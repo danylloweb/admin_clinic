@@ -1,0 +1,7 @@
+!composer.json
+!composer.lock
+**/venv
+.git
+.gitignore
+docker-compose.yml
+docker-compose-chalice.yml

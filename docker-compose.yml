@@ -1,0 +1,102 @@
+services:
+    app:
+        build:
+            context: ./docker
+            dockerfile: Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+        ports:
+            - 8001:80
+        depends_on:
+            - mysql
+            - mongo
+            - redis
+            - kafka
+        networks:
+            - admin_clinic
+    mysql:
+        image: epionebr/mysql:tagname
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: renovar
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_PASSWORD: root
+            MYSQL_USER: root
+        volumes:
+            - ./data/mysql/dbdata:/var/lib/mysql
+        ports:
+            - 3306:3306
+        command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --innodb-buffer-pool-size=4G
+        networks:
+            - admin_clinic
+    pma:
+        image: phpmyadmin/phpmyadmin
+        ports:
+            - 9006:80
+        environment:
+            - PMA_ARBITRARY=1
+            - UPLOAD_LIMIT=1G
+        networks:
+            - admin_clinic
+
+    mongo:
+        image: mongo
+        restart: always
+        volumes:
+            - ./data/db:/data/db
+        networks:
+            - admin_clinic
+
+    redis:
+        image: redis
+        networks:
+            - admin_clinic
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        restart: unless-stopped
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            TZ: "America/Sao_Paulo"
+        networks:
+            - admin_clinic
+
+    kafka:
+        image: confluentinc/cp-kafka:latest
+        restart: unless-stopped
+        depends_on:
+            - zookeeper
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_CREATE_TOPICS: ""
+            TZ: "America/Sao_Paulo"
+        volumes:
+            - ./.docker/kafka:/data/db
+        networks:
+            - admin_clinic
+
+    kafka-ui:
+        image: provectuslabs/kafka-ui
+        ports:
+            - "8089:8080"
+        restart: on-failure
+        depends_on:
+            - kafka
+        environment:
+            - KAFKA_CLUSTERS_0_NAME=local
+            - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+            - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+        networks:
+            - admin_clinic
+
+networks:
+    admin_clinic:
+        driver: bridge
