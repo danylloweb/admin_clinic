@@ -1,33 +1,30 @@
 @extends('layouts.header')
 @section('content')
-    <div class="">
         <div class="card mb-3">
             <div class="card-body">
-                <h3 class="card-title fs-5">Lista de Procedimentos</h3>
+                <h3 class="card-title fs-5">Lista de Campanhas</h3>
                 <div class="p-1 table-responsive">
-                    <table id="datatable-procedure" class="table table-bordered table-striped" style="width: 100%">
+                    <table id="datatable-campaigns" class="table table-bordered table-striped" style="width: 100%">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Id</th>
                                 <th>Nome</th>
-                                <th>Tipo</th>
-                                <th>Preço a vista</th>
+                                <th>Data</th>
+                                <th>Imagem</th>
                                 <th>Status</th>
-                                <th>Atualizado em</th>
-                                <th>Ações</th>
+                                <th>Ação</th>
                             </tr>
                         </thead>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
 @endsection
 
 @push('scripts')
     <script>
         $(function () {
-            const table = $('#datatable-procedure').DataTable({
+            const table = $('#datatable-campaigns').DataTable({
                 processing: true,
                 serverSide: true,
                 searching: true,
@@ -38,10 +35,9 @@
                     const columnMap = {
                         0: 'id',
                         1: 'name',
-                        2: 'procedure_type_name',
-                        3: 'price',
+                        2: 'date',
+                        3: 'url_image',
                         4: 'status',
-                        5: 'updated_at',
                         6: 'id'
                     };
 
@@ -50,7 +46,7 @@
                     const orderBy = columnMap[orderColumnIndex] || 'id';
 
                     $.ajax({
-                        url: '{{ route("procedures.index") }}',
+                        url: '{{ route("campaigns.index") }}',
                         method: 'GET',
                         data: {
                             limit: 15,
@@ -71,14 +67,17 @@
                 columns: [
                     { data: 'id' },
                     { data: 'name' },
-                    { data: 'procedure_type_name',
+                    { data: 'date',
+                        render: function (data) {
+                            return moment(data).format('DD/MM/YYYY');
+                        },
                         orderable: false,
                         searchable: false
                     },
-                    { data: 'price',
-                       render: function(data) {
-                            return 'R$ ' + parseFloat(data).toFixed(2).replace('.', ',');
-                       },
+                    { data: 'url_image',
+                        render: function (data) {
+                           return `<img src="${data}" alt="imagem" style="width: 60px; height: auto; border-radius: 5px;"/>`;
+                        },
                       orderable: false,
                       searchable: false
                     },
@@ -87,15 +86,19 @@
                         searchable: false
                     },
                     {
-                        data: 'updated_at',
-                        render: function(data) {
-                            return moment(data).format('DD/MM/YYYY HH:mm');
-                        }
-                    },
-                    {
                         data: 'id',
                         orderable: false,
-                        searchable: false
+                        searchable: false,
+                        render: function (data) {
+                            return `
+                            <button class="btn btn-sm btn-primary me-1" onclick="viewCampaign(${data.id})">
+                              <i class="ph ph-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCampaign(${data.id})">
+                              <i class="ph ph-trash"></i>
+                            </button>
+                          `;
+                        }
                     }
                 ],
                 language: {
@@ -103,5 +106,13 @@
                 }
             });
         });
+
+        function viewCampaign(id) {
+          console.log('Visualizar campanha com ID:', id);
+        }
+
+        function deleteCampaign(id) {
+            console.log('Deletar campanha com ID:', id);
+        }
     </script>
 @endpush

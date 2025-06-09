@@ -52,12 +52,25 @@
 <script src="{{ asset('js/index.ea66387c.js') }}" nomodule defer></script>
 <script src="{{ asset('js/vendor.353a377b.js') }}" type="module"></script>
 <script src="{{ asset('js/vendor.07ba7954.js') }}" nomodule defer></script>
+</body>
 <script>
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const email = this.email.value;
-        const password = this.password.value;
+        const form     = this;
+        const email    = form.email.value;
+        const password = form.password.value;
+
+        const btn = form.querySelector("button[type='submit']");
+        const originalText = btn.innerHTML;
+
+        // Desabilita botão e inputs
+        btn.disabled = true;
+        btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        Entrando...
+    `;
+        Array.from(form.elements).forEach(el => el.disabled = true);
 
         try {
             const res = await fetch("{{ route('login') }}", {
@@ -72,7 +85,12 @@
             const data = await res.json();
 
             if (!res.ok) {
-                showToast("Usuario e senha Incorreto: " + (data.message || "Verifique suas credenciais"), "danger");
+                showToast("Usuário e senha incorretos: " + (data.message || "Verifique suas credenciais"), "danger");
+
+                // Reativa botão e inputs
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                Array.from(form.elements).forEach(el => el.disabled = false);
                 return;
             }
 
@@ -81,10 +99,8 @@
 
             showToast("Login realizado com sucesso! Redirecionando...", "success");
 
-            // Após o login, buscar dados do usuário
             await fetchUserData(data.token);
 
-            // Redireciona com um leve delay após o toast
             setTimeout(() => {
                 window.location.href = "/dashboard";
             }, 2500);
@@ -92,6 +108,11 @@
         } catch (err) {
             showToast("Erro inesperado. Tente novamente.", "danger");
             console.error(err);
+
+            // Reativa botão e inputs em caso de erro inesperado
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            Array.from(form.elements).forEach(el => el.disabled = false);
         }
     });
 
@@ -132,6 +153,9 @@
         <div class="d-flex">
             <div class="toast-body">${message}</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <span class="spinner-border spinner-border-sm me-1 mt-1"
+                role="status" aria-hidden="true">
+            </span>
         </div>
     `;
 
@@ -143,5 +167,4 @@
         }, 4000);
     }
 </script>
-</body>
 </html>

@@ -50,6 +50,17 @@ class PanelController extends Controller
         ]);
     }
 
+    /**
+     * @return View|Factory|Application
+     */
+    public function campaignIndex(): View|Factory|Application
+    {
+        return view('campaigns.index', [
+            'title' => 'Campanhas WhatsApp',
+            'subtitle' => 'Lista de Campanhas',
+        ]);
+    }
+
 
 
 }

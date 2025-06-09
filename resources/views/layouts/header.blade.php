@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="{{ asset('accordion.8001c1c2.css') }}">
+    <link rel="stylesheet" href="{{ asset('app.css') }}">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,20 +20,6 @@
     <link rel="preload" as="image" href="{{ asset('6.98e0f35c.jpg') }}" type="image/jpeg">
     <link rel="preload" as="image" href="{{ asset('7.368c39ac.jpg') }}" type="image/jpeg">
     <link rel="preload" as="image" href="{{ asset('8.8d1edcfe.jpg') }}" type="image/jpeg">
-    <style>
-        .dataTables_filter {
-            text-align: right;
-        }
-        .dataTables_filter label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .dataTables_filter input {
-            max-width: 250px;
-        }
-    </style>
-
 </head>
 <body>
 <div id="page-loader">
@@ -144,9 +131,10 @@
                    readonly> <span class="mx-n2">-</span> <input
             type="text" name="end" value="06/14/2025" class="form-control-plaintext text-end w-20" required readonly>
     </div>
-    <div class="align-items-center d-flex gap-1 ms-3"><a href class="icon icon-subtle ph ph-plus-circle"></a> <a href
-                                                                                                                 class="icon icon-subtle ph ph-download"></a>
-        <a href class="icon icon-subtle ph ph-gear"></a></div>
+    <div class="align-items-center d-flex gap-1 ms-3"><a href class="icon icon-subtle ph ph-plus-circle"></a>
+        <a href class="icon icon-subtle ph ph-download"></a>
+        <a href class="icon icon-subtle ph ph-gear"></a>
+    </div>
 </header>
 <div id="content" data-scrollbar>
  @yield('content')
@@ -155,74 +143,13 @@
 <script src="{{ asset('js/index.ea66387c.js') }}" nomodule defer></script>
 <script src="{{ asset('js/vendor.353a377b.js') }}" type="module"></script>
 <script src="{{ asset('js/vendor.07ba7954.js') }}" nomodule defer></script>
-<script>
-    // 🔹 Definição de tema do app
-    const defaultTheme = "8";
-    let theme = localStorage.getItem("sa-theme") || defaultTheme;
-    const validThemes = ["1", "2", "3", "4", "5", "6", "7", "8"];
-    if (!validThemes.includes(theme)) {
-        theme = defaultTheme;
-        localStorage.setItem("sa-theme", theme);
-    }
-    // 🔹 Função carregamento de tema
-    document.documentElement.setAttribute("data-sa-theme", theme);
-    // 🔹 Função carregamento de usuário
-    document.addEventListener("DOMContentLoaded", function () {
-        const user = JSON.parse(localStorage.getItem("user"));
-
-        if (user) {
-            document.getElementById("user-avatar").src = user.img || "1.e810f372.jpg";
-            document.getElementById("user-name").textContent = user.name || "Usuário";
-            document.getElementById("user-email").textContent = user.email || "";
-        }
-    });
-    // 🔹 Função auxiliar para exibir toast
-    function showToast(message, type = "info") {
-        const toastId = "toast-" + Date.now();
-        const container = document.getElementById("toast-container");
-
-        const toast = document.createElement("div");
-        toast.className = `toast align-items-center text-white bg-${type} border-0 show mb-2`;
-        toast.setAttribute("role", "alert");
-        toast.setAttribute("id", toastId);
-
-        toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    `;
-
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.classList.remove("show");
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
-    }
-    // 🔹 Função logout User
-    function logoutUser() {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        document.cookie = "jwt_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        window.location.href = "/login";
-    }
-</script>
+<script src="{{ asset('js/app.js') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Bootstrap (se usar) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- DataTables -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
-<!-- Moment.js para formatar datas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
-<!-- DataTables em português -->
 <script src="https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"></script>
-
 @stack('scripts')
 </body>
 </html>

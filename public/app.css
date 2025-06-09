@@ -1,0 +1,33 @@
+.dataTables_filter {
+    text-align: right;
+}
+.dataTables_filter label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.dataTables_filter input {
+    max-width: 250px;
+}
+.p-1.table-responsive {
+    scrollbar-width: thin;           /* Firefox */
+    scrollbar-color: #444 #222;      /* Firefox */
+}
+
+.p-1.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.p-1.table-responsive::-webkit-scrollbar-track {
+    background: #222;
+}
+
+.p-1.table-responsive::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 4px;
+    border: 1px solid #333;
+}
+
+.p-1.table-responsive::-webkit-scrollbar-thumb:hover {
+    background-color: #777;
+}

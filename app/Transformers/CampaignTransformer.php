@@ -26,8 +26,7 @@ class CampaignTransformer extends TransformerAbstract
             'name'        => $model->name,
             'description' => $model->description,
             'url_image'   => $model->url_image,
-            'date'        => $model->date->format('Y-m-d'),
-            'date_format' => $model->date->format('d/m/Y'),
+            'date'        => $model->date,
             'status'      => $model->status == 0 ? 'Criado' : 'Concluida',
             'created_at'  => $model->created_at->toDateTimeString(),
             'updated_at'  => $model->updated_at->toDateTimeString()
