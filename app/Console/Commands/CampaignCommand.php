@@ -34,13 +34,13 @@ class CampaignCommand extends Command
     }
     public function handle()
     {
-        $not      = [75,549,238,251,253,412,322,426,635,180,181,217,214];
+        $not      = [75,549,238,251,253,412,322,426,635,180,181,217,214,230];
         $patients = $this->patientRepository->skipPresenter()->findWhereNotIn('id',$not);
-        $camp     = $this->campaignService->find(10,true);
+        $camp     = $this->campaignService->find(11,true);
         $image    = $camp->url_image;
         foreach ($patients as $patient) {
             $this->campaignService->sendImageToWhatsApp($patient->chat_id, $image, $camp->description);
-           echo "\n $patient->id - $patient->social_name";
+            echo "\n $patient->id - $patient->social_name";
         }
     }
 }
