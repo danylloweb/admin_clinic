@@ -53,4 +53,15 @@ class CampaignsController extends Controller
         ]);
     }
 
+    /**
+     * @return View|Factory|Application
+     */
+    public function create(): View|Factory|Application
+    {
+        return view('campaigns.create', [
+            'title'    => 'Criar Campanha',
+            'subtitle' => 'Formulário de Criação de Campanha',
+        ]);
+    }
+
 }

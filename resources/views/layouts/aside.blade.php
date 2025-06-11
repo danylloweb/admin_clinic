@@ -28,7 +28,12 @@
             <li><a href="#"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
             <li><a href="#"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>
             <li class="menu-title">Marketing</li>
-            <li><a href="{{ route('panel.campaigns.index') }}"> <i class="ph ph-whatsapp-logo"></i> <span>Whatsapp</span></a></li>
+            <li class="menu-sub"><a href> <i class="ph ph-whatsapp-logo"></i> <span>Whatsapp</span> </a>
+                <ul>
+                    <li><a href="{{ route('panel.campaigns.index') }}"><i class="ph ph-whatsapp-logo"></i>Lista</a></li>
+                    <li><a href="{{ route('panel.campaign.create') }}"><i class="ph ph-whatsapp-logo"></i>Novo</a></li>
+                </ul>
+            </li>
             <li class="menu-sub"><a href> <i class="ph ph-chat-circle-text"></i> <span>Mensagens</span> </a>
                 <ul>
                     <li><a href="{{ route('panel.campaigns.index') }}">Lista</a></li>

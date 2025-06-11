@@ -91,10 +91,10 @@
                         searchable: false,
                         render: function (data) {
                             return `
-                            <button class="btn btn-sm btn-primary me-1" onclick="viewCampaign(${data.id})">
+                            <button class="btn btn-sm btn-primary me-1" onclick="viewCampaign(${data})">
                               <i class="ph ph-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteCampaign(${data.id})">
+                            <button class="btn btn-sm btn-danger" onclick="deleteCampaign(${data})">
                               <i class="ph ph-trash"></i>
                             </button>
                           `;
@@ -108,7 +108,7 @@
         });
 
         function viewCampaign(id) {
-          console.log('Visualizar campanha com ID:', id);
+            window.location.href = '{{ route("panel-campaign-show", ":id") }}'.replace(':id', id);
         }
 
         function deleteCampaign(id) {
