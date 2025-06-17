@@ -49,6 +49,16 @@ services:
         networks:
             - admin_clinic
 
+    mongo-express:
+        image: mongo-express
+        restart: always
+        ports:
+            - 8084:8081
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongo
+            - ME_CONFIG_BASICAUTH=false
+        networks:
+            - admin_clinic
     redis:
         image: redis
         networks:
