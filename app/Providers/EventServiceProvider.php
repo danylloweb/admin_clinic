@@ -108,7 +108,6 @@ class EventServiceProvider extends ServiceProvider
         });
 
         Patient::created(function () {
-            $this->dashboardService->setQtyPatient();
             Cache::store('redis')->tags('patients')->flush();
         });
         Patient::updated(function () {

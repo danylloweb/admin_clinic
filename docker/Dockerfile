@@ -1,100 +1,89 @@
-FROM php:8.3-fpm
+FROM php:8.3-cli
+ENV DOCUMENT_ROOT=/var/www/html
+# ==== Sistema ====
+# - Inclui libs necessárias para compilar extensões (incl. OpenSwoole), GD, intl etc.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nginx supervisor unzip git curl nano ca-certificates tzdata \
+    pkg-config $PHPIZE_DEPS \
+    libxml2-dev libzip-dev libxslt-dev \
+    libssl-dev libcurl4-openssl-dev zlib1g-dev \
+    libicu-dev \
+    libzstd-dev libmemcached-dev \
+    libjpeg62-turbo-dev libfreetype6-dev libpng-dev \
+  && rm -rf /var/lib/apt/lists/*
 
-ENV DOCUMENT_ROOT /var/www/html
-ENV TZ=America/Recife
-# Instala dependências necessárias
-RUN apt-get update && apt-get install -y \
-        nginx \
-        unzip \
-        git \
-        curl \
-        nano \
-        libxml2-dev \
-        libzip-dev \
-        libxslt-dev \
-        libpng-dev \
-        libssl-dev \
-        libzstd-dev \
-        libmemcached-dev \
-        librdkafka-dev \
-        supervisor \
-        cron \
-    && docker-php-ext-install opcache \
-    && pecl install redis mongodb apcu rdkafka xdebug \
-    && echo "extension=mongodb.so" > $PHP_INI_DIR/conf.d/mongo.ini \
-    && echo "extension=rdkafka.so" > $PHP_INI_DIR/conf.d/rdkafka.ini \
-    && docker-php-ext-enable redis mongodb apcu rdkafka xdebug \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-configure zip \
-    && docker-php-ext-install bcmath \
-    && docker-php-ext-install -j "$(nproc)" mysqli pdo_mysql intl zip xsl soap gd \
-    && docker-php-source delete
+# ==== PHP core/extensões ====
+# GD separado (PHP 8.3 usa --with-freetype --with-jpeg)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+ && docker-php-ext-install -j"$(nproc)" gd
 
-# Instala manualmente o memcached com suporte atualizado
+RUN docker-php-ext-install -j"$(nproc)" \
+    pcntl opcache bcmath mysqli pdo_mysql intl zip xsl soap
+
+# ==== Extensões PECL ====
+# MongoDB fixado na série ^1.15 para compatibilidade com mongodb/laravel-mongodb 4.8.x
+RUN pecl install mongodb-1.15.0 \
+ && docker-php-ext-enable mongodb
+
+RUN pecl install redis \
+ && docker-php-ext-enable redis
+
+RUN pecl install apcu \
+ && docker-php-ext-enable apcu
+
+# OpenSwoole (Octane) — conforme documentação oficial
+RUN pecl install openswoole \
+ && docker-php-ext-enable openswoole
+
+# ==== Memcached (manual) ====
 RUN curl -fsSL https://github.com/php-memcached-dev/php-memcached/archive/refs/heads/master.zip -o /tmp/memcached.zip \
-    && unzip /tmp/memcached.zip -d /tmp/ \
-    && cd /tmp/php-memcached-master \
-    && phpize \
-    && ./configure --with-php-config=/usr/local/bin/php-config --disable-memcached-sasl \
-    && make -j "$(nproc)" && make install \
-    && docker-php-ext-enable memcached \
-    && rm -rf /tmp/php-memcached-master /tmp/memcached.zip
+ && unzip /tmp/memcached.zip -d /tmp/ \
+ && cd /tmp/php-memcached-master \
+ && phpize \
+ && ./configure --with-php-config=/usr/local/bin/php-config --disable-memcached-sasl \
+ && make -j"$(nproc)" && make install \
+ && docker-php-ext-enable memcached \
+ && rm -rf /tmp/php-memcached-master /tmp/memcached.zip
 
-# Configura o fuso horário
+# ==== Fuso horário ====
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-# Configura o diretório de trabalho
+# ==== Diretórios / permissões base ====
+RUN mkdir -p /run/nginx /var/log/nginx /var/log/supervisor /var/log/laravel \
+    /etc/nginx/conf.d /etc/supervisor/conf.d
+
 WORKDIR $DOCUMENT_ROOT
 
-# Remove configurações antigas do Nginx
-RUN rm -f /etc/nginx/conf.d/*
-
-RUN mkdir -p /run/nginx \
-    && mkdir -p /var/log/supervisor \
-    && mkdir -p /etc/nginx/conf.d \
-    && mkdir -p /etc/supervisor.d \
-    && mkdir -p /var/log/laravel
-
-ENV PATH="/usr/bin/supervisor:${PATH}"
-# Copia o código da aplicação e as configurações
+# ==== Copia app e configs ====
 COPY . $DOCUMENT_ROOT
-COPY nginx.conf /etc/nginx/nginx.conf
 COPY php.ini /usr/local/etc/php/conf.d/app.ini
-COPY php-fpm-www.conf /usr/local/etc/php-fpm.d/www.conf
-COPY supervisor.conf /etc/supervisor.d/supervisord.conf
-COPY laravel-cron /etc/cron.d/laravel-cron
-RUN chmod 0644 /etc/cron.d/laravel-cron
-# Instala o Composer
+COPY swoole/nginx.conf /etc/nginx/nginx.conf
+COPY swoole/site-nginx.conf /etc/nginx/conf.d/app.conf
+COPY swoole/supervisor.conf /etc/supervisor/conf.d/supervisord.conf
+COPY swoole/supervisor.conf /etc/supervisor/supervisord.conf
+
+# ==== Composer ====
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-# Instala as dependências do Laravel
-#RUN composer install --no-dev --no-interaction --no-progress --no-suggest --optimize-autoloader
-# Configuração do Xdebug para cobertura de testes
-RUN echo "zend_extension=/usr/local/lib/php/extensions/no-debug-non-zts-20230831/xdebug.so" > $PHP_INI_DIR/conf.d/xdebug.ini \
-    && echo "xdebug.mode=coverage" >> $PHP_INI_DIR/conf.d/xdebug.ini \
-    && echo "xdebug.start_with_request=yes" >> $PHP_INI_DIR/conf.d/xdebug.ini
-# Set permissions
+#RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
+#RUN composer require laravel/octane --ignore-platform-reqs \
+#    && php artisan octane:install --server=swoole
+
+# ==== Permissões ====
+WORKDIR $DOCUMENT_ROOT
+COPY . .
+
 RUN chown -R www-data:www-data $DOCUMENT_ROOT \
     && chown -R www-data:www-data /run/nginx \
     && chown -R www-data:www-data /var/log/nginx \
     && chown -R www-data:www-data /var/log/supervisor \
     && chown -R www-data:www-data /var/log/laravel
-RUN chmod 777 /var/www/html
+RUN chmod -R 777 $DOCUMENT_ROOT
 
-COPY . $DOCUMENT_ROOT
+# Nginx logs para STDOUT/STDERR (útil em containers)
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+ && ln -sf /dev/stderr /var/log/nginx/error.log
 
-# Garante que os diretórios existem
-RUN mkdir -p $DOCUMENT_ROOT/storage/logs \
-    && mkdir -p /run/nginx \
-    && mkdir -p /var/log/supervisor \
-    && mkdir -p /etc/nginx/conf.d \
-    && mkdir -p /etc/supervisor.d \
-    && mkdir -p /var/log/laravel
-
-RUN chown -R www-data:www-data $DOCUMENT_ROOT \
-    && chmod -R 775 $DOCUMENT_ROOT/storage
-# Exposição da porta 80
 EXPOSE 80
 
-# Define o comando de inicialização
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
-CMD ["supervisord", "-n", "-c", "/etc/supervisor.d/supervisord.conf"]
+# ==== Start (Nginx + Octane/OpenSwoole via Supervisor) ====
+CMD ["supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Services\PatientService;
 use App\Validators\PatientValidator;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class PatientsController.
@@ -81,7 +85,7 @@ class PatientsController extends Controller
     {
         $id      = $request->get('id');
         $patient = $this->service->find($id, true);
-        return $this->getImagebyPhone($patient->phone);
+        return $this->getImagebyPhone($patient->chat_id);
     }
 
     /**
@@ -91,6 +95,34 @@ class PatientsController extends Controller
     private function getImagebyPhone($phone): JsonResponse
     {
         return response()->json($this->service->getlinkImageByPhone($phone), 200);
+    }
+
+    /**
+     * @param int $id
+     * @return Application|Factory|View|\Illuminate\Foundation\Application
+     */
+    public function patientShow(int $id): Factory|View|\Illuminate\Foundation\Application|Application
+    {
+        $patient = $this->service->find($id, true);
+        $photo   = $this->service->getlinkImageByPhone($patient->chat_id);
+        return view('patients.show', [
+            'title'    => 'Paciente',
+            'subtitle' => 'Detalhe do(a) Paciente',
+            'patient'  => $patient,
+            'photo'    => $photo->success?? 'https://ui-avatars.com/api/?name='.urlencode($patient->name),
+        ]);
+    }
+
+    public function patientChat(int $id): Factory|View|\Illuminate\Foundation\Application|Application
+    {
+        $patient = $this->service->find($id, true);
+        $photo   = $this->service->getImageToContactWhatsApp($patient->chat_id);
+        return view('patients.chat', [
+            'title'    => 'Paciente',
+            'subtitle' => 'Chat com Paciente',
+            'patient'  => $patient,
+            'photo'    => $photo->success?? 'https://ui-avatars.com/api/?name='.urlencode($patient->name),
+        ]);
     }
 
 

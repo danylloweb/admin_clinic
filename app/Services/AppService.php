@@ -235,7 +235,7 @@ class AppService
         try {
             $params = [
                 'token'  => '19kudd3ash52qthi',
-                'chatId' => $this->getContactIdByPhone($phone)
+                'chatId' => $phone
             ];
             $uri      = "https://api.ultramsg.com/instance33014/contacts/image?".http_build_query($params);
             $request  = new Request('GET',$uri ,  $this->getHeaderUltra());
@@ -267,18 +267,36 @@ class AppService
      * @param $phone
      * @return mixed
      */
-    public function getLastMessagesWhatsApp($phone): mixed
+    public function getLastMessagesWhatsApp($chatId): mixed
     {
         $params = [
             'token'  => '19kudd3ash52qthi',
-            'chatId' => $this->getContactIdByPhone($phone),
+            'chatId' => $chatId,
             'limit'  => '50',
         ];
 
         $request = new Request('GET', 'https://api.ultramsg.com/instance33014/chats/messages?'.http_build_query($params), $this->getHeaderUltra());
         $res     = $this->getHttpClient()->sendAsync($request)->wait();
 
-        return $res->getBody();
+        return json_decode($res->getBody(), true);
+    }
+
+    public function getLastMessagesByChatId($chatId): mixed
+    {
+
+        try {
+            $messages = $this->getLastMessagesWhatsApp($chatId);
+            usort($messages, function ($a, $b) {
+                $ta = isset($a['timestamp']) ? (int)$a['timestamp'] : 0;
+                $tb = isset($b['timestamp']) ? (int)$b['timestamp'] : 0;
+                return $ta <=> $tb;
+            });
+            return $messages;
+        } catch (\Throwable $e) {
+            Log::error('getLastMessagesByChatId error: ' . $e->getMessage());
+            return [];
+        }
+
     }
 
     /**
@@ -295,7 +313,13 @@ class AppService
 
         return json_decode($response->getBody());
     }
-
+    public function getAllChats(): mixed
+    {
+        $chats = $this->getChats();
+        return Cache::store('redis')->tags('allChat')->remember("chat", 5, function () use ($chats) {
+            return $chats;
+        });
+    }
     /**
      * @param $chat_id
      * @return mixed
@@ -359,7 +383,7 @@ class AppService
      */
     public function getlinkImageByPhone($phone):mixed
     {
-        return Cache::store('redis')->tags('imageProfile')->remember($phone, 120000, function () use ($phone) {
+        return Cache::store('redis')->tags('imageProfile')->remember($phone, 1220000, function () use ($phone) {
             return $this->getImageToContactWhatsApp($phone);
         });
     }

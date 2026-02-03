@@ -1,0 +1,235 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #0c1317;
+    height: 100vh;
+}
+
+.app {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 30%;
+    background: #111b21;
+    border-right: 1px solid #2a3942;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #202c33;
+    color: #e9edef;
+}
+
+.chat-list {
+    overflow-y: auto;
+
+}
+
+.chat-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    color: #e9edef;
+}
+
+.chat-item:hover,
+.chat-item.active {
+    background: #2a3942;
+}
+
+.chat-item img,
+.chat-header img {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+/* Loading state */
+.loading {
+    padding: 16px;
+    color: #cfd8dc;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Chat */
+.chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0b141a;
+}
+
+.chat-header {
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #202c33;
+    color: #e9edef;
+}
+
+.messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message {
+    max-width: 60%;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.received {
+    background: #202c33;
+    color: #e9edef;
+    align-self: flex-start;
+}
+
+.sent {
+    background: #005c4b;
+    color: #e9edef;
+    align-self: flex-end;
+}
+
+/* Input */
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background: #202c33;
+    position: relative; /* necessário para posicionar o emoji picker */
+    gap: 10px;
+    align-items: center;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    background: #2a3942;
+    color: #e9edef;
+}
+
+.chat-input button {
+    margin-left: 10px;
+    background: #005c4b;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+/* Quill editor custom (WhatsApp style) */
+#editor-container {
+    flex: 1;
+    background: #2a3942;
+    border-radius: 8px;
+    min-height: 42px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 8px 12px;
+    color: #e9edef;
+    font-size: 15px;
+    line-height: 1.3;
+    outline: none;
+}
+
+/* Placeholder para contenteditable: aparece quando está vazio */
+#editor-container:empty:before {
+    content: attr(data-placeholder);
+    color: #8696a0;
+    pointer-events: none;
+}
+
+/* Placeholder via classe is-empty (fallback quando :empty não detecta) */
+#editor-container.is-empty:before {
+    content: attr(data-placeholder);
+    color: #8696a0;
+    pointer-events: none;
+}
+
+/* Proteção contra espaços em branco — quando contem apenas <br> ou &nbsp;, JS limpa, mas deixar um fallback visual */
+#editor-container[contenteditable] {
+    white-space: pre-wrap;
+}
+
+/* Quill compat classes (caso ainda existam em CSS antigo) */
+.ql-container {
+    border: none !important;
+    font-size: 15px;
+    color: #e9edef;
+}
+
+.ql-editor {
+    padding: 10px 15px;
+}
+
+.ql-editor::before {
+    color: #8696a0;
+    font-style: normal;
+}
+
+.ql-editor.ql-blank::before {
+    content: 'Digite uma mensagem';
+}
+
+/* Emoji picker */
+.emoji-picker {
+    position: absolute;
+    bottom: 58px; /* acima do input */
+    left: 10px;
+    display: none;
+    gap: 6px;
+    background: #12181b;
+    border: 1px solid #2a3942;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    z-index: 50;
+}
+
+.emoji-picker.show {
+    display: flex;
+}
+
+.emoji-picker button {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.emoji-picker button:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+/* Responsividade: reduz a sidebar em telas pequenas */
+@media (max-width: 800px) {
+    .sidebar { display: none; }
+    .chat { flex: 1; }
+}

@@ -38,26 +38,6 @@
         <input type="text" class="form-control" placeholder="Pesquisar...">
     </div>
     <ul class="header-menu ms-6 ms-xl-10">
-        <li class="d-lg-none">
-            <button type="button" class="ph ph-magnifying-glass" data-bs-toggle="dropdown" data-bs-display="static"
-                    data-bs-auto-close="outside" aria-expanded="false"><span class="visually-hidden">Pesquisar</span>
-            </button>
-            <div class="dropdown-menu header-dropdown-menu">
-                <div class="align-items-center d-flex flex-shrink-0 h-11 px-4">
-                    <div class="fw-medium text-body-emphasis">Pesquisar</div>
-                    <button type="button" class="icon me-n1 ms-auto ph ph-gear"><span
-                            class="visually-hidden">Configurações</span></button>
-                </div>
-                <div class="align-items-center d-flex mb-6 mx-n0.5 px-4"><i
-                        class="fs-5 me-n7 ms-3 ph ph-magnifying-glass position-relative"></i>
-                    <input type="text" class="form-control ps-9" placeholder="Digite a palavra chave" aria-label="Search">
-                </div>
-                <div class="fs-7 mb-1 px-4 text-body-secondary">Pesquisa Recente</div>
-                <div class="flex-grow-1 mx-n1.5 pb-1 px-3" data-scrollbar>
-                    <div id="recent-searches"></div>
-                </div>
-            </div>
-        </li>
         <li class="dropdown header-notify">
             <button type="button" class="ph ph-bell" data-bs-toggle="dropdown" data-bs-display="static"
                     data-bs-auto-close="outside" aria-expanded="false"><span
@@ -125,31 +105,69 @@
         </ol>
     </nav>
     <i class="ms-auto"></i>
-    <div class="d-md-flex d-none date-range-picker date-range-picker-body fs-7"><i
-            class="fs-3 me-2 ph ph-clock position-relative"></i>
-            <input type="text" name="start" value="06/08/2025" class="form-control-plaintext w-20" required
-                   readonly> <span class="mx-n2">-</span> <input
-            type="text" name="end" value="06/14/2025" class="form-control-plaintext text-end w-20" required readonly>
+    @php
+        use Carbon\Carbon;
+        $now = Carbon::now();
+        $start = $now->copy()->startOfWeek()->subDay();
+        $end   = $now->copy()->endOfWeek()->subDay();
+    @endphp
+
+    <div class="d-md-flex d-none date-range-picker date-range-picker-body fs-7">
+        <i class="fs-3 me-2 ph ph-clock position-relative"></i>
+        <input type="text" name="start" value="{{ $start->format('m/d/Y') }}" class="form-control-plaintext w-20" required readonly>
+        <span class="mx-n2">-</span>
+        <input type="text" name="end" value="{{ $end->format('m/d/Y') }}" class="form-control-plaintext text-end w-20" required readonly>
     </div>
-    <div class="align-items-center d-flex gap-1 ms-3"><a href class="icon icon-subtle ph ph-plus-circle"></a>
-        <a href class="icon icon-subtle ph ph-download"></a>
+
+    <div class="align-items-center d-flex gap-1 ms-3">
+        <a href="{{ $routeCreate??"#" }}" class="icon icon-subtle ph ph-plus-circle"></a>
+        <a href class="icon icon-subtle ph ph-download" ></a>
         <a href class="icon icon-subtle ph ph-gear"></a>
     </div>
 </header>
 <div id="content" data-scrollbar>
  @yield('content')
 </div>
+<script src="{{ asset('js/app.js') }}"></script>
 <script src="{{ asset('js/index.2675e9f1.js') }}" type="module"></script>
 <script src="{{ asset('js/index.ea66387c.js') }}" nomodule defer></script>
 <script src="{{ asset('js/vendor.353a377b.js') }}" type="module"></script>
 <script src="{{ asset('js/vendor.07ba7954.js') }}" nomodule defer></script>
-<script src="{{ asset('js/app.js') }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script src="https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"></script>
+<script>
+    function showToast(message, type = "info") {
+        const toastId = "toast-" + Date.now();
+        const container = document.getElementById("toast-container");
+
+        const toast = document.createElement("div");
+        toast.className = `toast align-items-center text-white bg-${type} border-0 show mb-2`;
+        toast.setAttribute("role", "alert");
+        toast.setAttribute("id", toastId);
+
+        toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <span class="spinner-border spinner-border-sm me-1 mt-1"
+                role="status" aria-hidden="true">
+            </span>
+        </div>
+    `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.remove("show");
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+</script>
 @stack('scripts')
 </body>
 </html>

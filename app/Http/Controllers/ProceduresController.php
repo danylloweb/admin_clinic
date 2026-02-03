@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Services\ProcedureService;
 use App\Validators\ProcedureValidator;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -68,6 +71,22 @@ class ProceduresController extends Controller
     public function updateStatus(int $id, Request $request)
     {
         return response()->json($this->service->update($request->all(), $id));
+    }
+
+    /**
+     * @param int $id
+     * @return Factory|View|\Illuminate\Foundation\Application|Application
+     *
+     */
+    public function procedureShow(int $id): Factory|View|\Illuminate\Foundation\Application|Application
+    {
+        $procedure = $this->service->find($id, true);
+        return view('procedures.show', [
+            'title'    => 'Procedimento',
+            'subtitle' => 'Detalhe do(a) Procedimento',
+            'patient'  => $procedure,
+            'routeCreate' => route('panel.procedures.index'),
+        ]);
     }
 
 

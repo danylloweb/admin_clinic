@@ -34,6 +34,7 @@
                 ajax: function(data, callback, settings) {
                     const page = Math.floor(data.start / data.length) + 1;
                     const search = data.search.value;
+                    const limit = data.length === -1 ? 0 : data.length;
 
                     const columnMap = {
                         0: 'id',
@@ -53,7 +54,7 @@
                         url: '{{ route("procedures.index") }}',
                         method: 'GET',
                         data: {
-                            limit: 15,
+                            limit: limit,
                             orderBy: orderBy,
                             sortedBy: orderDir,
                             page: page,
@@ -95,7 +96,17 @@
                     {
                         data: 'id',
                         orderable: false,
-                        searchable: false
+                        searchable: false,
+                        render: function (data) {
+                            return `
+                            <button class="btn btn-sm btn-primary me-1" onclick="viewProcedure(${data})">
+                              <i class="ph ph-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProcedure(${data})">
+                              <i class="ph ph-trash"></i>
+                            </button>
+                          `;
+                        }
                     }
                 ],
                 language: {
@@ -103,5 +114,13 @@
                 }
             });
         });
+
+        function viewProcedure(id) {
+            window.location.href = '{{ route("panel.procedure.show", ":id") }}'.replace(':id', id);
+        }
+
+        function deleteProcedure(id) {
+            console.log('Deletar procedimento com ID:', id);
+        }
     </script>
 @endpush

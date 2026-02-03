@@ -45,6 +45,8 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::resource('followUpSchedules', 'FollowUpSchedulesController', ['create', 'edit']);
     Route::post('send-message-direct', 'FollowUpMessagesController@sendMessageDirect');
     Route::get('schedule-calendar', 'SchedulesController@calendar');
+    Route::get('all-chats', 'FollowUpMessagesController@getAllChats');
+    Route::get('get-chat', 'FollowUpMessagesController@getChat');
 
 });
 Route::any('{any}', function () {

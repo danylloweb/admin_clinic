@@ -2,9 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Entities\AvatarChat;
 use App\Models\Chat;
 use App\Services\LeadService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  *
@@ -33,17 +38,47 @@ class GetChatsCommand extends Command
     }
     public function handle()
     {
-       $chats = $this->leadService->getChats();
+        $output = new ConsoleOutput();
+        $chats = $this->leadService->getChats();
+        $progress = new ProgressBar($output, count($chats));
+        Log::info("Starting caching chats with avatars...");
+        $progress->start();
+        $chats = Cache::store('redis')->tags('allChat')->remember("chat", 1220000, function () use ($chats, $progress) {
+            foreach ($chats as $key => $chat) {
+                $chatId = null;
+                $progress->advance();
+                if (is_object($chat) && property_exists($chat, 'id')) {
+                    $chatId = $chat->id;
+                } elseif (is_array($chat) && array_key_exists('id', $chat)) {
+                    $chatId = $chat['id'];
+                }
 
-        foreach ($chats as $chat) {
-           $data_create = [
-               "chat_id"      => $chat->id,
-               "last_time"    => date('d/m/Y H:i:s', $chat->last_time),
-               "timestamp"    => $chat->last_time,
-               "name"         => $chat->name,
-               "last_message" => "FirstMessage",
-           ];
-            $this->chatRepository->create($data_create);
-       }
+                $avatar = null;
+                if (!empty($chatId)) {
+                    $avatar = $this->getAvatar($chatId);
+                }
+
+                // attach avatar to the element in the original collection/array
+                if (is_object($chat)) {
+                    $chats[$key]->avatar = $avatar;
+                } elseif (is_array($chat)) {
+                    $chats[$key]['avatar'] = $avatar;
+                }
+
+            }
+            return $chats;
+        });
+        $progress->finish();
+    }
+
+    private function getAvatar($chatId)
+    {
+        $avatar     = $this->leadService->getlinkImageByPhone($chatId);
+        $avatarChat = AvatarChat::create([
+            'chat_id' => $chatId,
+            'avatar'  => $avatar->success??"https://static.vecteezy.com/ti/vetor-gratis/p1/26434417-padrao-avatar-perfil-icone-do-social-meios-de-comunicacao-do-utilizador-foto-vetor.jpg",
+        ]);
+        return $avatarChat->avatar;
     }
 }
+

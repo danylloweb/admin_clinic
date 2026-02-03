@@ -16,7 +16,7 @@
             <li class="menu-title">Pacientes</li>
             <li class="menu-sub"><a href> <i class="ph ph-user-list"></i> <span>Lista</span> </a>
                 <ul>
-                    <li><a href="#">Todos</a></li>
+                    <li><a href="{{ route('panel.patient.index') }}">Todos</a></li>
                     <li><a href="#">Novo paciente</a></li>
                 </ul>
             </li>
@@ -39,6 +39,12 @@
                     <li><a href="{{ route('panel.campaigns.index') }}">Lista</a></li>
                     <li><a href="#">Novo</a></li>
                     <li><a href="#">Enviar</a></li>
+                </ul>
+            </li>
+            <li class="menu-title">Contatos</li>
+            <li class="menu-sub"><a href> <i class="ph ph-whatsapp-logo"></i> <span>Whatsapp</span> </a>
+                <ul>
+                    <li><a href=""><i class="ph ph-whatsapp-logo"></i>Lista</a></li>
                 </ul>
             </li>
         </ul>

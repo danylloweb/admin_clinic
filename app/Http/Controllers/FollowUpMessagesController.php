@@ -39,4 +39,15 @@ class FollowUpMessagesController extends Controller
     {
         return response()->json($this->service->sendMessageDirect($request->all()));
     }
+
+    public function getAllChats()
+    {
+        return response()->json($this->service->getAllChats());
+    }
+
+    public function getChat(Request $request)
+    {
+        $chatId = $request->query->get('chatId');
+        return response()->json($this->service->getLastMessagesByChatId($chatId));
+    }
 }
