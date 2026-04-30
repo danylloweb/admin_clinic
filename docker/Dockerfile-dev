@@ -21,7 +21,7 @@ RUN docker-php-ext-install -j"$(nproc)" \
     pcntl opcache bcmath mysqli pdo_mysql intl zip xsl soap
 
 # ==== Extensões PECL ====
-# MongoDB fixado na série ^1.15 para compatibilidade com mongodb/laravel-mongodb 4.8.x
+# MongoDB >= 1.21 necessário para mongodb/laravel-mongodb ^5.x (Laravel 12)
 RUN pecl install mongodb \
  && docker-php-ext-enable mongodb
 
@@ -69,13 +69,11 @@ RUN chmod 0644 /etc/cron.d/laravel-cron \
 
 # ==== Composer ====
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
-RUN composer require laravel/octane --ignore-platform-reqs \
-    && php artisan octane:install --server=swoole
+#RUN composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-reqs
+#RUN php artisan octane:install --server=swoole --no-interaction
+#docker run --rm -v $(pwd):/app -w /app composer:2.9 update --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
 # ==== Permissões ====
-WORKDIR $DOCUMENT_ROOT
-COPY . .
 
 RUN chown -R www-data:www-data $DOCUMENT_ROOT \
     && chown -R www-data:www-data /run/nginx \
