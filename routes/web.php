@@ -24,5 +24,9 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-patients-chat/{id}',[PatientsController::class,'patientChat'])->name('panel.patient.chat');
     Route::get('/panel-procedure-show/{id}',[ProceduresController::class,'procedureShow'])->name('panel.procedure.show');
     Route::get('/panel-procedure-create',[PanelController::class,'procedureCreate'])->name('panel.procedure.create');
+    Route::get('/panel-sales-orders-index',[PanelController::class,'salesOrderIndex'])->name('panel.sales-order.index');
+    Route::get('/panel-sales-orders-create',[PanelController::class,'salesOrderCreate'])->name('panel.sales-order.create');
+    Route::get('/panel-sales-orders-invoice',[PanelController::class,'salesOrderInvoice'])->name('panel.sales-order.invoice');
+    Route::get('/panel-sales-orders-edit/{id}',[PanelController::class,'salesOrderEdit'])->name('panel.sales-order.edit');
 });
 

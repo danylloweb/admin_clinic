@@ -25,8 +25,8 @@
             <li><a href="#"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
             <li><a href="#"> <i class="ph ph-stethoscope"></i> <span>Triagens</span></a></li>
             <li class="menu-title">Vendas</li>
-            <li><a href="#"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
-            <li><a href="#"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>
+            <li><a href="{{ route('panel.sales-order.index') }}"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
+            <li><a href="{{ route('panel.sales-order.create') }}"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>
             <li class="menu-title">Marketing</li>
             <li class="menu-sub"><a href> <i class="ph ph-whatsapp-logo"></i> <span>Whatsapp</span> </a>
                 <ul>

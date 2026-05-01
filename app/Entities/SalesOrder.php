@@ -62,16 +62,16 @@ class SalesOrder extends Model implements Transformable
     public function getTaxByMasterCard(): array
     {
         return [
-            ["installment" => 1, "tax" => 0.0349],
-            ["installment" => 2, "tax" => 0.0899],
-            ["installment" => 3, "tax" => 0.1099],
-            ["installment" => 4, "tax" => 0.1199],
-            ["installment" => 5, "tax" => 0.1299],
-            ["installment" => 6, "tax" => 0.1399],
-            ["installment" => 7, "tax" => 0.1499],
-            ["installment" => 8, "tax" => 0.1599],
-            ["installment" => 9, "tax" => 0.1699],
-            ["installment" => 10,"tax" => 0.1799]
+            ["installment" => 1, "tax" => 0.0449],
+            ["installment" => 2, "tax" => 0.0999],
+            ["installment" => 3, "tax" => 0.1199],
+            ["installment" => 4, "tax" => 0.1299],
+            ["installment" => 5, "tax" => 0.1399],
+            ["installment" => 6, "tax" => 0.1499],
+            ["installment" => 7, "tax" => 0.1599],
+            ["installment" => 8, "tax" => 0.1699],
+            ["installment" => 9, "tax" => 0.1799],
+            ["installment" => 10,"tax" => 0.1899]
         ];
     }
 
@@ -81,16 +81,16 @@ class SalesOrder extends Model implements Transformable
     public function getTaxByEloCard(): array
     {
         return [
-            ["installment" => 1, "tax" => 0.0468],
-            ["installment" => 2, "tax" => 0.1038],
-            ["installment" => 3, "tax" => 0.1238],
-            ["installment" => 4, "tax" => 0.1338],
-            ["installment" => 5, "tax" => 0.1438],
-            ["installment" => 6, "tax" => 0.1538],
-            ["installment" => 7, "tax" => 0.1638],
-            ["installment" => 8, "tax" => 0.1738],
-            ["installment" => 9, "tax" => 0.1838],
-            ["installment" => 10,"tax" => 0.1938]
+            ["installment" => 1, "tax" => 0.0568],
+            ["installment" => 2, "tax" => 0.1138],
+            ["installment" => 3, "tax" => 0.1338],
+            ["installment" => 4, "tax" => 0.1438],
+            ["installment" => 5, "tax" => 0.1538],
+            ["installment" => 6, "tax" => 0.1638],
+            ["installment" => 7, "tax" => 0.1738],
+            ["installment" => 8, "tax" => 0.1838],
+            ["installment" => 9, "tax" => 0.1938],
+            ["installment" => 10,"tax" => 0.2038]
         ];
     }
 
@@ -118,7 +118,7 @@ class SalesOrder extends Model implements Transformable
     {
         $brand  = $this->attributes['brand_card'];
         $amount = $this->attributes['amount'];
-        $tax    = ($brand <= 2) ? 0.0169 : 0.0288;
+        $tax    = ($brand <= 2) ? 0.0269 : 0.0388;
         return $amount + ($amount * $tax);
     }
 }

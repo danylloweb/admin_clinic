@@ -2,6 +2,7 @@
 
 namespace App\Transformers;
 
+use Carbon\Carbon;
 use League\Fractal\TransformerAbstract;
 use App\Entities\Schedule;
 
@@ -33,8 +34,8 @@ class ScheduleTransformer extends TransformerAbstract
             'patient_id'           => $model->patient_id,
             'patient_name'         => $model->patient->name,
             'last_message'         => $model->patient->getLastMessageByChatId(),
-            'date'                 => $model->date->format('d/m/Y'),
-            'date_real'            => $model->date->format('Y-m-d'),
+            'date'                 => Carbon::create($model->date)->format('d/m/Y'),
+            'date_real'            => Carbon::create($model->date)->format('Y-m-d'),
             'time'                 => $model->time,
             'phone'                => $model->patient->phone,
             'phone_link'           => str_replace(["(",")","-"],'',$model->patient->phone),

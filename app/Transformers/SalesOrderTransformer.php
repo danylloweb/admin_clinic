@@ -65,7 +65,12 @@ class SalesOrderTransformer extends TransformerAbstract
                 return 'Pago';
             case 2:
                 return 'Cancelado';
-
+            case 3:
+                return 'Parcial';
+            case 4:
+                return 'Finalizado';
+            default:
+                return 'Aguardando pagamento';
         }
     }
 }

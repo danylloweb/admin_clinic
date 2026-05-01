@@ -22,8 +22,12 @@
 </head>
 <body class="align-items-center d-flex p-5">
 <div class="toast-container position-fixed top-0 end-0 p-3 z-3" id="toast-container"></div>
-<div class="card m-auto mw-400 p-8 w-100"><h2 class="fs-6 text-body-emphasis">Bem vindo ao Admin!</h2>
-    <div class="mb-5 text-body-secondary">Entre com suas credenciais</div>
+<div class="card m-auto mw-400 p-8 w-100">
+    <div class="text-center mb-5">
+        <img src="https://renovarestetica.com.br/Original-01.png" width="190" alt="Renovar">
+        <h2 class="fs-6 text-body-emphasis mt-3">Bem vindo ao Painel!</h2>
+        <div class="text-body-secondary">Entre com suas credenciais</div>
+    </div>
     <form id="loginForm" class="mb-5">
         <div class="mb-3 position-relative">
             <i class="fs-3 left-0 m-2.5 ph ph-user-circle position-absolute text-body-secondary top-0"></i>

@@ -112,15 +112,15 @@ class SalesOrderDetailTransformer extends TransformerAbstract
     {
         switch ($status) {
             case "Confirmado":
-                return "Confirmado✅";
+                return "Confirmado ✅";
             case "Marcado":
-                return "Marcado🔵";
+                return "Agendado 🔵";
             case "Cancelado":
-                return "Cancelada❌";
+                return "Cancelada ❌";
             case "Adiado":
-                return "Adiado🕓";
+                return "Adiado 🕓";
                 default:
-                    return "Aguadando agendamento🕓";
+                    return "Aguardando Agendamento  🕓";
         }
     }
 }

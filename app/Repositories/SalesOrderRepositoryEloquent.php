@@ -16,6 +16,12 @@ use App\Validators\SalesOrderValidator;
  */
 class SalesOrderRepositoryEloquent extends AppRepository implements SalesOrderRepository
 {
+    protected $fieldSearchable = [
+        'id' => '=',
+        'patient.name' => 'like',
+        'patient.social_name' => 'like',
+    ];
+
     /**
      * Specify Model class name
      *
