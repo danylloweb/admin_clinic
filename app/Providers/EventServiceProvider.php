@@ -44,38 +44,8 @@ class EventServiceProvider extends ServiceProvider
     private function afterCreatedModels()
     {
 
-        $this->dashboardService = new DashboardService();
-        User::created(function ($user) {
-            UserGateway::query()->create([
-                'name'     => $user->name,
-                'email'    => $user->email,
-                'password' => $user->password,
-                'user_type_id' => $user->user_type_id,
-                'img' => $user->img,
-            ]);
-        });
-
-        User::updated(function ($user) {
-            $user_gateway = UserGateway::query()->where('email',$user->email)->first();
-            if ($user_gateway){
-                $user_gateway->name     = $user->name;
-                $user_gateway->password = $user->password;
-                $user_gateway->user_type_id = $user->user_type_id;
-                $user_gateway->img = $user->img;
-                $user_gateway->save();
-            }else{
-                UserGateway::query()->create([
-                    'name'     => $user->name,
-                    'email'    => $user->email,
-                    'password' => $user->password,
-                    'user_type_id' => $user->user_type_id,
-                    'img' => $user->img,
-                ]);
-            }
-        });
 
         Screening::created(function () {
-            $this->dashboardService->setQtyScreenings();
             Cache::store('redis')->tags('screenings')->flush();
         });
         Screening::updated(function () {
@@ -86,7 +56,6 @@ class EventServiceProvider extends ServiceProvider
         });
 
         Schedule::created(function () {
-            $this->dashboardService->setQtySchedules();
             Cache::store('redis')->tags('schedules')->flush();
         });
         Schedule::updated(function () {
@@ -97,7 +66,7 @@ class EventServiceProvider extends ServiceProvider
         });
 
         Procedure::created(function () {
-            $this->dashboardService->setQtyProcedures();
+
             Cache::store('redis')->tags('procedures')->flush();
         });
         Procedure::updated(function () {

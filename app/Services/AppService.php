@@ -451,9 +451,18 @@ class AppService
      */
     public function putFileS3($file_name_content, $content): string
     {
-        $path = config('APP_NAME').$file_name_content;
-        Storage::disk('s3')->put($path, $content);
-        return Storage::disk('s3')->url($file_name_content);
+        try {
+            if ($this->canUseS3Disk()) {
+                $path = config('APP_NAME').$file_name_content;
+                Storage::disk('s3')->put($path, $content);
+                return Storage::disk('s3')->url($file_name_content);
+            }
+        } catch (\Throwable $exception) {
+            Log::warning('S3 upload unavailable, using public disk fallback: '.$exception->getMessage());
+        }
+
+        Storage::disk('public')->put($file_name_content, $content);
+        return Storage::disk('public')->url($file_name_content);
     }
 
     /**
@@ -463,11 +472,25 @@ class AppService
     public function deleteFileS3($file_name_content): void
     {
         try {
-            $file = str_replace("https://msadmin.s3.amazonaws.com/",'',$file_name_content);
-            Storage::disk('s3')->delete($file);
+            if ($this->canUseS3Disk() && str_contains((string) $file_name_content, 'amazonaws.com')) {
+                $file = str_replace("https://msadmin.s3.amazonaws.com/",'',$file_name_content);
+                Storage::disk('s3')->delete($file);
+                return;
+            }
+
+            $file = preg_replace('#^.*/storage/#', '', (string) $file_name_content);
+            if ($file) {
+                Storage::disk('public')->delete($file);
+            }
         }catch (\Exception $exception) {
 
         }
 
+    }
+
+    protected function canUseS3Disk(): bool
+    {
+        return class_exists('League\\Flysystem\\AwsS3V3\\PortableVisibilityConverter')
+            && config('filesystems.disks.s3.driver') === 's3';
     }
 }

@@ -177,6 +177,23 @@ class PanelController extends Controller
             'items' => $items,
         ]);
     }
+    public function usersIndex(): View|Factory|Application
+    {
+        return view('users.index', [
+            'title'       => 'Colaboradores',
+            'subtitle'    => 'Lista de Colaboradores',
+            'routeCreate' => '#',
+        ]);
+    }
+
+    public function usersEdit(int $id): View|Factory|Application
+    {
+        return view('users.edit', [
+            'title'    => 'Colaboradores',
+            'subtitle' => 'Editar Colaborador',
+            'userId'   => $id,
+        ]);
+    }
 
 
 

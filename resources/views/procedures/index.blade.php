@@ -175,12 +175,8 @@
                         searchable: false,
                         render: function (data, type, row) {
                             const checked = Number(row.status_enum) === 1 ? 'checked' : '';
-                            return `
-                                <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
-                                    <input class="form-check-input procedure-status-switch" type="checkbox" data-id="${row.id}" ${checked}>
-                                    <span>${row.status}</span>
-                                </div>
-                            `;
+                            return `<input class="form-check-input procedure-status-switch" type="checkbox" data-id="${row.id}" ${checked}>
+                                    <span>${row.status}</span>`;
                         }
                     },
                     {
