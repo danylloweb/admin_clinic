@@ -4,6 +4,34 @@
         <div class="card mb-3">
             <div class="card-body">
                 <h3 class="card-title fs-5">Lista de Procedimentos</h3>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de pacote</label>
+                        <select id="filter-is-package" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1">Pacote</option>
+                            <option value="0">Avulso</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de procedimento</label>
+                        <select id="filter-procedure-type" class="form-select">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select id="filter-status" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1">Ativo</option>
+                            <option value="0">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button id="btn-apply-filters" class="btn btn-primary">Filtrar</button>
+                        <button id="btn-clear-filters" class="btn btn-secondary">Limpar</button>
+                    </div>
+                </div>
                 <div class="p-1 table-responsive">
                     <table id="datatable-procedure" class="table table-bordered table-striped" style="width: 100%">
                         <thead>
@@ -26,8 +54,63 @@
 
 @push('scripts')
     <script>
+        let proceduresTable;
+
+        async function loadProcedureTypes() {
+            const select = document.getElementById('filter-procedure-type');
+            try {
+                const res = await fetch(`{{ route('procedureTypes.index') }}?limit=1000`, { credentials: 'same-origin' });
+                if (!res.ok) {
+                    return;
+                }
+                const data = await res.json();
+                const items = Array.isArray(data?.data) ? data.data : [];
+
+                items.forEach((item) => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function toggleProcedureStatus(id, inputEl) {
+            const nextStatus = inputEl.checked ? 1 : 0;
+            inputEl.disabled = true;
+
+            try {
+                const res = await fetch(`{{ url('/') }}/procedure-update-status/${id}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: nextStatus })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || 'Erro ao atualizar status do procedimento');
+                }
+
+                showToast('Status do procedimento atualizado.', 'success');
+                if (proceduresTable) {
+                    proceduresTable.ajax.reload(null, false);
+                }
+            } catch (error) {
+                inputEl.checked = !inputEl.checked;
+                showToast(error.message || 'Erro ao atualizar status do procedimento', 'danger');
+            } finally {
+                inputEl.disabled = false;
+            }
+        }
+
         $(function () {
-            const table = $('#datatable-procedure').DataTable({
+            proceduresTable = $('#datatable-procedure').DataTable({
                 processing: true,
                 serverSide: true,
                 searching: true,
@@ -58,7 +141,10 @@
                             orderBy: orderBy,
                             sortedBy: orderDir,
                             page: page,
-                            search: search
+                            search: search,
+                            is_package: document.getElementById('filter-is-package').value || null,
+                            procedure_type_id: document.getElementById('filter-procedure-type').value || null,
+                            status: document.getElementById('filter-status').value || null,
                         },
                         success: function(response) {
                             callback({
@@ -83,9 +169,19 @@
                       orderable: false,
                       searchable: false
                     },
-                    { data: 'status',
+                    {
+                        data: null,
                         orderable: false,
-                        searchable: false
+                        searchable: false,
+                        render: function (data, type, row) {
+                            const checked = Number(row.status_enum) === 1 ? 'checked' : '';
+                            return `
+                                <div class="form-check form-switch m-0 d-flex align-items-center gap-2">
+                                    <input class="form-check-input procedure-status-switch" type="checkbox" data-id="${row.id}" ${checked}>
+                                    <span>${row.status}</span>
+                                </div>
+                            `;
+                        }
                     },
                     {
                         data: 'updated_at',
@@ -113,6 +209,27 @@
                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
                 }
             });
+
+            document.getElementById('btn-apply-filters').addEventListener('click', function () {
+                proceduresTable.ajax.reload();
+            });
+
+            document.getElementById('btn-clear-filters').addEventListener('click', function () {
+                document.getElementById('filter-is-package').value = '';
+                document.getElementById('filter-procedure-type').value = '';
+                document.getElementById('filter-status').value = '';
+                proceduresTable.ajax.reload();
+            });
+
+            document.getElementById('datatable-procedure').addEventListener('change', function (event) {
+                const input = event.target.closest('.procedure-status-switch');
+                if (!input) {
+                    return;
+                }
+                toggleProcedureStatus(input.dataset.id, input);
+            });
+
+            loadProcedureTypes();
         });
 
         function viewProcedure(id) {

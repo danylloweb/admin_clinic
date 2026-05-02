@@ -152,28 +152,28 @@ class PanelController extends Controller
      */
     public function salesOrderInvoice(Request $request): View|Factory|Application
     {
-        $items = json_decode($request->query('items', '[]'), true);
+        $items = json_decode((string) $request->input('items', '[]'), true);
         if (!is_array($items)) {
             $items = [];
         }
 
-        $socialName = $request->query('social_name', 'Paciente');
-        $date = $request->query('date', now()->format('d/m/Y'));
+        $socialName = $request->input('social_name', 'Paciente');
+        $date = $request->input('date', now()->format('d/m/Y'));
 
         return view('sales-orders.invoice', [
             'documentTitle' => $socialName . ' - ' . $date,
             'socialName' => $socialName,
-            'patientName' => $request->query('patient_name', $socialName),
-            'phone' => $request->query('phone', '-'),
+            'patientName' => $request->input('patient_name', $socialName),
+            'phone' => $request->input('phone', '-'),
             'date' => $date,
-            'paymentLabel' => $request->query('payment_label', 'Nao informado'),
-            'brandLabel' => $request->query('brand_label', 'Nao informado'),
-            'qtyInstallments' => (int)$request->query('qty_installments', 1),
-            'subtotal' => (float)$request->query('subtotal', 0),
-            'pixAmount' => (float)$request->query('pix_amount', 0),
-            'debitAmount' => (float)$request->query('debit_amount', 0),
-            'creditTotal' => (float)$request->query('credit_total', 0),
-            'installmentAmount' => (float)$request->query('installment_amount', 0),
+            'paymentLabel' => $request->input('payment_label', 'Nao informado'),
+            'brandLabel' => $request->input('brand_label', 'Nao informado'),
+            'qtyInstallments' => (int)$request->input('qty_installments', 1),
+            'subtotal' => (float)$request->input('subtotal', 0),
+            'pixAmount' => (float)$request->input('pix_amount', 0),
+            'debitAmount' => (float)$request->input('debit_amount', 0),
+            'creditTotal' => (float)$request->input('credit_total', 0),
+            'installmentAmount' => (float)$request->input('installment_amount', 0),
             'items' => $items,
         ]);
     }

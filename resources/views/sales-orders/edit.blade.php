@@ -18,6 +18,48 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modal-create-patient" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar novo paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome</label>
+                            <input type="text" id="new-patient-name" class="form-control" placeholder="Nome completo">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome social</label>
+                            <input type="text" id="new-patient-social-name" class="form-control" placeholder="Opcional">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" id="new-patient-phone" class="form-control" placeholder="(81)99999-0000" maxlength="15" inputmode="numeric">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data de nascimento</label>
+                            <input type="date" id="new-patient-birth-date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sexo</label>
+                            <select id="new-patient-sex" class="form-select">
+                                <option value="F">Feminino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-new-patient">Salvar paciente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal editar agendamento --}}
     <div class="modal fade" id="modal-edit-schedule" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -117,11 +159,14 @@
 @push('scripts')
 <script>
     const ORDER_ID = {{ (int) $orderId }};
+    const MODAL_IDS = ['modal-create-patient', 'modal-schedule', 'modal-edit-schedule'];
 
     const typePaymentLabels = {1:'PIX', 2:'Cartão de Crédito', 3:'Cartão de Débito', 4:'Dinheiro'};
     const statusLabels = {0:'Inicial', 1:'Pago', 2:'Cancelado', 3:'Parcial', 4:'Finalizado'};
 
     let currentOrder = null;
+    let createPatientModal = null;
+    let backdropObserver = null;
 
     async function apiGet(url) {
         const res = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
@@ -157,6 +202,224 @@
         return res.json();
     }
 
+    function parseMoneyBr(value) {
+        if (typeof value === 'number') {
+            return value;
+        }
+        if (!value) {
+            return 0;
+        }
+
+        const normalized = String(value).replace(/\./g, '').replace(',', '.').replace(/[^0-9.-]/g, '');
+        const parsed = parseFloat(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function getPaymentLabel(typePayment) {
+        switch (Number(typePayment)) {
+            case 1: return 'PIX';
+            case 2: return 'Cartao de Credito';
+            case 3: return 'Cartao de Debito';
+            case 4: return 'Dinheiro';
+            default: return 'Nao informado';
+        }
+    }
+
+    function getBrandLabel(brandCard) {
+        switch (Number(brandCard)) {
+            case 1: return 'MasterCard';
+            case 2: return 'Visa';
+            case 3: return 'Elo';
+            default: return 'Nao informado';
+        }
+    }
+
+    function formatOrderDatePtBr(value) {
+        if (!value) {
+            return new Date().toLocaleDateString('pt-BR');
+        }
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return new Date().toLocaleDateString('pt-BR');
+        }
+
+        return date.toLocaleDateString('pt-BR');
+    }
+
+    function submitInvoicePreview(payload) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `{{ route('panel.sales-order.invoice') }}`;
+        form.target = '_blank';
+        form.style.display = 'none';
+
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrf) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrf;
+            form.appendChild(csrfInput);
+        }
+
+        Object.entries(payload).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value ?? '';
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+
+    function maskPhoneValue(value) {
+        let v = String(value || '').replace(/\D/g, '');
+        if (v.length > 11) {
+            v = v.slice(0, 11);
+        }
+
+        if (v.length > 7) {
+            return '(' + v.slice(0, 2) + ')' + v.slice(2, 7) + '-' + v.slice(7);
+        }
+        if (v.length > 2) {
+            return '(' + v.slice(0, 2) + ')' + v.slice(2);
+        }
+        if (v.length > 0) {
+            return '(' + v;
+        }
+        return '';
+    }
+
+    function resetCreatePatientForm() {
+        document.getElementById('new-patient-name').value = '';
+        document.getElementById('new-patient-social-name').value = '';
+        document.getElementById('new-patient-phone').value = '';
+        document.getElementById('new-patient-birth-date').value = '';
+        document.getElementById('new-patient-sex').value = 'F';
+    }
+
+    function reconcileModalBackdrops() {
+        const visibleModals = Array.from(document.querySelectorAll('.modal.show'));
+        const backdrops = Array.from(document.querySelectorAll('.modal-backdrop'));
+
+        if (visibleModals.length === 0) {
+            backdrops.forEach((backdrop) => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            return;
+        }
+
+        // Keep only one backdrop when at least one modal is visible.
+        backdrops.forEach((backdrop, index) => {
+            if (index > 0) {
+                backdrop.remove();
+            }
+        });
+
+        const activeBackdrop = document.querySelector('.modal-backdrop');
+        if (activeBackdrop) {
+            activeBackdrop.style.zIndex = '1050';
+        }
+
+        visibleModals.forEach((modalEl) => {
+            modalEl.style.zIndex = '1060';
+        });
+    }
+
+    function enforceBackdropSafety() {
+        const visibleModals = document.querySelectorAll('.modal.show').length;
+        document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+            if (visibleModals === 0) {
+                backdrop.remove();
+                return;
+            }
+
+            // Backdrop remains visual only and never blocks interactions.
+            backdrop.style.zIndex = '1050';
+            backdrop.style.pointerEvents = 'none';
+        });
+    }
+
+    function observeBackdropInsertions() {
+        if (backdropObserver) {
+            backdropObserver.disconnect();
+        }
+
+        backdropObserver = new MutationObserver(() => {
+            enforceBackdropSafety();
+            reconcileModalBackdrops();
+        });
+
+        backdropObserver.observe(document.body, { childList: true });
+    }
+
+    async function createPatient() {
+        const saveButton = document.getElementById('btn-save-new-patient');
+        const name = document.getElementById('new-patient-name').value.trim();
+        const socialName = document.getElementById('new-patient-social-name').value.trim();
+        const phone = document.getElementById('new-patient-phone').value.trim();
+        const birthDate = document.getElementById('new-patient-birth-date').value;
+        const sex = document.getElementById('new-patient-sex').value || 'F';
+
+        if (!name) {
+            showToast('Preencha o nome do paciente.', 'danger');
+            return;
+        }
+
+        if (!phone) {
+            showToast('Preencha o telefone do paciente.', 'danger');
+            return;
+        }
+
+        if (!birthDate) {
+            showToast('Preencha a data de nascimento do paciente.', 'danger');
+            return;
+        }
+
+        const previousText = saveButton.innerText;
+        saveButton.disabled = true;
+        saveButton.innerText = 'Salvando...';
+
+        try {
+            const res = await fetch('{{ route('patients.store') }}', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    name,
+                    social_name: socialName,
+                    phone,
+                    birth_date: birthDate,
+                    sex,
+                })
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json().catch(() => ({}));
+                const validationMessages = Object.values(errorResponse.errors || {}).flat().join('\n');
+                showToast(validationMessages || errorResponse.message || 'Erro ao cadastrar paciente', 'danger');
+                return;
+            }
+
+            showToast('Paciente cadastrado com sucesso.', 'success');
+            createPatientModal.hide();
+            resetCreatePatientForm();
+        } catch (error) {
+            showToast(error.message || 'Erro ao cadastrar paciente', 'danger');
+        } finally {
+            saveButton.disabled = false;
+            saveButton.innerText = previousText;
+        }
+    }
+
     function statusBadge(item) {
         if (item.schedule_id) {
             return `<span class="badge bg-success">${item.status}</span>`;
@@ -173,7 +436,12 @@
             {{-- Paciente somente leitura --}}
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Paciente</label>
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                        <label class="form-label fw-semibold mb-0">Paciente</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-open-create-patient-modal">
+                            <i class="ph ph-user-plus"></i>
+                        </button>
+                    </div>
                     <div class="border rounded p-2 d-flex align-items-center gap-2">
                         <div>
                             <div class="fw-semibold">${order.patient_name}</div>
@@ -266,6 +534,7 @@
             </div>
 
             <div class="mt-3 d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary" onclick="openEditInvoicePreview()">Gerar documento</button>
                 <a href="{{ route('panel.sales-order.index') }}" class="btn btn-secondary">Voltar</a>
             </div>
         `;
@@ -304,12 +573,24 @@
         `).join('');
     }
 
+    document.addEventListener('click', function (event) {
+        const openCreatePatientButton = event.target.closest('#btn-open-create-patient-modal');
+        if (!openCreatePatientButton) {
+            return;
+        }
+
+        resetCreatePatientForm();
+        normalizeModalLayering('modal-create-patient');
+        createPatientModal.show();
+        normalizeModalLayering('modal-create-patient');
+    });
+
     function escapeAttr(value) {
         return String(value ?? '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
-    function normalizeModalLayering() {
-        const modalEl = document.getElementById('modal-schedule');
+    function normalizeModalLayering(modalId) {
+        const modalEl = document.getElementById(modalId);
         if (!modalEl) return;
 
         // Keep modal at body level to avoid z-index conflicts with parent containers.
@@ -323,19 +604,37 @@
         });
     }
 
+    function initializeModalLayering() {
+        MODAL_IDS.forEach((modalId) => {
+            const modalEl = document.getElementById(modalId);
+            if (!modalEl) {
+                return;
+            }
+
+            normalizeModalLayering(modalId);
+            modalEl.addEventListener('shown.bs.modal', function () {
+                normalizeModalLayering(modalId);
+                setTimeout(reconcileModalBackdrops, 0);
+                setTimeout(enforceBackdropSafety, 0);
+            });
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                setTimeout(reconcileModalBackdrops, 0);
+                setTimeout(enforceBackdropSafety, 0);
+            });
+        });
+    }
+
     window.openScheduleModal = function(itemId, procedureName) {
         document.getElementById('schedule-item-id').value = itemId;
         document.getElementById('schedule-procedure-name').value = procedureName;
         document.getElementById('schedule-date').value = '';
         document.getElementById('schedule-time').value = '';
         document.getElementById('schedule-send-message').checked = true;
-        normalizeModalLayering();
-        const modal = new bootstrap.Modal(document.getElementById('modal-schedule'));
+        normalizeModalLayering('modal-schedule');
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-schedule'));
         modal.show();
-        normalizeModalLayering();
+        normalizeModalLayering('modal-schedule');
     };
-
-    document.getElementById('modal-schedule').addEventListener('shown.bs.modal', normalizeModalLayering);
 
     window.savePayment = async function() {
         const typePayment = Number(document.getElementById('edit-type-payment').value);
@@ -374,6 +673,39 @@
         } catch (e) {
             showToast(e.message || 'Erro ao atualizar status', 'danger');
         }
+    };
+
+    window.openEditInvoicePreview = function() {
+        if (!currentOrder) {
+            showToast('Nao foi possivel carregar os dados do pedido.', 'danger');
+            return;
+        }
+
+        if (!(currentOrder.items || []).length) {
+            showToast('Este pedido nao possui itens para gerar o documento.', 'danger');
+            return;
+        }
+
+        const socialName = currentOrder.social_name || currentOrder.patient_name || 'Paciente';
+        submitInvoicePreview({
+            social_name: socialName,
+            patient_name: currentOrder.patient_name || socialName,
+            phone: currentOrder.phone || '-',
+            date: formatOrderDatePtBr(currentOrder.created_at),
+            payment_label: getPaymentLabel(currentOrder.type_payment),
+            brand_label: getBrandLabel(currentOrder.brand_card),
+            qty_installments: String(currentOrder.qty_installments || 1),
+            subtotal: String(parseMoneyBr(currentOrder.amount)),
+            pix_amount: String(parseMoneyBr(currentOrder.amount_pix)),
+            debit_amount: String(parseMoneyBr(currentOrder.amount_debit)),
+            credit_total: String(parseMoneyBr(currentOrder.amount_credit)),
+            installment_amount: String(parseMoneyBr(currentOrder.amount_installment)),
+            items: JSON.stringify((currentOrder.items || []).map(item => ({
+                name: item.procedure_name || item.procedure_title || '-',
+                price: parseMoneyBr(item.price),
+                qty: Number(item.qty || 0),
+            }))),
+        });
     };
 
     document.getElementById('btn-save-schedule').addEventListener('click', async function() {
@@ -473,24 +805,11 @@
             document.getElementById('edit-schedule-observation').value = s.observation_status || '';
         } catch (e) {}
 
-        if (modalEl.parentElement !== document.body) document.body.appendChild(modalEl);
-        modalEl.style.zIndex = '1060';
-        editScheduleModalInstance = new bootstrap.Modal(modalEl);
+        normalizeModalLayering('modal-edit-schedule');
+        editScheduleModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         editScheduleModalInstance.show();
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.style.zIndex = '1050');
+        normalizeModalLayering('modal-edit-schedule');
     };
-
-    document.getElementById('modal-edit-schedule').addEventListener('shown.bs.modal', function() {
-        this.style.zIndex = '1060';
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.style.zIndex = '1050');
-    });
-
-    document.getElementById('modal-edit-schedule').addEventListener('hidden.bs.modal', function() {
-        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '';
-    });
 
     document.getElementById('edit-schedule-procedure-search').addEventListener('keyup', function() {
         const term = this.value.trim();
@@ -505,7 +824,7 @@
 
         editScheduleProcedureTimer = setTimeout(async function() {
             try {
-                const data = await apiGet(`{{ route('procedures.index') }}?search=${encodeURIComponent(term)}&limit=7`);
+                const data = await apiGet(`{{ route('procedures.index') }}?search=${encodeURIComponent(term)}&limit=7&status=1`);
                 resultsEl.innerHTML = '';
                 (data.data || []).forEach(procedure => {
                     const btn = document.createElement('button');
@@ -567,6 +886,14 @@
         }
     });
     // ---- End Edit Schedule Modal ----
+
+    document.getElementById('btn-save-new-patient').addEventListener('click', createPatient);
+    document.getElementById('new-patient-phone').addEventListener('input', function () {
+        this.value = maskPhoneValue(this.value);
+    });
+    observeBackdropInsertions();
+    initializeModalLayering();
+    createPatientModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modal-create-patient'));
 
     loadOrder();
 </script>

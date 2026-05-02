@@ -14,12 +14,7 @@
                 </ul>
             </li>
             <li class="menu-title">Pacientes</li>
-            <li class="menu-sub"><a href> <i class="ph ph-user-list"></i> <span>Lista</span> </a>
-                <ul>
-                    <li><a href="{{ route('panel.patient.index') }}">Todos</a></li>
-                    <li><a href="#">Novo paciente</a></li>
-                </ul>
-            </li>
+            <li><a href="{{ route('panel.patient.index') }}"> <i class="ph ph-user-list"></i> <span>Todos</span></a></li>
             <li class="menu-title">Operacional</li>
             <li><a href="{{ route('panel.schedules.index') }}"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
             <li><a href="#"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>

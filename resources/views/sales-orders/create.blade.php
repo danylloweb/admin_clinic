@@ -10,7 +10,12 @@
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6 position-relative">
-                                <label class="form-label">Paciente</label>
+                                <div class="d-flex align-items-center justify-content-between mb-1 gap-2">
+                                    <label class="form-label mb-0">Paciente</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="btn-open-create-patient-modal">
+                                        <i class="ph ph-user-plus"></i> Novo paciente
+                                    </button>
+                                </div>
                                 <input type="text" id="patient-search" class="form-control" placeholder="Pesquisar por nome ou telefone" onkeyup="searchPatients()" autocomplete="off">
                                 <div id="patient-results" class="list-group position-absolute w-100 z-3 border rounded shadow-sm" style="background:#2a2a3a;"></div>
                                 <div id="selected-patient" class="mt-2"></div>
@@ -101,6 +106,48 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-create-patient" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar novo paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome</label>
+                            <input type="text" id="new-patient-name" class="form-control" placeholder="Nome completo">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nome social</label>
+                            <input type="text" id="new-patient-social-name" class="form-control" placeholder="Opcional">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" id="new-patient-phone" class="form-control" placeholder="(81)99999-0000" maxlength="15" inputmode="numeric">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data de nascimento</label>
+                            <input type="date" id="new-patient-birth-date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sexo</label>
+                            <select id="new-patient-sex" class="form-select">
+                                <option value="F">Feminino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-new-patient">Salvar paciente</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -114,6 +161,56 @@
 
         let patientSearchTimer = null;
         let procedureSearchTimer = null;
+        let createPatientModal = null;
+
+        function maskPhoneValue(value) {
+            let v = String(value || '').replace(/\D/g, '');
+            if (v.length > 11) {
+                v = v.slice(0, 11);
+            }
+
+            if (v.length > 7) {
+                return '(' + v.slice(0, 2) + ')' + v.slice(2, 7) + '-' + v.slice(7);
+            }
+            if (v.length > 2) {
+                return '(' + v.slice(0, 2) + ')' + v.slice(2);
+            }
+            if (v.length > 0) {
+                return '(' + v;
+            }
+            return '';
+        }
+
+        function normalizeCreatePatientModalLayering() {
+            const modalEl = document.getElementById('modal-create-patient');
+            if (!modalEl) {
+                return;
+            }
+
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+
+            modalEl.style.zIndex = '1060';
+            document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+                backdrop.style.zIndex = '1050';
+            });
+        }
+
+        function cleanupModalArtifacts() {
+            document.querySelectorAll('.modal-backdrop').forEach((backdrop) => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+
+        function resetCreatePatientForm() {
+            document.getElementById('new-patient-name').value = '';
+            document.getElementById('new-patient-social-name').value = '';
+            document.getElementById('new-patient-phone').value = '';
+            document.getElementById('new-patient-birth-date').value = '';
+            document.getElementById('new-patient-sex').value = 'F';
+        }
 
         function formatMoney(value) {
             return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -250,6 +347,35 @@
             }
         }
 
+        function submitInvoicePreview(payload) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `{{ route('panel.sales-order.invoice') }}`;
+            form.target = '_blank';
+            form.style.display = 'none';
+
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrf) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrf;
+                form.appendChild(csrfInput);
+            }
+
+            Object.entries(payload).forEach(([key, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value ?? '';
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
         window.openInvoicePreview = function () {
             if (!saleState.selectedPatient) {
                 showToast('Selecione um paciente para gerar o documento', 'danger');
@@ -274,7 +400,7 @@
                 qty: item.qty,
             }));
 
-            const query = new URLSearchParams({
+            submitInvoicePreview({
                 social_name: socialName,
                 patient_name: patient.name || socialName,
                 phone: patient.phone || '-',
@@ -289,12 +415,6 @@
                 installment_amount: String(totals.installmentAmount),
                 items: JSON.stringify(serializedItems),
             });
-
-            const url = `{{ route('panel.sales-order.invoice') }}?${query.toString()}`;
-            const newWindow = window.open(url, '_blank');
-            if (!newWindow) {
-                showToast('Nao foi possivel abrir nova aba. Verifique bloqueio de pop-up.', 'danger');
-            }
         };
 
         function renderSelectedPatient() {
@@ -326,6 +446,16 @@
             document.getElementById('patient-search').value = '';
             document.getElementById('patient-results').innerHTML = '';
             renderSelectedPatient();
+        }
+
+        function normalizeCreatedPatient(patient) {
+            return {
+                id: patient?.id,
+                name: patient?.name || '',
+                social_name: patient?.social_name || patient?.name || '',
+                phone: patient?.phone || '',
+                photo: patient?.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(patient?.name || 'Paciente')}`,
+            };
         }
 
         function renderCartItems() {
@@ -419,7 +549,7 @@
         }
 
         async function fetchProcedures(term) {
-            const url = `{{ route('procedures.index') }}?search=${encodeURIComponent(term)}&limit=8`;
+            const url = `{{ route('procedures.index') }}?search=${encodeURIComponent(term)}&limit=8&status=1`;
             const res = await fetch(url, { credentials: 'same-origin' });
             if (!res.ok) {
                 return [];
@@ -536,6 +666,74 @@
             }
         }
 
+        async function createPatient() {
+            const saveButton = document.getElementById('btn-save-new-patient');
+            const name = document.getElementById('new-patient-name').value.trim();
+            const socialName = document.getElementById('new-patient-social-name').value.trim();
+            const phone = document.getElementById('new-patient-phone').value.trim();
+            const birthDate = document.getElementById('new-patient-birth-date').value;
+            const sex = document.getElementById('new-patient-sex').value || 'F';
+
+            if (!name) {
+                showToast('Preencha o nome do paciente.', 'danger');
+                return;
+            }
+
+            if (!phone) {
+                showToast('Preencha o telefone do paciente.', 'danger');
+                return;
+            }
+
+            if (!birthDate) {
+                showToast('Preencha a data de nascimento do paciente.', 'danger');
+                return;
+            }
+
+            const previousText = saveButton.innerText;
+            saveButton.disabled = true;
+            saveButton.innerText = 'Salvando...';
+
+            try {
+                const res = await fetch('{{ route('patients.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        name,
+                        social_name: socialName,
+                        phone,
+                        birth_date: birthDate,
+                        sex,
+                    })
+                });
+
+                if (!res.ok) {
+                    const errorResponse = await res.json().catch(() => ({}));
+                    const validationMessages = Object.values(errorResponse.errors || {}).flat().join('\n');
+                    throw new Error(validationMessages || errorResponse.message || 'Erro ao cadastrar paciente');
+                }
+
+                const response = await res.json();
+                const created = normalizeCreatedPatient(response.data || response);
+
+                saleState.selectedPatient = created;
+                document.getElementById('patient-search').value = `${created.name} - ${created.phone || ''}`;
+                document.getElementById('patient-results').innerHTML = '';
+                renderSelectedPatient();
+                createPatientModal?.hide();
+                resetCreatePatientForm();
+                showToast('Paciente cadastrado com sucesso.', 'success');
+            } catch (error) {
+                showToast(error.message || 'Erro ao cadastrar paciente', 'danger');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.innerText = previousText;
+            }
+        }
+
         function buildSalesOrderPayload() {
             const payment = getSelectedPaymentInfo();
             const userId = getLoggedUserId();
@@ -618,6 +816,22 @@
             }
         });
 
+        document.getElementById('btn-open-create-patient-modal').addEventListener('click', function () {
+            resetCreatePatientForm();
+            normalizeCreatePatientModalLayering();
+            createPatientModal.show();
+            normalizeCreatePatientModalLayering();
+        });
+
+        document.getElementById('btn-save-new-patient').addEventListener('click', createPatient);
+        document.getElementById('new-patient-phone').addEventListener('input', function () {
+            this.value = maskPhoneValue(this.value);
+        });
+        document.getElementById('modal-create-patient').addEventListener('shown.bs.modal', normalizeCreatePatientModalLayering);
+        document.getElementById('modal-create-patient').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
+
+        normalizeCreatePatientModalLayering();
+        createPatientModal = new bootstrap.Modal(document.getElementById('modal-create-patient'));
         renderSelectedPatient();
         renderCartItems();
     </script>

@@ -55,7 +55,7 @@
                 <tr>
                     <th>Procedimento</th>
                     <th class="text-end">Qtd</th>
-                    <th class="text-end">Valor unitario</th>
+                    <th class="text-end">Valor unitário</th>
                     <th class="text-end">Total</th>
                 </tr>
                 </thead>

@@ -2,14 +2,15 @@
 
 namespace App\Criterias;
 
+use Carbon\Carbon;
 use Prettus\Repository\Contracts\CriteriaInterface;
 use Prettus\Repository\Contracts\RepositoryInterface;
 
 /**
- * Class FilterByProcedureStatusActiveCriteria
+ * Class FilterByTypePackageScheduleCriteria
  * @package namespace App\Criteria;
  */
-class FilterByProcedureStatusActiveCriteria extends AppCriteria implements CriteriaInterface
+class FilterByTypePackageScheduleCriteria extends AppCriteria implements CriteriaInterface
 {
 
     /**
@@ -19,9 +20,9 @@ class FilterByProcedureStatusActiveCriteria extends AppCriteria implements Crite
      */
     public function apply($model, RepositoryInterface $repository)
     {
-        $status = $this->request->query->get('status');
-        if (is_numeric($status)) {
-            $model = $model->where('status', (int) $status);
+        $is_package = $this->request->query->get('is_package');
+        if (is_numeric($is_package)) {
+            $model = $model->where('is_package', $is_package);
         }
         return $model;
     }

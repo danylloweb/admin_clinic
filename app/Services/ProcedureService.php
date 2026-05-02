@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\Criterias\AppRequestCriteria;
 use App\Criterias\FilterByProcedureStatusActiveCriteria;
+use App\Criterias\FilterByProcedureTypeScheduleCriteria;
+use App\Criterias\FilterByTypePackageScheduleCriteria;
+use App\Criterias\FilterByTypeProcedureScheduleCriteria;
 use App\Repositories\ProcedureRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
@@ -34,6 +37,8 @@ class ProcedureService extends AppService
     {
         return $this->repository
             ->resetCriteria()
+            ->pushCriteria(app(FilterByTypePackageScheduleCriteria::class))
+            ->pushCriteria(app(FilterByProcedureTypeScheduleCriteria::class))
             ->pushCriteria(app(FilterByProcedureStatusActiveCriteria::class))
             ->pushCriteria(app(AppRequestCriteria::class))
             ->paginate($limit);
