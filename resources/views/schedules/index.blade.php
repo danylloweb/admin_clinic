@@ -39,12 +39,12 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Data inicial</label>
-                    <input type="date" id="filter-start-date" class="form-control">
+                    <input type="date" id="filter-start-date" class="form-control" value="{{ now()->format('Y-m-d') }}">
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Data final</label>
-                    <input type="date" id="filter-end-date" class="form-control">
+                    <input type="date" id="filter-end-date" class="form-control" value="{{ now()->format('Y-m-d') }}">
                 </div>
 
                 <div class="col-md-4 d-flex align-items-end gap-2">
@@ -101,6 +101,46 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-confirm-attendance" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Atendimento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="confirm-schedule-id">
+
+                    <div class="mb-3">
+                        <label class="form-label">Paciente</label>
+                        <input type="text" id="confirm-schedule-patient" class="form-control" disabled>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Procedimento</label>
+                        <input type="text" id="confirm-schedule-procedure" class="form-control" disabled>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Profissional</label>
+                        <select id="confirm-professional-id" class="form-select" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label">Observação (opcional)</label>
+                        <textarea id="confirm-observation-status" class="form-control" rows="3" placeholder="Observação da confirmação"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btn-save-confirm-attendance">Confirmar atendimento</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -112,6 +152,7 @@
             };
 
             let table;
+            let attendanceModal;
 
             function debounce(fn, delay = 350) {
                 let timer = null;
@@ -204,6 +245,117 @@
                 document.getElementById('schedule-total-price').innerText = formatCurrency(total.total_price || 0);
                 document.getElementById('schedule-total-cost').innerText = formatCurrency(total.total_cost || 0);
                 document.getElementById('schedule-estimate-cost').innerText = formatCurrency(total.estimate_cost || 0);
+            }
+
+            function normalizeModalLayering() {
+                const modalEl = document.getElementById('modal-confirm-attendance');
+                if (!modalEl) {
+                    return;
+                }
+
+                // Keep modal at body level to avoid parent stacking-context issues.
+                if (modalEl.parentElement !== document.body) {
+                    document.body.appendChild(modalEl);
+                }
+
+                modalEl.style.zIndex = '1060';
+                document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+                    backdrop.style.zIndex = '1050';
+                });
+            }
+
+            function cleanupModalArtifacts() {
+                document.querySelectorAll('.modal-backdrop').forEach((backdrop) => backdrop.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+
+            async function apiPut(url, payload) {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || 'Erro ao salvar confirmação');
+                }
+
+                return response.json();
+            }
+
+            async function loadProfessionals() {
+                const select = document.getElementById('confirm-professional-id');
+                select.innerHTML = '<option value="">Selecione...</option>';
+
+                try {
+                    const response = await fetch(`{{ route('users.index') }}?has_medical=Sim&limit=200`, { credentials: 'same-origin' });
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const users = Array.isArray(data?.data) ? data.data : [];
+
+                    users.forEach((user) => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+
+            function openConfirmAttendanceModal(row) {
+                document.getElementById('confirm-schedule-id').value = row.id;
+                document.getElementById('confirm-schedule-patient').value = row.patient_name || '-';
+                document.getElementById('confirm-schedule-procedure').value = row.procedure_name || '-';
+                document.getElementById('confirm-professional-id').value = '';
+                document.getElementById('confirm-observation-status').value = '';
+                normalizeModalLayering();
+                attendanceModal.show();
+                normalizeModalLayering();
+            }
+
+            async function saveAttendanceConfirmation() {
+                const scheduleId = document.getElementById('confirm-schedule-id').value;
+                const professionalId = document.getElementById('confirm-professional-id').value;
+                const observationStatus = document.getElementById('confirm-observation-status').value || '';
+                const saveButton = document.getElementById('btn-save-confirm-attendance');
+
+                if (!professionalId) {
+                    showToast('Selecione um profissional para confirmar.', 'danger');
+                    return;
+                }
+
+                const previousText = saveButton.innerText;
+                saveButton.disabled = true;
+                saveButton.innerText = 'Confirmando...';
+
+                try {
+                    await apiPut(`{{ url('/') }}/schedule/update-status/${scheduleId}`, {
+                        status: 'Confirmado',
+                        professional_id: Number(professionalId),
+                        observation_status: observationStatus,
+                    });
+
+                    showToast('Atendimento confirmado com sucesso.', 'success');
+                    attendanceModal.hide();
+                    table.ajax.reload();
+                } catch (error) {
+                    showToast(error.message || 'Erro ao confirmar atendimento.', 'danger');
+                } finally {
+                    saveButton.disabled = false;
+                    saveButton.innerText = previousText;
+                }
             }
 
             async function loadProcedureTypes() {
@@ -325,7 +477,7 @@
                         { data: 'patient_name', orderable: false },
                         { data: 'procedure_name', orderable: false },
                         {
-                            data: 'item_price',
+                            data: 'price',
                             orderable: false,
                             searchable: false,
                         },
@@ -345,7 +497,7 @@
                                 return `
                                     <div class="d-flex flex-column gap-1">
                                         <span>${data}</span>
-                                        ${whatsapp ? `<a href="${whatsapp}" target="_blank" class="text-decoration-none small">WhatsApp</a>` : ''}
+                                        ${whatsapp ? `<a href="${whatsapp}" target="_blank" class="text-decoration-success small">WhatsApp</a>` : ''}
                                     </div>
                                 `;
                             }
@@ -384,6 +536,10 @@
                             render: function (data, type, row) {
                                 const buttons = [];
 
+                                if (row.status !== 'Confirmado') {
+                                    buttons.push(`<button type="button" class="btn btn-sm btn-success btn-confirm-attendance" data-id="${row.id}" title="Confirmar atendimento"><i class="ph ph-check"></i></button>`);
+                                }
+
                                 if (row.sale_id) {
                                     buttons.push(`<a href="/panel-sales-orders-edit/${row.sale_id}" class="btn btn-sm btn-outline-primary" title="Abrir pedido"><i class="ph ph-shopping-bag-open"></i></a>`);
                                 }
@@ -404,6 +560,24 @@
 
             document.getElementById('filter-patient-search').addEventListener('keyup', searchPatients);
             document.getElementById('filter-procedure-search').addEventListener('keyup', searchProcedures);
+            document.getElementById('btn-save-confirm-attendance').addEventListener('click', saveAttendanceConfirmation);
+            document.getElementById('modal-confirm-attendance').addEventListener('shown.bs.modal', normalizeModalLayering);
+            document.getElementById('modal-confirm-attendance').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
+
+            document.getElementById('datatable-schedules').addEventListener('click', function (event) {
+                const confirmButton = event.target.closest('.btn-confirm-attendance');
+                if (!confirmButton) {
+                    return;
+                }
+
+                const rowData = table.row(confirmButton.closest('tr')).data();
+                if (!rowData) {
+                    showToast('Não foi possível carregar os dados do agendamento.', 'danger');
+                    return;
+                }
+
+                openConfirmAttendanceModal(rowData);
+            });
 
             document.getElementById('btn-apply-filters').addEventListener('click', function () {
                 table.ajax.reload();
@@ -440,6 +614,9 @@
             });
 
             loadProcedureTypes();
+            loadProfessionals();
+            normalizeModalLayering();
+            attendanceModal = new bootstrap.Modal(document.getElementById('modal-confirm-attendance'));
             initializeTable();
         })();
     </script>

@@ -33,7 +33,7 @@
                   d="M1 1h14M1 6.25h9.546M1 11.5h14"/>
         </svg>
         <span class="visually-hidden">Open Sidebar</span></button>
-    <a class="d-none d-sm-block logo" href="{{route('dashboard')}}">Renovar Estética</a> <i class="ms-auto"></i>
+    <a class="d-none d-sm-block logo" href="{{route('dashboard')}}"><img src="{{ asset('img/logo reduzida.png') }}"  width="80px"></a> <i class="ms-auto"></i>
     <div class="content-search d-lg-flex d-none"><i class="fs-5 ph ph-magnifying-glass"></i>
         <input type="text" class="form-control" placeholder="Pesquisar...">
     </div>
