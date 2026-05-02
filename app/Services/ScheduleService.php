@@ -137,7 +137,20 @@ class ScheduleService extends AppService
     {
         $data['date'] = Carbon::create($data['date'])->format('Y-m-d');
         $data['time'] = Carbon::create($data['time'])->format('H:i:s');
-        return parent::update($data, $id, $skipPresenter);
+
+        $result = parent::update($data, $id, $skipPresenter);
+
+        // If procedure changed, sync procedure_name on linked SalesOrderItem
+        if (!empty($data['procedure_id'])) {
+            $item = $this->salesOrderItemRepository->skipPresenter()->findWhere(['schedule_id' => $id])->first();
+            if ($item) {
+                $procedure = $this->getProcedure((int) $data['procedure_id']);
+                $item->procedure_name = $procedure->name;
+                $item->save();
+            }
+        }
+
+        return $result;
     }
 
     /**

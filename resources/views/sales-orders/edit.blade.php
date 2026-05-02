@@ -18,6 +18,66 @@
         </div>
     </div>
 
+    {{-- Modal editar agendamento --}}
+    <div class="modal fade" id="modal-edit-schedule" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Agendamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-schedule-id">
+                    <div class="mb-3">
+                        <label class="form-label">Paciente</label>
+                        <input type="text" id="edit-schedule-patient" class="form-control" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Procedimento</label>
+                        <input type="text" id="edit-schedule-procedure-search" class="form-control" placeholder="Buscar procedimento" autocomplete="off">
+                        <input type="hidden" id="edit-schedule-procedure-id">
+                        <div id="edit-schedule-procedure-results" class="list-group position-absolute mt-1 z-3 shadow-sm" style="width:calc(100% - 3rem);background:#2a2a3a;"></div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Data</label>
+                            <input type="date" id="edit-schedule-date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hora</label>
+                            <input type="time" id="edit-schedule-time" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select id="edit-schedule-status" class="form-select">
+                                <option value="Marcado">Marcado</option>
+                                <option value="Confirmado">Confirmado</option>
+                                <option value="Adiado">Adiado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Profissional</label>
+                            <select id="edit-schedule-professional-id" class="form-select">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Observação</label>
+                        <textarea id="edit-schedule-observation" class="form-control" rows="3" placeholder="Observação"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-edit-schedule">Salvar alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal agendamento --}}
     <div class="modal fade" id="modal-schedule" tabindex="-1" aria-labelledby="modal-schedule-label" aria-hidden="true">
         <div class="modal-dialog">
@@ -133,7 +193,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label fw-semibold">Total</label>
-                    <div class="fw-semibold">R$ ${order.amount}</div>
+                    <div class="fw-semibold fs-4">R$ ${order.amount}</div>
                 </div>
             </div>
 
@@ -233,7 +293,11 @@
                         ? `<button class="btn btn-sm btn-outline-success" onclick="openScheduleModal(${item.id}, '${escapeAttr(item.procedure_name)}')">
                                <i class="ph ph-calendar-plus"></i> Agendar
                            </button>`
-                        : `<span class="text-muted small">Agendado</span>`
+                        : `<div class="d-flex gap-1">
+                               <button class="btn btn-sm btn-outline-success" onclick="openEditScheduleModal(${item.schedule_id}, '${escapeAttr(item.procedure_name)}', ${item.procedure_id || 'null'})">
+                                   <i class="ph ph-pencil-simple-line"></i>Editar
+                               </button>
+                           </div>`
                     }
                 </td>
             </tr>
@@ -365,6 +429,144 @@
                 `<div class="alert alert-danger">Erro ao carregar pedido: ${e.message}</div>`;
         }
     }
+
+    // ---- Edit Schedule Modal ----
+    let editScheduleModalInstance = null;
+    let editScheduleProcedureTimer = null;
+
+    async function loadProfessionalsForEdit() {
+        const select = document.getElementById('edit-schedule-professional-id');
+        if (!select || select.options.length > 1) return;
+        try {
+            const data = await apiGet(`{{ route('users.index') }}?has_medical=Sim&limit=200`);
+            (data.data || []).forEach(user => {
+                const opt = document.createElement('option');
+                opt.value = user.id;
+                opt.textContent = user.name;
+                select.appendChild(opt);
+            });
+        } catch (e) {}
+    }
+
+    window.openEditScheduleModal = async function(scheduleId, procedureName, procedureId) {
+        const modalEl = document.getElementById('modal-edit-schedule');
+        document.getElementById('edit-schedule-id').value = scheduleId;
+        document.getElementById('edit-schedule-patient').value = currentOrder?.patient_name || '-';
+        document.getElementById('edit-schedule-procedure-search').value = procedureName || '';
+        document.getElementById('edit-schedule-procedure-id').value = procedureId || '';
+        document.getElementById('edit-schedule-date').value = '';
+        document.getElementById('edit-schedule-time').value = '';
+        document.getElementById('edit-schedule-status').value = 'Marcado';
+        document.getElementById('edit-schedule-professional-id').value = '';
+        document.getElementById('edit-schedule-observation').value = '';
+        document.getElementById('edit-schedule-procedure-results').innerHTML = '';
+
+        await loadProfessionalsForEdit();
+
+        try {
+            const data = await apiGet(`{{ url('/') }}/schedules/${scheduleId}`);
+            const s = data.data ?? data;
+            document.getElementById('edit-schedule-date').value = s.date_real || s.date || '';
+            document.getElementById('edit-schedule-time').value = String(s.time || '').slice(0, 5);
+            document.getElementById('edit-schedule-status').value = s.status || 'Marcado';
+            document.getElementById('edit-schedule-professional-id').value = s.professional_id || '';
+            document.getElementById('edit-schedule-observation').value = s.observation_status || '';
+        } catch (e) {}
+
+        if (modalEl.parentElement !== document.body) document.body.appendChild(modalEl);
+        modalEl.style.zIndex = '1060';
+        editScheduleModalInstance = new bootstrap.Modal(modalEl);
+        editScheduleModalInstance.show();
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.style.zIndex = '1050');
+    };
+
+    document.getElementById('modal-edit-schedule').addEventListener('shown.bs.modal', function() {
+        this.style.zIndex = '1060';
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.style.zIndex = '1050');
+    });
+
+    document.getElementById('modal-edit-schedule').addEventListener('hidden.bs.modal', function() {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    });
+
+    document.getElementById('edit-schedule-procedure-search').addEventListener('keyup', function() {
+        const term = this.value.trim();
+        clearTimeout(editScheduleProcedureTimer);
+        const resultsEl = document.getElementById('edit-schedule-procedure-results');
+
+        if (term.length < 2) {
+            document.getElementById('edit-schedule-procedure-id').value = '';
+            resultsEl.innerHTML = '';
+            return;
+        }
+
+        editScheduleProcedureTimer = setTimeout(async function() {
+            try {
+                const data = await apiGet(`{{ route('procedures.index') }}?search=${encodeURIComponent(term)}&limit=7`);
+                resultsEl.innerHTML = '';
+                (data.data || []).forEach(procedure => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action';
+                    btn.style.cssText = 'background:#2a2a3a;color:#fff;border-color:rgba(255,255,255,0.1)';
+                    btn.innerHTML = `<div class="d-flex justify-content-between"><span>${procedure.name}</span><small>R$ ${procedure.price}</small></div>`;
+                    btn.addEventListener('click', function() {
+                        document.getElementById('edit-schedule-procedure-id').value = procedure.id;
+                        document.getElementById('edit-schedule-procedure-search').value = procedure.name;
+                        resultsEl.innerHTML = '';
+                    });
+                    resultsEl.appendChild(btn);
+                });
+            } catch(e) {}
+        }, 350);
+    });
+
+    document.getElementById('btn-save-edit-schedule').addEventListener('click', async function() {
+        const scheduleId = document.getElementById('edit-schedule-id').value;
+        const procedureId = document.getElementById('edit-schedule-procedure-id').value;
+        const date = document.getElementById('edit-schedule-date').value;
+        const time = document.getElementById('edit-schedule-time').value;
+        const status = document.getElementById('edit-schedule-status').value;
+        const professionalId = document.getElementById('edit-schedule-professional-id').value;
+        const observation = document.getElementById('edit-schedule-observation').value || '';
+
+        if (!procedureId) { showToast('Selecione o procedimento.', 'danger'); return; }
+        if (!date || !time) { showToast('Preencha data e hora.', 'danger'); return; }
+
+        this.disabled = true;
+        const prev = this.innerText;
+        this.innerText = 'Salvando...';
+
+        try {
+            await apiPut(`{{ url('/') }}/schedules/${scheduleId}`, {
+                procedure_id: Number(procedureId),
+                date, time, status,
+                professional_id: professionalId ? Number(professionalId) : null,
+                observation_status: observation,
+            });
+
+            if (status === 'Confirmado' && professionalId) {
+                await apiPut(`{{ url('/') }}/schedule/update-status/${scheduleId}`, {
+                    status,
+                    professional_id: Number(professionalId),
+                    observation_status: observation,
+                });
+            }
+
+            showToast('Agendamento atualizado com sucesso.', 'success');
+            editScheduleModalInstance?.hide();
+            loadOrder();
+        } catch (e) {
+            showToast(e.message || 'Erro ao salvar agendamento.', 'danger');
+        } finally {
+            this.disabled = false;
+            this.innerText = prev;
+        }
+    });
+    // ---- End Edit Schedule Modal ----
 
     loadOrder();
 </script>

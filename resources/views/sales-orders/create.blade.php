@@ -12,14 +12,14 @@
                             <div class="col-md-6 position-relative">
                                 <label class="form-label">Paciente</label>
                                 <input type="text" id="patient-search" class="form-control" placeholder="Pesquisar por nome ou telefone" onkeyup="searchPatients()" autocomplete="off">
-                                <div id="patient-results" class="list-group position-absolute w-100 z-3 bg-white border rounded shadow-sm text-dark"></div>
+                                <div id="patient-results" class="list-group position-absolute w-100 z-3 border rounded shadow-sm" style="background:#2a2a3a;"></div>
                                 <div id="selected-patient" class="mt-2"></div>
                             </div>
 
                             <div class="col-md-6 position-relative">
                                 <label class="form-label">Procedimentos</label>
                                 <input type="text" id="procedure-search" class="form-control" placeholder="Pesquisar por nome" onkeyup="searchProcedures()" autocomplete="off">
-                                <div id="procedure-results" class="list-group position-absolute w-100 z-3 bg-white border rounded shadow-sm text-dark"></div>
+                                <div id="procedure-results" class="list-group position-absolute w-100 z-3 border rounded shadow-sm" style="background:#2a2a3a;"></div>
                             </div>
                         </div>
 
@@ -451,8 +451,8 @@
                         <div class="d-flex align-items-center gap-2">
                             <img src="${patient.photo}" alt="foto" style="width:34px;height:34px;border-radius:999px;object-fit:cover;">
                             <div>
-                                <div class="text-dark">${patient.name}</div>
-                                <small class="text-dark">${patient.phone || '-'}</small>
+                                <div class="text-white">${patient.name}</div>
+                                <small class="text-white">${patient.phone || '-'}</small>
                             </div>
                         </div>
                     </button>
@@ -496,8 +496,8 @@
                     <div class="list-group-item">
                         <div class="d-flex align-items-center justify-content-between gap-2">
                             <div>
-                                <div class="text-dark">${procedure.name}</div>
-                                <small class="text-dark">Valor: R$ ${procedure.price}</small>
+                                <div class="text-white">${procedure.name}</div>
+                                <small class="text-white">Valor: R$ ${procedure.price}</small>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <input id="qty-procedure-${procedure.id}" type="number" min="1" value="1" class="form-control form-control-sm text-dark" style="width:56px;">
