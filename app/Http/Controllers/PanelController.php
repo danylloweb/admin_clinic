@@ -44,6 +44,18 @@ class PanelController extends Controller
     /**
      * @return View|Factory|Application
      */
+    public function scheduleIndex(): View|Factory|Application
+    {
+        return view('schedules.index', [
+            'title'       => 'Agendamentos',
+            'subtitle'    => 'Lista de Agendamentos',
+            'routeCreate' => '#',
+        ]);
+    }
+
+    /**
+     * @return View|Factory|Application
+     */
     public function procedureIndex(): View|Factory|Application
     {
         return view('procedures.index', [

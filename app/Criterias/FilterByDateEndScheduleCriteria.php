@@ -20,9 +20,16 @@ class FilterByDateEndScheduleCriteria extends AppCriteria implements CriteriaInt
      */
     public function apply($model, RepositoryInterface $repository)
     {
-        $end   = $this->request->query->get('end');
-        $end   = Carbon::create($end)->addDay()->format('Y-m-d');
-        $model = $model->where('date', '<', $end);
+        $end = $this->request->query->get('end')
+            ?: $this->request->query->get('end_date')
+            ?: $this->request->query->get('final_date');
+
+        if (!$end) {
+            return $model;
+        }
+
+        $end = Carbon::create($end)->endOfDay()->format('Y-m-d');
+        $model = $model->where('date', '<=', $end);
         return $model;
     }
 

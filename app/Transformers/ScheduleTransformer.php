@@ -23,30 +23,37 @@ class ScheduleTransformer extends TransformerAbstract
     public function transform(Schedule $model)
     {
         $sale = $model->getSaleOrderStatus();
+        $procedure = $model->procedure;
+        $patient = $model->patient;
+        $procedureType = $procedure?->procedureType;
+        $phone = $patient?->phone;
+        $procedureItem = $model->getProcedureItem();
+
         return [
             'id'                   => (int) $model->id,
             'procedure_id'         => $model->procedure_id,
-            'procedure_name'       => $model->procedure->name,
-            'procedure_type'       => $model->procedure->procedureType->name,
-            'procedure_price'      => $model->procedure->price,
-            'price'                => number_format($model->procedure->price,2,',','.'),
-            'procedure_price_cost' => $model->procedure->cost_price,
+            'procedure_name'       => $procedureItem?->procedure_name ?? '-',
+            'procedure_type'       => $procedureType?->name ?? '-',
+            'procedure_price'      => (float) ($procedureItem->price ?? 0),
+            'price'                => number_format((float) ($procedure?->price ?? 0),2,',','.'),
+            'item_price'           => "R$".number_format((float) ($procedureItem->price ?? 0),2,',','.'),
+            'procedure_price_cost' => (float) ($procedure?->cost_price ?? 0),
             'patient_id'           => $model->patient_id,
-            'patient_name'         => $model->patient->name,
-            'last_message'         => $model->patient->getLastMessageByChatId(),
-            'date'                 => Carbon::create($model->date)->format('d/m/Y'),
-            'date_real'            => Carbon::create($model->date)->format('Y-m-d'),
-            'time'                 => $model->time,
-            'phone'                => $model->patient->phone,
-            'phone_link'           => str_replace(["(",")","-"],'',$model->patient->phone),
+            'patient_name'         => $patient?->name ?? '-',
+            'last_message'         => $patient?->getLastMessageByChatId(),
+            'date'                 => $model->date ? Carbon::create($model->date)->format('d/m/Y') : '-',
+            'date_real'            => $model->date ? Carbon::create($model->date)->format('Y-m-d') : null,
+            'time'                 => $model->time ?? '-',
+            'phone'                => $phone,
+            'phone_link'           => $phone ? preg_replace('/\D+/', '', $phone) : '',
             'status'               => $model->status,
-            'status_title'         => $this->getTitleStatusSchedule($model->status),
+            'status_title'         => $this->getTitleStatusSchedule($model->status) ?? ($model->status ?: '-'),
             'observation_status'   => $model->observation_status,
             'professional'         => $model->user->name??'',
-            'saleStatus'           => $this->getTitleStatus($sale['status']),
-            'sale_id'              => $sale['id'],
-            'created_at'           => $model->created_at->toDateTimeString(),
-            'updated_at'           => $model->updated_at->toDateTimeString()
+            'saleStatus'           => $this->getTitleStatus($sale['status']) ?? '-',
+            'sale_id'              => $sale['id'] ?? 0,
+            'created_at'           => $model->created_at?->toDateTimeString(),
+            'updated_at'           => $model->updated_at?->toDateTimeString()
         ];
     }
 
@@ -58,13 +65,19 @@ class ScheduleTransformer extends TransformerAbstract
     {
         switch ($status) {
             case 0:
-                return "Orçamento🟡";
+                return "Orçamento 🟡";
             case 1:
-                return "Paga✅";
+                return "Pago ✅";
             case 2:
-                return "Cancelada❌";
+                return "Cancelada ❌";
+            case 3:
+                return "Parcial 💰";
+            case 4:
+                return "Finalizada ✅";
 
         }
+
+        return null;
     }
 
     /**
@@ -83,5 +96,7 @@ class ScheduleTransformer extends TransformerAbstract
             case "Adiado":
                 return "Adiado🕓";
         }
+
+        return null;
     }
 }

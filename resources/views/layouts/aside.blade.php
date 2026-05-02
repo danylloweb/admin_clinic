@@ -21,7 +21,7 @@
                 </ul>
             </li>
             <li class="menu-title">Operacional</li>
-            <li><a href="#"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
+            <li><a href="{{ route('panel.schedules.index') }}"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
             <li><a href="#"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
             <li><a href="#"> <i class="ph ph-stethoscope"></i> <span>Triagens</span></a></li>
             <li class="menu-title">Vendas</li>

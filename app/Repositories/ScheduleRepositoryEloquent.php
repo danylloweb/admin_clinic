@@ -16,6 +16,15 @@ use App\Validators\ScheduleValidator;
  */
 class ScheduleRepositoryEloquent extends AppRepository implements ScheduleRepository
 {
+    protected $fieldSearchable = [
+        'id'             => '=',
+        'patient.name'   => 'like',
+        'patient.phone'  => 'like',
+        'procedure.name' => 'like'
+    ];
+
+
+
     /**
      * Specify Model class name
      *

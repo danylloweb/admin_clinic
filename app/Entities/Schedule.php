@@ -55,7 +55,7 @@ class Schedule extends Model implements Transformable
 
     public function user()
     {
-        return $this->belongsTo(User::class,'professional_id');
+        return $this->belongsTo(User::class, 'professional_id');
     }
 
     /**
@@ -63,11 +63,21 @@ class Schedule extends Model implements Transformable
      */
     public function getSaleOrderStatus(): array
     {
-        $item = SalesOrderItem::query()->where("schedule_id",$this->attributes['id'])->first();
-        if ($item){
+        $item = SalesOrderItem::query()->where("schedule_id", $this->attributes['id'])->first();
+
+        if ($item) {
             $sale = SalesOrder::find($item->sales_order_id);
-            return ['status' => $sale->status,'id' => $sale->id];
+
+            if ($sale) {
+                return ['status' => $sale->status, 'id' => $sale->id];
+            }
         }
-        return ['status' => 1,'id' => 0];
+
+        return ['status' => null, 'id' => 0];
+    }
+
+    public function getProcedureItem()
+    {
+        return SalesOrderItem::query()->where("schedule_id", $this->attributes['id'])->first();
     }
 }

@@ -2,69 +2,99 @@
 @section('content')
     <div class="card mb-3">
         <div class="card-body">
-            <h3 class="card-title fs-5">Lista de Pedidos</h3>
+            <h3 class="card-title fs-5">Lista de Agendamentos</h3>
 
-            <div class="row g-2 mb-3">
-                <div class="col-md-2">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3 position-relative">
                     <label class="form-label">Paciente</label>
                     <input type="text" id="filter-patient-search" class="form-control" placeholder="Nome ou telefone" autocomplete="off">
                     <input type="hidden" id="filter-patient-id">
-                    <div id="filter-patient-results" class="list-group position-absolute w-25 z-3"></div>
+                    <div id="filter-patient-results" class="list-group position-absolute top-100 start-0 mt-1 w-100 z-3 shadow-sm"></div>
                 </div>
-                <div class="col-md-2">
+
+                <div class="col-md-3 position-relative">
                     <label class="form-label">Procedimento</label>
                     <input type="text" id="filter-procedure-search" class="form-control" placeholder="Nome do procedimento" autocomplete="off">
                     <input type="hidden" id="filter-procedure-id">
-                    <div id="filter-procedure-results" class="list-group position-absolute w-25 z-3"></div>
+                    <div id="filter-procedure-results" class="list-group position-absolute top-100 start-0 mt-1 w-100 z-3 shadow-sm"></div>
                 </div>
-                <div class="col-md-1">
+
+                <div class="col-md-2">
+                    <label class="form-label">Tipo</label>
+                    <select id="filter-procedure-type" class="form-select">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
                     <label class="form-label">Status</label>
                     <select id="filter-status" class="form-select">
                         <option value="">Todos</option>
-                        <option value="0">Inicial</option>
-                        <option value="1">Pago</option>
-                        <option value="2">Cancelado</option>
-                        <option value="3">Parcial</option>
-                        <option value="4">Finalizado</option>
+                        <option value="Marcado">Marcado</option>
+                        <option value="Confirmado">Confirmado</option>
+                        <option value="Adiado">Adiado</option>
+                        <option value="Cancelado">Cancelado</option>
                     </select>
                 </div>
+
                 <div class="col-md-2">
-                    <label class="form-label">Pagamento</label>
-                    <select id="filter-type-payment" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="1">PIX</option>
-                        <option value="2">Cartao de Credito</option>
-                        <option value="3">Cartao de Debito</option>
-                        <option value="4">Dinheiro</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Inicio</label>
+                    <label class="form-label">Data inicial</label>
                     <input type="date" id="filter-start-date" class="form-control">
                 </div>
+
                 <div class="col-md-2">
-                    <label class="form-label">Fim</label>
-                    <input type="date" id="filter-final-date" class="form-control">
+                    <label class="form-label">Data final</label>
+                    <input type="date" id="filter-end-date" class="form-control">
                 </div>
+
                 <div class="col-md-4 d-flex align-items-end gap-2">
                     <button id="btn-apply-filters" class="btn btn-primary">Filtrar</button>
                     <button id="btn-clear-filters" class="btn btn-secondary">Limpar</button>
                 </div>
             </div>
 
-            <div class="mb-2 fw-semibold">Total pago filtrado: <span id="orders-total-price">R$ 0,00</span></div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="small text-muted">Total confirmado</div>
+                            <div id="schedule-total-price" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-success bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="small text-muted">Custo confirmado</div>
+                            <div id="schedule-total-cost" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                        <div class="card-body">
+                            <div class="small text-muted">Estimado marcado</div>
+                            <div id="schedule-estimate-cost" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="p-1 table-responsive">
-                <table id="datatable-sales-orders" class="table table-bordered table-striped" style="width: 100%">
+                <table id="datatable-schedules" class="table table-bordered table-striped align-middle" style="width: 100%">
                     <thead>
                     <tr>
                         <th>ID</th>
                         <th>Paciente</th>
+                        <th>Procedimento</th>
                         <th>Valor</th>
-                        <th>Pagamento</th>
+                        <th>Contato</th>
                         <th>Status</th>
                         <th>Data</th>
-                        <th>Acao</th>
+                        <th>Hora</th>
+                        <th>Profissional</th>
+                        <th>Pedido</th>
+                        <th>Ação</th>
                     </tr>
                     </thead>
                 </table>
@@ -89,6 +119,21 @@
                     clearTimeout(timer);
                     timer = setTimeout(() => fn.apply(this, args), delay);
                 };
+            }
+
+            function formatCurrency(value) {
+                let number;
+
+                if (typeof value === 'number') {
+                    number = value;
+                } else {
+                    number = Number(String(value ?? 0).replace(/\./g, '').replace(',', '.'));
+                }
+
+                if (Number.isNaN(number)) {
+                    return 'R$ 0,00';
+                }
+                return 'R$ ' + number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
 
             function clearResults(containerId) {
@@ -140,7 +185,7 @@
                     button.type = 'button';
                     button.className = 'list-group-item list-group-item-action';
                     button.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center gap-3">
                             <span>${procedure.name}</span>
                             <small class="text-muted">R$ ${procedure.price}</small>
                         </div>
@@ -153,6 +198,35 @@
                     });
                     container.appendChild(button);
                 });
+            }
+
+            function updateTotals(total = {}) {
+                document.getElementById('schedule-total-price').innerText = formatCurrency(total.total_price || 0);
+                document.getElementById('schedule-total-cost').innerText = formatCurrency(total.total_cost || 0);
+                document.getElementById('schedule-estimate-cost').innerText = formatCurrency(total.estimate_cost || 0);
+            }
+
+            async function loadProcedureTypes() {
+                const select = document.getElementById('filter-procedure-type');
+
+                try {
+                    const response = await fetch(`{{ route('procedureTypes.index') }}?limit=1000`, { credentials: 'same-origin' });
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const items = Array.isArray(data?.data) ? data.data : [];
+
+                    items.forEach((item) => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
             }
 
             const searchPatients = debounce(async function () {
@@ -192,7 +266,7 @@
             });
 
             function initializeTable() {
-                table = $('#datatable-sales-orders').DataTable({
+                table = $('#datatable-schedules').DataTable({
                     processing: true,
                     serverSide: true,
                     searching: true,
@@ -203,19 +277,16 @@
 
                         const columnMap = {
                             0: 'id',
-                            1: 'id',
-                            2: 'amount',
-                            3: 'type_payment',
-                            4: 'status',
-                            5: 'created_at'
+                            7: 'date',
+                            8: 'time'
                         };
 
                         const orderColumnIndex = data.order?.[0]?.column ?? 0;
                         const orderDir = data.order?.[0]?.dir ?? 'desc';
-                        const orderBy = columnMap[orderColumnIndex] || 'id';
+                        const orderBy = columnMap[orderColumnIndex] || 'time';
 
                         $.ajax({
-                            url: '{{ route("salesOrders.index") }}',
+                            url: '{{ route("schedules.index") }}',
                             method: 'GET',
                             data: {
                                 limit: limit,
@@ -225,17 +296,25 @@
                                 sortedBy: orderDir || 'desc',
                                 patient_id: state.patientId || null,
                                 procedure_id: state.procedureId || null,
+                                procedure_type_id: document.getElementById('filter-procedure-type').value || null,
                                 status: document.getElementById('filter-status').value || null,
-                                type_payment: document.getElementById('filter-type-payment').value || null,
-                                start_date: document.getElementById('filter-start-date').value || null,
-                                final_date: document.getElementById('filter-final-date').value || null,
+                                start: document.getElementById('filter-start-date').value || null,
+                                end: document.getElementById('filter-end-date').value || null,
                             },
                             success: function (response) {
-                                document.getElementById('orders-total-price').innerText = 'R$ ' + (response.total?.total_price || '0,00');
+                                updateTotals(response.total || {});
                                 callback({
-                                    recordsTotal: response.meta.pagination.total,
-                                    recordsFiltered: response.meta.pagination.total,
-                                    data: response.data
+                                    recordsTotal: response.meta?.pagination?.total || 0,
+                                    recordsFiltered: response.meta?.pagination?.total || 0,
+                                    data: response.data || []
+                                });
+                            },
+                            error: function () {
+                                updateTotals({});
+                                callback({
+                                    recordsTotal: 0,
+                                    recordsFiltered: 0,
+                                    data: []
                                 });
                             }
                         });
@@ -244,35 +323,76 @@
                     columns: [
                         { data: 'id' },
                         { data: 'patient_name', orderable: false },
+                        { data: 'procedure_name', orderable: false },
                         {
-                            data: 'amount',
+                            data: 'item_price',
                             orderable: false,
                             searchable: false,
-                            render: function (data) {
-                                return `R$ ${data}`;
-                            }
                         },
                         {
-                            data: 'type_payment_title',
+                            data: 'phone',
                             orderable: false,
-                            searchable: false
+                            searchable: false,
+                            render: function (data, type, row) {
+                                if (!data) {
+                                    return '-';
+                                }
+
+                                const whatsapp = row.phone_link
+                                    ? `https://wa.me/${String(row.phone_link).replace(/\D/g, '')}`
+                                    : null;
+
+                                return `
+                                    <div class="d-flex flex-column gap-1">
+                                        <span>${data}</span>
+                                        ${whatsapp ? `<a href="${whatsapp}" target="_blank" class="text-decoration-none small">WhatsApp</a>` : ''}
+                                    </div>
+                                `;
+                            }
                         },
                         {
                             data: 'status_title',
                             orderable: false,
                             searchable: false
                         },
+                        { data: 'date' },
+                        { data: 'time' },
                         {
-                            data: 'date',
-                            orderable: false,
-                            searchable: false
-                        },
-                        {
-                            data: 'id',
+                            data: 'professional',
                             orderable: false,
                             searchable: false,
-                            render: function(data) {
-                                return `<a href="/panel-sales-orders-edit/${data}" class="btn btn-sm btn-outline-primary"><i class="ph ph-pencil-simple-line"></i></a>`;
+                            render: function (data) {
+                                return data || '-';
+                            }
+                        },
+                        {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row) {
+                                if (!row.sale_id) {
+                                    return '-';
+                                }
+
+                                return `${row.saleStatus || '-'}`;
+                            }
+                        },
+                        {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function (data, type, row) {
+                                const buttons = [];
+
+                                if (row.sale_id) {
+                                    buttons.push(`<a href="/panel-sales-orders-edit/${row.sale_id}" class="btn btn-sm btn-outline-primary" title="Abrir pedido"><i class="ph ph-shopping-bag-open"></i></a>`);
+                                }
+
+                                if (row.phone_link) {
+                                    buttons.push(`<a href="https://wa.me/${String(row.phone_link).replace(/\D/g, '')}" target="_blank" class="btn btn-sm btn-outline-success" title="WhatsApp"><i class="ph ph-whatsapp-logo"></i></a>`);
+                                }
+
+                                return buttons.length ? `<div class="d-flex gap-1">${buttons.join('')}</div>` : '-';
                             }
                         }
                     ],
@@ -296,10 +416,10 @@
                 document.getElementById('filter-procedure-search').value = '';
                 document.getElementById('filter-patient-id').value = '';
                 document.getElementById('filter-procedure-id').value = '';
+                document.getElementById('filter-procedure-type').value = '';
                 document.getElementById('filter-status').value = '';
-                document.getElementById('filter-type-payment').value = '';
                 document.getElementById('filter-start-date').value = '';
-                document.getElementById('filter-final-date').value = '';
+                document.getElementById('filter-end-date').value = '';
                 clearResults('filter-patient-results');
                 clearResults('filter-procedure-results');
                 table.ajax.reload();
@@ -319,6 +439,7 @@
                 }
             });
 
+            loadProcedureTypes();
             initializeTable();
         })();
     </script>

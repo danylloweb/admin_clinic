@@ -76,7 +76,9 @@ class ScheduleService extends AppService
             ->pushCriteria(app(FilterByProcedureScheduleCriteria::class))
             ->pushCriteria(app(FilterByStatusCriteria::class))
             ->pushCriteria(app(FilterByPatientScheduleCriteria::class))
-            ->pushCriteria(app(FilterByDateScheduleCriteria::class))
+//            ->pushCriteria(app(FilterByDateScheduleCriteria::class))
+            ->pushCriteria(app(FilterByDateStartScheduleCriteria::class))
+            ->pushCriteria(app(FilterByDateEndScheduleCriteria::class))
             ->pushCriteria(app(AppRequestCriteria::class))
             ->paginate($limit);
 
