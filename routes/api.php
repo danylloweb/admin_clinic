@@ -7,7 +7,17 @@ use App\Http\Controllers\AuthController;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::middleware('jwt.auth')->get('/dashboard-data', function () {
-    return response()->json(['message' => 'Acesso permitido', 'user' => auth()->user()]);
+    $user = auth('api')->user() ?? auth()->user();
+
+    if (!$user) {
+        try {
+            $user = \Tymon\JWTAuth\Facades\JWTAuth::parseToken()->authenticate();
+        } catch (\Throwable $exception) {
+            $user = null;
+        }
+    }
+
+    return response()->json(['message' => 'Acesso permitido', 'user' => $user]);
 });
 Route::get('startschedule', 'ForgotPasswordController@startSchedule');
 Route::get('startGetLastCommand', 'ForgotPasswordController@startGetLastCommand');

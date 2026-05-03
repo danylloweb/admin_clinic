@@ -12,7 +12,7 @@
             <li><a href="{{ route('panel.patient.index') }}"> <i class="ph ph-user-list"></i> <span>Todos</span></a></li>
             <li class="menu-title">Operacional</li>
             <li><a href="{{ route('panel.schedules.index') }}"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
-            <li><a href="#"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
+            <li><a href="{{ route('panel.schedules.calendar') }}"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
             <li class="menu-title">Vendas</li>
             <li><a href="{{ route('panel.sales-order.index') }}"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
             <li><a href="{{ route('panel.sales-order.create') }}"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>

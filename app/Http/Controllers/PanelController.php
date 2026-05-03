@@ -53,6 +53,15 @@ class PanelController extends Controller
         ]);
     }
 
+    public function scheduleCalendar(): View|Factory|Application
+    {
+        return view('schedules.calendar', [
+            'title'       => 'Agendamentos',
+            'subtitle'    => 'Calendario de Agendamentos',
+            'routeCreate' => '#',
+        ]);
+    }
+
     /**
      * @return View|Factory|Application
      */

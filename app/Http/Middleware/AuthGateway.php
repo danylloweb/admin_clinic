@@ -4,7 +4,11 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthGateway
 {
@@ -14,14 +18,27 @@ class AuthGateway
      * @param Closure $next
      * @return JsonResponse|mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
-//        if (!$request->header('Authorization')) {
-//            return $this->unauthorized();
-//        }
-//       if ($request->header('Authorization') != config('apikey.key')) {
-//            return $this->unauthorized();
-//        }
+        $token = $request->cookie('jwt_token');
+        if (empty($token)) {
+            return $this->unauthorized();
+        }
+
+        try {
+            $user = Cache::store('redis')->tags('logins')->remember($token, 12000, function () use ($token) {
+                return JWTAuth::setToken($token)->toUser();
+            });
+            if (!$user) {
+                return $this->unauthorized();
+            }
+
+
+            $request->attributes->add(['user_jwt' => $user]);
+        } catch (JWTException $exception) {
+            return $this->unauthorized();
+        }
+
         return $next($request);
     }
 

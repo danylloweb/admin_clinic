@@ -25,11 +25,13 @@
 
                     <div class="row align-items-end">
                         <div class="col-md-6 mb-lg-20">
-                            <label for="url_image" class="form-label">URL da imagem</label>
-                            <input type="text" class="form-control" id="url_image" name="url_image" value="{{ $campaign['url_image'] }}">
+                            <label for="image_file" class="form-label">Imagem da campanha</label>
+                            <input type="file" class="form-control" id="image_file" accept="image/*">
+                            <input type="hidden" id="url_image" name="url_image" value="{{ $campaign['url_image'] }}">
+                            <small class="text-muted">Selecione um arquivo para substituir a imagem atual.</small>
                         </div>
                         <div class="col-md-6 mb-2 mt-3 text-center">
-                            <img src="{{ $campaign['url_image'] }}" alt="Imagem atual" class="rounded img-fluid" style="max-height: 300px;">
+                            <img id="imagePreview" src="{{ $campaign['url_image'] }}" alt="Imagem atual" class="rounded img-fluid" style="max-height: 300px;">
                         </div>
                     </div>
 
@@ -55,19 +57,23 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            $('#url_image').on('input', function () {
-                const url = $(this).val();
+            $('#image_file').on('change', function () {
+                const file = this.files[0];
                 const $image = $('#imagePreview');
 
-                if (url) {
-                    $image.fadeOut(300, function () {
-                        $image.attr('src', url).removeClass('d-none').fadeIn(300);
-                    });
-                } else {
-                    $image.fadeOut(300, function () {
-                        $image.addClass('d-none');
-                    });
+                if (!file) {
+                    return;
                 }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const base64 = e.target.result;
+                    $('#url_image').val(base64);
+                    $image.fadeOut(300, function () {
+                        $image.attr('src', base64).removeClass('d-none').fadeIn(300);
+                    });
+                };
+                reader.readAsDataURL(file);
             });
 
             const form = document.getElementById('formEditCampaign');
@@ -82,7 +88,7 @@
                 const formData = {
                     name: form.name.value,
                     date: form.date.value,
-                    url_image: form.url_image.value,
+                    url_image: form.url_image.value || null,
                     description: form.description.value
                 };
 
@@ -105,7 +111,7 @@
                     }, 2000);
                 })
                     .catch(err => {
-                        showToast('error', err.message);
+                        showToast(err.message || 'Erro ao salvar campanha', 'danger');
                     })
                     .finally(() => {
                         enableForm(form,"Salvar alterações");

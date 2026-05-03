@@ -21,8 +21,10 @@
 
                     <div class="row align-items-end">
                         <div class="col-md-6 mb-3">
-                            <label for="url_image" class="form-label">URL da imagem</label>
-                            <input type="text" class="form-control" id="url_image" name="url_image">
+                            <label for="image_file" class="form-label">Imagem da campanha</label>
+                            <input type="file" class="form-control" id="image_file" accept="image/*">
+                            <input type="hidden" id="url_image" name="url_image">
+                            <small class="text-muted">Selecione um arquivo de imagem.</small>
                         </div>
                         <div class="col-md-6 mb-2 mt-3 text-center">
                             <img id="imagePreview" src="" alt="Preview da imagem" class="rounded img-fluid d-none" style="max-height: 300px;">
@@ -52,19 +54,27 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-        $('#url_image').on('input', function () {
-            const url = $(this).val();
+        $('#image_file').on('change', function () {
+            const file = this.files[0];
             const $image = $('#imagePreview');
 
-            if (url) {
-                $image.fadeOut(300, function () {
-                    $image.attr('src', url).removeClass('d-none').fadeIn(300);
-                });
-            } else {
+            if (!file) {
+                $('#url_image').val('');
                 $image.fadeOut(300, function () {
                     $image.addClass('d-none');
                 });
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const base64 = e.target.result;
+                $('#url_image').val(base64);
+                $image.fadeOut(300, function () {
+                    $image.attr('src', base64).removeClass('d-none').fadeIn(300);
+                });
+            };
+            reader.readAsDataURL(file);
         });
 
         const form = document.getElementById('formCreateCampaign');
@@ -79,7 +89,7 @@
             const formData = {
                 name: form.name.value,
                 date: form.date.value,
-                url_image: form.url_image.value,
+                url_image: form.url_image.value || null,
                 description: form.description.value
             };
 
@@ -102,7 +112,7 @@
                     }, 2000);
                 })
                 .catch(err => {
-                    showToast('error', err.message);
+                    showToast(err.message || 'Erro ao criar campanha', 'danger');
                 })
                 .finally(() => {
                     enableForm(form,"Criar Campanha");

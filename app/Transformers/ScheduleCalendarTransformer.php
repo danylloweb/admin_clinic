@@ -23,7 +23,7 @@ class ScheduleCalendarTransformer extends TransformerAbstract
     public function transform(Schedule $model)
     {
         $date = Carbon::create($model->date);
-        $start = Carbon::create( $model->date->format('Y-m-d') . ' ' . $model->time);
+        $start = Carbon::create( $model->date . ' ' . $model->time);
         $end   = $start->copy()->addMinutes($model->procedure->execution_time);
         $sale  = $model->getSaleOrderStatus();
         $range = "De: ".$start->format('H:i') . ' - ' . $end->format('H:i');

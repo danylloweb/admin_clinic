@@ -39,7 +39,7 @@
     </div>
     <ul class="header-menu ms-6 ms-xl-10">
         <li class="dropdown header-notify">
-            <button type="button" class="ph ph-bell" data-bs-toggle="dropdown" data-bs-display="static"
+            <button type="button" id="notify-menu-toggle" class="ph ph-bell" data-bs-toggle="dropdown" data-bs-display="static"
                     data-bs-auto-close="outside" aria-expanded="false"><span
                     class="visually-hidden">Notificações</span></button>
             <div class="dropdown-menu header-dropdown-menu">
@@ -60,7 +60,7 @@
             </div>
         </li>
         <li class="d-none d-sm-block dropdown">
-            <button type="button" class="ph ph-check-square-offset" data-bs-toggle="dropdown" data-bs-display="static"
+            <button type="button" id="tasks-menu-toggle" class="ph ph-check-square-offset" data-bs-toggle="dropdown" data-bs-display="static"
                     data-bs-auto-close="outside" aria-expanded="false"><span class="visually-hidden">Tarefas</span>
             </button>
             <div class="dropdown-menu header-dropdown-menu">
@@ -81,16 +81,16 @@
             </div>
         </li>
         <li class="dropdown">
-            <button type="button" class="h-11 me-n0.5 p-2 rounded w-11" data-bs-toggle="dropdown" aria-expanded="false">
+            <button type="button" id="user-menu-toggle" class="h-11 me-n0.5 p-2 rounded w-11" data-bs-toggle="dropdown" aria-expanded="false">
                 <img id="user-avatar" class="h-8 rounded" src="" alt="Avatar do usuário">
             </button>
             <div class="dropdown-menu p-2">
                 <div class="px-3 py-2">
-                    <strong id="user-name" class="d-block text-dark fs-sm"></strong>
-                    <small class="text-muted" id="user-email"></small>
+                    <strong id="user-name" class="d-block text-white fs-sm"></strong>
+                    <small class="text-white" id="user-email"></small>
                 </div>
                 <hr class="my-1">
-                <a href="#" class="dropdown-item"><i class="ph ph-user-circle"></i> Profile</a>
+                <a href="#" id="user-profile-link" class="dropdown-item"><i class="ph ph-user-circle"></i> Profile</a>
                 <a href="#" class="dropdown-item" onclick="logoutUser()"><i class="ph ph-sign-out"></i> Sair</a>
             </div>
         </li>
@@ -166,6 +166,67 @@
             setTimeout(() => toast.remove(), 300);
         }, 4000);
     }
+
+    function loadHeaderUserInfo() {
+        const avatarEl = document.getElementById('user-avatar');
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+        const profileLinkEl = document.getElementById('user-profile-link');
+
+        let user = null;
+        try {
+            user = JSON.parse(localStorage.getItem('user') || 'null');
+        } catch (e) {
+            user = null;
+        }
+
+        const name = user?.name || 'Usuário';
+        const email = user?.email || '';
+        const avatar = user?.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6c757d&color=fff&size=64`;
+
+        if (avatarEl) avatarEl.src = avatar;
+        if (nameEl) nameEl.innerText = name;
+        if (emailEl) emailEl.innerText = email;
+        if (profileLinkEl) {
+            profileLinkEl.href = user?.id ? `{{ url('/panel-users-edit') }}/${user.id}` : '#';
+        }
+    }
+
+    function initializeHeaderDropdowns() {
+        if (typeof bootstrap === 'undefined') {
+            return;
+        }
+
+        ['notify-menu-toggle', 'tasks-menu-toggle', 'user-menu-toggle'].forEach((id) => {
+            const toggle = document.getElementById(id);
+            if (!toggle) {
+                return;
+            }
+
+            const instance = bootstrap.Dropdown.getOrCreateInstance(toggle, {
+                autoClose: toggle.getAttribute('data-bs-auto-close') || true,
+            });
+
+            // Force toggle on click in case data-api init is blocked by other scripts.
+            toggle.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                instance.toggle();
+            });
+        });
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        document.cookie = 'jwt_token=; Max-Age=0; path=/';
+        window.location.href = '/login';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadHeaderUserInfo();
+        initializeHeaderDropdowns();
+    });
 
 </script>
 @stack('scripts')
