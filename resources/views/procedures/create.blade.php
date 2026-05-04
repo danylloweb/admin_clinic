@@ -10,15 +10,15 @@
                 <div class="card-body">
                     <form id="procedureForm">
                         <div class="row">
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Nome</label>
                                 <input type="text" name="name" id="name" value="{{ old('name') }}" class="form-control" required>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Tempo</label>
                                 <input type="number" name="execution_time" id="execution_time"  class="form-control" required>
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Tipo</label>
                                 <select name="procedure_type_id" id="procedure_type_id" class="form-select" required>
                                     <option value="">Carregando tipos...</option>
