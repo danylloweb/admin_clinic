@@ -1,4 +1,4 @@
-# Application Service Omni Hub Api
+# Application Service Admin Clinic
 
 
 ## Setup
