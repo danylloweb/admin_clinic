@@ -59,6 +59,8 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    'force_secure_assets' => env('APP_ENV', 'local') === 'production',
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
