@@ -760,6 +760,9 @@
                             data: 'price',
                             orderable: false,
                             searchable: false,
+                            render: function(data) {
+                                return 'R$ ' + parseFloat(data).toFixed(2).replace('.', ',');
+                            },
                         },
                         { data: 'date' },
                         { data: 'time' },

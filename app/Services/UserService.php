@@ -102,7 +102,7 @@ class UserService extends AppService
     public function update(array $data, $id, bool $skipPresenter = false): mixed
     {
         try {
-            if (!$this->isEmpty($data['img'])){
+            if (isset($data['img']) && !$this->isEmpty($data['img'])){
                 $user = $this->repository->skipPresenter()->find($id);
                 $this->deleteFileS3($user->img);
                 $data['img'] = $this->putPhotoProfileUser($data['img']);
