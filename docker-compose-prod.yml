@@ -1,17 +1,17 @@
 version: "3.7"
 services:
-    app-clinic:
-        build:
-            context: ./docker
-            dockerfile: Dockerfile-dev
-        restart: unless-stopped
-        working_dir: /var/www/html
-        volumes:
-            - ./:/var/www/html
-        ports:
-            - 8001:80
-        networks:
-          - verbrechen
+  app-clinic:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - 8001:80
+    networks:
+      - verbrechen
 networks:
   verbrechen:
     external: true
