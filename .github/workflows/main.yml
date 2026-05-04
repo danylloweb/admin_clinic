@@ -22,9 +22,7 @@ jobs:
           envs: ENVPROD
           script: |
             set -euo pipefail
-            cd /var/www/html/
-            git clone git@github.com:danylloweb/admin_clinic.git
-            cd admin_clinic
+            cd /var/www/html/admin_clinic
             cat > .env <<'EOF'
             $ENVPROD
             EOF
