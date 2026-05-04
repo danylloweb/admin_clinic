@@ -23,8 +23,6 @@ jobs:
           script: |
             set -euo pipefail
             cd /var/www/html/admin_clinic
-            cat > .env <<'EOF'
-            $ENVPROD
-            EOF
+            printf '%s\n' "$ENVPROD" > .env
             make prod-install
 
