@@ -23,6 +23,7 @@ jobs:
           script: |
             set -euo pipefail
             cd /var/www/html/admin_clinic
+            git pull origin main
             printf '%s\n' "$ENVPROD" > .env
 
             # Ensure a compose version that supports 'services' and 'networks'.
