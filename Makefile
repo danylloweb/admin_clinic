@@ -40,5 +40,5 @@ prod-ps: check-compose
 	$(COMPOSE_PROD) ps
 
 prod-composer-install: check-compose
-	$(COMPOSE_PROD) exec -T app-clinic composer install
+	$(COMPOSE_PROD) exec -T app-clinic composer install --ignore-platform-reqs
 
