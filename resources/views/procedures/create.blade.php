@@ -10,12 +10,15 @@
                 <div class="card-body">
                     <form id="procedureForm">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Nome</label>
                                 <input type="text" name="name" id="name" value="{{ old('name') }}" class="form-control" required>
                             </div>
-
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Tempo</label>
+                                <input type="number" name="execution_time" id="execution_time"  class="form-control" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
                                 <label class="form-label">Tipo</label>
                                 <select name="procedure_type_id" id="procedure_type_id" class="form-select" required>
                                     <option value="">Carregando tipos...</option>
@@ -196,6 +199,7 @@
                 message_schedule_after: document.getElementById('message_schedule_after').value,
                 cost_price: document.getElementById('cost_price').value || null,
                 percentage_on_sale: document.getElementById('percentage_on_sale').value || 0,
+                execution_time: document.getElementById('execution_time').value || 60,
                 qty: document.getElementById('qty').value || 1,
                 unit_price: document.getElementById('unit_price').value || null,
                 is_package: document.getElementById('is_package').checked ? 1 : 0,
