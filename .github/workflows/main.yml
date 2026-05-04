@@ -24,5 +24,20 @@ jobs:
             set -euo pipefail
             cd /var/www/html/admin_clinic
             printf '%s\n' "$ENVPROD" > .env
+
+            # Ensure a compose version that supports 'services' and 'networks'.
+            if command -v docker-compose >/dev/null 2>&1; then
+              DC_VERSION="$(docker-compose version --short 2>/dev/null || true)"
+            else
+              DC_VERSION=""
+            fi
+
+            if [ -z "$DC_VERSION" ] || [ "$(printf '%s\n' "1.27.0" "$DC_VERSION" | sort -V | head -n1)" != "1.27.0" ]; then
+              mkdir -p "$HOME/.local/bin"
+              curl -fsSL "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o "$HOME/.local/bin/docker-compose"
+              chmod +x "$HOME/.local/bin/docker-compose"
+              export PATH="$HOME/.local/bin:$PATH"
+            fi
+
             make prod-install
 
