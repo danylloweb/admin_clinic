@@ -2,9 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\Patient;
+use App\Entities\SalesOrder;
+use App\Entities\SalesOrderItem;
+use App\Entities\Schedule;
+use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 /**
@@ -32,13 +39,224 @@ class PanelController extends Controller
     /**
      * @return View|Factory|Application
      */
-    public function dashboard(): View|Factory|Application
+    public function dashboard(Request $request): View|Factory|Application
     {
+
+        $dashboardData = Cache::store('redis')->tags('dashboard-chart')->remember($request->fullUrl(), 12000, function () use ($request) {
+
+            [$startDate, $endDate] = $this->resolveDashboardRange($request);
+            $paidStatuses = [1, 3, 4];
+
+            $schedulesToday = Schedule::query()
+                ->whereDate('date', now()->toDateString())
+                ->count();
+
+            $schedulesMonth = Schedule::query()
+                ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->count();
+
+            $revenueMonth = SalesOrder::query()
+                ->whereIn('status', $paidStatuses)
+                ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->sum('amount');
+
+            $ticketAverage = SalesOrder::query()
+                ->whereIn('status', $paidStatuses)
+                ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->avg('amount') ?? 0;
+
+            $newPatientsMonth = Patient::query()
+                ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->count();
+
+            $rawSchedulesByDay = Schedule::query()
+                ->selectRaw("DATE_FORMAT(date, '%Y-%m-%d') as label, COUNT(*) as total")
+                ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->groupBy('label')
+                ->orderBy('label')
+                ->get();
+
+            $schedulesByDay = $this->buildDateSeries($startDate, $endDate, $rawSchedulesByDay);
+
+            $scheduleStatusLabels = ['Marcado', 'Confirmado', 'Adiado', 'Cancelado'];
+            $rawScheduleStatus = Schedule::query()
+                ->selectRaw('status as label, COUNT(*) as total')
+                ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->groupBy('status')
+                ->pluck('total', 'label');
+
+            $scheduleStatus = collect($scheduleStatusLabels)
+                ->map(fn ($status) => [
+                    'label' => $status,
+                    'total' => (int) ($rawScheduleStatus[$status] ?? 0),
+                ])
+                ->values();
+
+            $revenueStart = $endDate->copy()->startOfMonth()->subMonths(5);
+            $rawRevenueByMonth = SalesOrder::query()
+                ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as label, SUM(amount) as total")
+                ->whereIn('status', $paidStatuses)
+                ->whereBetween('created_at', [$revenueStart->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->groupBy('label')
+                ->orderBy('label')
+                ->pluck('total', 'label');
+
+            $revenueByMonth = collect();
+            $cursorMonth = $revenueStart->copy();
+            while ($cursorMonth->lte($endDate)) {
+                $key = $cursorMonth->format('Y-m');
+                $revenueByMonth->push([
+                    'label' => $cursorMonth->format('m/Y'),
+                    'total' => (float) ($rawRevenueByMonth[$key] ?? 0),
+                ]);
+                $cursorMonth->addMonth();
+            }
+
+            $rawPaymentMethods = SalesOrder::query()
+                ->selectRaw('type_payment, COUNT(*) as total')
+                ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->groupBy('type_payment')
+                ->orderBy('type_payment')
+                ->get();
+
+            $paymentMethods = $rawPaymentMethods
+                ->map(fn ($item) => [
+                    'label' => $this->getPaymentTypeTitle((int) $item->type_payment),
+                    'total' => (int) $item->total,
+                ])
+                ->values();
+
+            $topProcedures = SalesOrderItem::query()
+                ->join('sales_orders', 'sales_orders.id', '=', 'sales_order_items.sales_order_id')
+                ->selectRaw(
+                    "sales_order_items.procedure_name as label,
+                SUM(sales_order_items.qty) as total_qty,
+                SUM(sales_order_items.qty * CAST(sales_order_items.price AS DECIMAL(10,2))) as total_value"
+                )
+                ->whereIn('sales_orders.status', $paidStatuses)
+                ->whereBetween('sales_orders.created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->groupBy('sales_order_items.procedure_name')
+                ->orderByDesc('total_qty')
+                ->limit(10)
+                ->get()
+                ->map(fn ($item) => [
+                    'label' => $item->label,
+                    'total_qty' => (int) $item->total_qty,
+                    'total_value' => (float) $item->total_value,
+                ])
+                ->values();
+
+            $salesStatusMap = [
+                0 => 'Inicial',
+                1 => 'Pago',
+                2 => 'Cancelado',
+                3 => 'Parcial',
+                4 => 'Finalizado',
+            ];
+            $rawSalesStatus = SalesOrder::query()
+                ->selectRaw('status, COUNT(*) as total')
+                ->whereBetween('created_at', [$startDate->copy()->startOfDay(), $endDate->copy()->endOfDay()])
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            $salesStatus = collect($salesStatusMap)
+                ->map(fn ($label, $status) => [
+                    'label' => $label,
+                    'total' => (int) ($rawSalesStatus[(string) $status] ?? 0),
+                ])
+                ->values();
+
+            return [
+                'meta' => [
+                    'start' => $startDate->toDateString(),
+                    'end' => $endDate->toDateString(),
+                ],
+                'cards' => [
+                    'schedules_today' => $schedulesToday,
+                    'schedules_period' => $schedulesMonth,
+                    'revenue_period' => (float) $revenueMonth,
+                    'ticket_average' => (float) $ticketAverage,
+                    'new_patients_period' => $newPatientsMonth,
+                ],
+                'charts' => [
+                    'schedules_by_day' => $schedulesByDay->all(),
+                    'schedule_status' => $scheduleStatus->all(),
+                    'revenue_by_month' => $revenueByMonth->all(),
+                    'payment_methods' => $paymentMethods->all(),
+                    'top_procedures' => $topProcedures->all(),
+                    'sales_status' => $salesStatus->all(),
+                ],
+            ];
+        });
+
+
         return view('dashboard', [
             'title'       => 'Dashboard',
             'subtitle'    => 'Painel de Controle',
             'routeCreate' => route('dashboard'),
+            'dashboardData' => $dashboardData,
         ]);
+    }
+
+    private function resolveDashboardRange(Request $request): array
+    {
+        $defaultStart = now()->subMonth()->startOfMonth();
+        $defaultEnd = now()->subMonth()->endOfMonth();
+
+        $startDate = $this->parseDate($request->query('start')) ?? $defaultStart;
+        $endDate = $this->parseDate($request->query('end')) ?? $defaultEnd;
+
+        if ($startDate->gt($endDate)) {
+            [$startDate, $endDate] = [$endDate->copy(), $startDate->copy()];
+        }
+
+        return [$startDate->startOfDay(), $endDate->endOfDay()];
+    }
+
+    private function parseDate(?string $value): ?Carbon
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        foreach (['Y-m-d', 'm/d/Y', 'd/m/Y'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $value);
+            } catch (\Throwable $exception) {
+                // Continue until a supported date format is matched.
+            }
+        }
+
+        return null;
+    }
+
+    private function buildDateSeries(Carbon $startDate, Carbon $endDate, Collection $rawRows): Collection
+    {
+        $indexedRows = $rawRows->pluck('total', 'label');
+        $series = collect();
+
+        $cursor = $startDate->copy()->startOfDay();
+        while ($cursor->lte($endDate)) {
+            $key = $cursor->format('Y-m-d');
+            $series->push([
+                'label' => $key,
+                'total' => (int) ($indexedRows[$key] ?? 0),
+            ]);
+            $cursor->addDay();
+        }
+
+        return $series;
+    }
+
+    private function getPaymentTypeTitle(int $typePayment): string
+    {
+        return match ($typePayment) {
+            1 => 'PIX',
+            2 => 'Cartao de Credito',
+            3 => 'Cartao de Debito',
+            4 => 'Dinheiro',
+            default => 'Nao informado',
+        };
     }
 
     /**
