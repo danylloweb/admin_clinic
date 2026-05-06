@@ -4,6 +4,7 @@ namespace App\Entities;
 
 use App\Models\Chat;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Prettus\Repository\Contracts\Transformable;
 use Prettus\Repository\Traits\TransformableTrait;
 
@@ -42,6 +43,11 @@ class Patient extends Model implements Transformable
     {
         $chat = Chat::where('chat_id',$this->attributes['chat_id'])->first();
         return $chat->last_message??"";
+    }
+
+    public function medicalRecord(): HasOne
+    {
+        return $this->hasOne(PatientMedicalRecord::class, 'patient_id', 'id');
     }
 
 }

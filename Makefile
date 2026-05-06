@@ -42,3 +42,7 @@ prod-ps: check-compose
 prod-composer-install: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic composer install --ignore-platform-reqs
 
+prod-migrate: check-compose
+	$(COMPOSE_PROD) exec -T app-clinic php artisan migrate --force
+
+#yes | php artisan make:entity

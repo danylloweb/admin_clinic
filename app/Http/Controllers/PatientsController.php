@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\PatientMedicalRecord;
 use App\Services\PatientService;
 use App\Validators\PatientValidator;
 use Illuminate\Contracts\Foundation\Application;
@@ -105,11 +106,20 @@ class PatientsController extends Controller
     {
         $patient = $this->service->find($id, true);
         $photo   = $this->service->getlinkImageByPhone($patient->chat_id);
+        $medicalRecord = PatientMedicalRecord::query()->find($id);
+
+        $medicalRecordPanel = [
+            'status' => $medicalRecord?->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
+            'link' => $medicalRecord?->publicUrl(),
+            'submitted_at' => optional($medicalRecord?->submitted_at)->format('d/m/Y H:i'),
+        ];
+
         return view('patients.show', [
             'title'    => 'Paciente',
             'subtitle' => 'Detalhe do(a) Paciente',
             'patient'  => $patient,
             'photo'    => $photo->success?? 'https://ui-avatars.com/api/?name='.urlencode($patient->name),
+            'medicalRecordPanel' => $medicalRecordPanel,
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CampaignsController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\PatientMedicalRecordController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProceduresController;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,12 @@ Route::get('/login', [PanelController::class,'login'])->name('login2');
 Route::get('/chat', function () {
     return view('chats.index');
 });
+
+Route::get('/prontuario/sucesso', [PatientMedicalRecordController::class, 'successStatus'])->name('patient-medical-record.success');
+Route::get('/prontuario/{token}', [PatientMedicalRecordController::class, 'publicForm'])->name('patient-medical-record.show');
+Route::post('/prontuario/{token}', [PatientMedicalRecordController::class, 'submitPublicForm'])->name('patient-medical-record.submit');
+Route::get('/prontuario/status/{token}', [PatientMedicalRecordController::class, 'formSuccess'])->name('patient-medical-record.status');
+
 Route::middleware(['jwt.web'])->group(function () {
     Route::get('/dashboard',[PanelController::class,'dashboard'])->name('dashboard');
     Route::get('/panel-schedules-index',[PanelController::class,'scheduleIndex'])->name('panel.schedules.index');
@@ -24,6 +31,8 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-patients-create',[PanelController::class,'patientCreate'])->name('panel.patient.create');
     Route::get('/panel-patients-show/{id}',[PatientsController::class,'patientShow'])->name('panel.patient.show');
     Route::get('/panel-patients-chat/{id}',[PatientsController::class,'patientChat'])->name('panel.patient.chat');
+    Route::get('/panel-patients-medical-record-link/{patientId}', [PatientMedicalRecordController::class, 'issueLink'])->name('panel.patient.medical-record.link');
+    Route::get('/panel-patients-medical-record-show/{patientId}', [PatientMedicalRecordController::class, 'panelShow'])->name('panel.patient.medical-record.show');
     Route::get('/panel-procedure-show/{id}',[ProceduresController::class,'procedureShow'])->name('panel.procedure.show');
     Route::get('/panel-procedure-create',[PanelController::class,'procedureCreate'])->name('panel.procedure.create');
     Route::get('/panel-sales-orders-index',[PanelController::class,'salesOrderIndex'])->name('panel.sales-order.index');

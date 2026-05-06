@@ -15,7 +15,7 @@
                                 <input type="text" name="name" id="name" value="{{ old('name') }}" class="form-control" required>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Tempo</label>
+                                <label class="form-label">Tempo de execução</label>
                                 <input type="number" name="execution_time" id="execution_time"  class="form-control" required>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -31,7 +31,7 @@
                                 <input type="number" step="0.01" name="cost_price" id="cost_price" value="{{ old('cost_price') }}" class="form-control">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">% sobre venda</label>
+                                <label class="form-label">% Sobre venda</label>
                                 <input type="number" step="0.01" name="percentage_on_sale" id="percentage_on_sale" value="{{ old('percentage_on_sale', 0) }}" class="form-control">
                             </div>
                             <div class="col-md-4 mb-3">
@@ -176,7 +176,7 @@
         // update whenever cost, percentage or quantity change
         const costInput = document.getElementById('cost_price');
         const percInput = document.getElementById('percentage_on_sale');
-        const qtyInput = document.getElementById('qty');
+        const qtyInput  = document.getElementById('qty');
         if (costInput) costInput.addEventListener('input', computePrice);
         if (percInput) percInput.addEventListener('input', computePrice);
         if (qtyInput) qtyInput.addEventListener('input', computePrice);
