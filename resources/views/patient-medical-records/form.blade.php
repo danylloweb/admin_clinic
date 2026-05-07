@@ -315,7 +315,7 @@
                     </div>
                     <div>
                         <label for="emergency_contact_phone">Telefone do contato</label>
-                        <input type="text" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone', $record->emergency_contact_phone) }}" placeholder="(81) 99999-0000" inputmode="tel">
+                        <input type="text" id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone', $record->emergency_contact_phone) }}" placeholder="(81) 99999-0000" inputmode="tel" maxlength="15">
                     </div>
                 </div>
             </section>
@@ -474,6 +474,16 @@
         </form>
     </div>
 </div>
+<script>
+    document.getElementById('emergency_contact_phone').addEventListener('input', function (e) {
+        let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+        let r = '';
+        if (v.length > 0) r = '(' + v.slice(0, 2);
+        if (v.length >= 3) r += ') ' + v.slice(2, v.length <= 10 ? 6 : 7);
+        if (v.length >= (v.length <= 10 ? 7 : 8)) r += '-' + v.slice(v.length <= 10 ? 6 : 7);
+        e.target.value = r;
+    });
+</script>
 </body>
 </html>
 
