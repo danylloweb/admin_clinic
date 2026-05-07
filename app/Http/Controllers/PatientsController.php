@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Entities\PatientMedicalRecord;
+use App\Services\PatientMedicalRecordService;
 use App\Services\PatientService;
 use App\Validators\PatientValidator;
 use Illuminate\Contracts\Foundation\Application;
@@ -31,12 +32,12 @@ class PatientsController extends Controller
     protected $validator;
 
     /**
-     * PatientsController constructor.
-     *
      * @param PatientService $service
      * @param PatientValidator $validator
+     * @param PatientMedicalRecordService $patientMedicalRecordService
      */
-    public function __construct(PatientService $service, PatientValidator $validator)
+    public function __construct(PatientService $service, PatientValidator $validator,
+                                private PatientMedicalRecordService $patientMedicalRecordService)
     {
         $this->validator  = $validator;
         $this->service    = $service;
@@ -104,16 +105,15 @@ class PatientsController extends Controller
      */
     public function patientShow(int $id): Factory|View|\Illuminate\Foundation\Application|Application
     {
-        $patient = $this->service->find($id, true);
-        $photo   = $this->service->getlinkImageByPhone($patient->chat_id);
-        $medicalRecord = PatientMedicalRecord::query()->find($id);
+        $patient       = $this->service->find($id, true);
+        $photo         = $this->service->getlinkImageByPhone($patient->chat_id);
+        $medicalRecord = $this->patientMedicalRecordService->findWhere(['patient_id' => $id])->first();
 
         $medicalRecordPanel = [
-            'status' => $medicalRecord?->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
-            'link' => $medicalRecord?->publicUrl(),
-            'submitted_at' => optional($medicalRecord?->submitted_at)->format('d/m/Y H:i'),
+            'status'       => $medicalRecord?->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
+            'link'         => $medicalRecord?->publicUrl(),
+            'submitted_at' => $medicalRecord?->submitted_at ?? null,
         ];
-
         return view('patients.show', [
             'title'    => 'Paciente',
             'subtitle' => 'Detalhe do(a) Paciente',

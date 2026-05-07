@@ -51,8 +51,7 @@ class PatientMedicalRecord extends Model implements Transformable
 
     protected $casts = [
         'token_generated_at' => 'datetime',
-        'submitted_at' => 'datetime',
-        'lgpd_consent' => 'boolean',
+        'lgpd_consent'       => 'boolean',
     ];
 
     public function patient(): BelongsTo

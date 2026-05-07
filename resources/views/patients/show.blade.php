@@ -1,8 +1,8 @@
 @extends('layouts.header')
 @section('content')
-<div class="container py-6">
+<div class="container py-8">
     <div class="row">
-        <div class="col-12 col-md-8 mx-auto">
+        <div class="col-lg-12 col-md-12 mx-auto">
             <div class="card">
                 <div class="card-header d-flex align-items-center">
                     <img src="{{ $photo ?? 'https://ui-avatars.com/api/?name='.urlencode($patient->name) }}" alt="avatar" id="patientAvatar" class="rounded-circle me-3" style="width:64px;height:64px;object-fit:cover;">
@@ -14,25 +14,27 @@
                 <div class="card-body">
                     <form id="patientForm">
                         <input type="hidden" name="id" id="patientId" value="{{ $patient->id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nome</label>
+                                <input type="text" name="name" id="name" value="{{ $patient->name }}" class="form-control" required>
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Nome</label>
-                            <input type="text" name="name" id="name" value="{{ $patient->name }}" class="form-control" required>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nome Social</label>
+                                <input type="text" name="social_name" id="social_name" value="{{ $patient->social_name }}" class="form-control">
+                            </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefone</label>
+                                <input type="text" name="phone" id="phone" value="{{ $patient->phone }}" class="form-control" required>
+                            </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Nome Social</label>
-                            <input type="text" name="social_name" id="social_name" value="{{ $patient->social_name }}" class="form-control">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Telefone</label>
-                            <input type="text" name="phone" id="phone" value="{{ $patient->phone }}" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Chat ID</label>
-                            <input type="text" name="chat_id" id="chat_id" value="{{ $patient->chat_id }}" class="form-control" readonly>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Chat ID</label>
+                                <input type="text" name="chat_id" id="chat_id" value="{{ $patient->chat_id }}" class="form-control" readonly>
+                            </div>
                         </div>
 
                         <div class="row">
@@ -61,7 +63,7 @@
                     <hr class="my-4">
 
                     @php
-                        $medicalRecordStatus = $medicalRecordPanel['status'] ?? 'nao_gerado';
+                        $medicalRecordStatus = $medicalRecordPanel['submitted_at'] ?? 'nao_gerado';
                         $medicalRecordLink = $medicalRecordPanel['link'] ?? '';
                     @endphp
 
@@ -71,28 +73,27 @@
                                 <h5 class="mb-1">Prontuário digital</h5>
                                 <p class="mb-2 text-muted">Gere um link único para o paciente preencher o prontuário pelo celular. O token permanece válido até o envio do formulário.</p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="badge {{ $medicalRecordStatus === 'pendente' ? 'bg-warning text-dark' : ($medicalRecordStatus === 'preenchido' ? 'bg-success' : 'bg-secondary') }}" id="medical-record-status-badge">
-                                        {{ $medicalRecordStatus === 'pendente' ? 'Pendente' : ($medicalRecordStatus === 'preenchido' ? 'Preenchido' : 'Não gerado') }}
+                                    <span class="badge {{ $medicalRecordStatus ? 'bg-success' : 'bg-black' }}" id="medical-record-status-badge">
+                                        {{ $medicalRecordStatus  ? 'Preenchido' : 'Não gerado' }}
                                     </span>
-                                    @if(!empty($medicalRecordPanel['submitted_at']))
-                                        <small class="text-muted" id="medical-record-submitted-at">Preenchido em {{ $medicalRecordPanel['submitted_at'] }}</small>
+                                    @if($medicalRecordStatus)
+                                        <small class="text-white" id="medical-record-submitted-at">Preenchido em {{ \Carbon\Carbon::parse($medicalRecordPanel['submitted_at'])->format('d/m/Y H:i:s') }}</small>
                                     @else
-                                        <small class="text-muted" id="medical-record-submitted-at"></small>
+                                        <small class="text-white" id="medical-record-submitted-at"></small>
                                     @endif
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn btn-outline-dark">
-                                    Ver prontuario
-                                </a>
+                                @if($medicalRecordStatus)
+                                    <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn bg-success">
+                                        Ver prontuario
+                                    </a>
+                                @endif
                                 <button type="button" class="btn btn-outline-primary" id="generateMedicalRecordLinkBtn">
                                     {{ $medicalRecordStatus === 'preenchido' ? 'Gerar novo link' : 'Gerar link' }}
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary" id="copyMedicalRecordLinkBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
                                     Copiar link
-                                </button>
-                                <button type="button" class="btn btn-success" id="shareMedicalRecordWhatsappBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
-                                    <i class="ph ph-whatsapp-logo"></i> WhatsApp
                                 </button>
                             </div>
                         </div>
@@ -149,9 +150,9 @@
             const map = {
                 pendente: {text: 'Pendente', classes: ['bg-warning', 'text-dark']},
                 preenchido: {text: 'Preenchido', classes: ['bg-success', 'text-white']},
-                nao_gerado: {text: 'Não gerado', classes: ['bg-secondary', 'text-white']},
+                nao_gerado: {text: 'Não gerado', classes: ['bg-black', 'text-white']},
             };
-
+            console.log(status)
             const config = map[status] || map.nao_gerado;
             medicalRecordStatusBadge.className = 'badge';
             config.classes.forEach((className) => medicalRecordStatusBadge.classList.add(className));
