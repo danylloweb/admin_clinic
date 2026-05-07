@@ -90,7 +90,7 @@
                                     </a>
                                 @endif
                                 <button type="button" class="btn btn-outline-primary" id="generateMedicalRecordLinkBtn">
-                                    {{ $medicalRecordStatus === 'preenchido' ? 'Gerar novo link' : 'Gerar link' }}
+                                    {{ $medicalRecordStatus ? 'Gerar novo link' : 'Gerar link' }}
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary" id="copyMedicalRecordLinkBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
                                     Copiar link
@@ -152,7 +152,6 @@
                 preenchido: {text: 'Preenchido', classes: ['bg-success', 'text-white']},
                 nao_gerado: {text: 'Não gerado', classes: ['bg-black', 'text-white']},
             };
-            console.log(status)
             const config = map[status] || map.nao_gerado;
             medicalRecordStatusBadge.className = 'badge';
             config.classes.forEach((className) => medicalRecordStatusBadge.classList.add(className));
@@ -171,29 +170,30 @@
             try {
                 const response = await fetch(medicalRecordLinkRoute.replace('__PATIENT__', patientId), {
                     method: 'GET',
-                    headers: {
-                        Accept: 'application/json'
-                    },
+                    headers: {Accept: 'application/json'},
                     credentials: 'same-origin'
                 });
 
-                if (!response.ok) {
+                if (response.ok) {
+                    showToast('Link do prontuário pronto para envio.', 'success');
+                    const payload = await response.json();
+                    if (medicalRecordLinkInput) {
+                        medicalRecordLinkInput.value = payload.link || '';
+                    }
+
+                    updateMedicalRecordStatus(payload.status || 'pendente');
+                    copyMedicalRecordLinkBtn.disabled = !(payload.link);
+                    shareMedicalRecordWhatsappBtn.disabled = !(payload.link);
+                    generateMedicalRecordLinkBtn.innerText = 'Gerar novo link';
+                }else{
                     showToast('Não foi possível gerar o link do prontuário.', 'danger');
                     return;
                 }
 
-                const payload = await response.json();
-                if (medicalRecordLinkInput) {
-                    medicalRecordLinkInput.value = payload.link || '';
-                }
 
-                updateMedicalRecordStatus(payload.status || 'pendente');
-                copyMedicalRecordLinkBtn.disabled = !(payload.link);
-                shareMedicalRecordWhatsappBtn.disabled = !(payload.link);
-                generateMedicalRecordLinkBtn.innerText = 'Gerar novo link';
-                showToast('Link do prontuário pronto para envio.', 'success');
+
             } catch (error) {
-                showToast(error.message || 'Erro ao gerar link do prontuário.', 'danger');
+                // showToast(error.message || 'Erro ao gerar link do prontuário.', 'danger');
             } finally {
                 generateMedicalRecordLinkBtn.disabled = false;
                 if (generateMedicalRecordLinkBtn.innerText !== 'Gerar novo link') {

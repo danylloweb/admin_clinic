@@ -47,6 +47,9 @@
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save me-1"></i> Salvar alterações
                     </button>
+                    <a href="{{ route('panel.campaign.send', ['id' => $campaign['id']]) }}" class="btn btn-primary ms-2">
+                        Enviar campanha
+                    </a>
                     <a href="{{ route('panel.campaigns.index') }}" class="btn btn-secondary ms-2">Voltar</a>
                 </form>
             </div>

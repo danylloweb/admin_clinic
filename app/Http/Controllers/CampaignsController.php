@@ -64,4 +64,31 @@ class CampaignsController extends Controller
         ]);
     }
 
+    public function panelSend(int $id): View|Factory|Application
+    {
+        $campaign = $this->service->find($id, true);
+        return view('campaigns.send', [
+            'title' => 'Disparo de Campanha',
+            'subtitle' => 'Envio em lote via WhatsApp',
+            'campaign' => $campaign,
+        ]);
+    }
+
+    public function startSend(int $id): JsonResponse
+    {
+        return response()->json($this->service->startDispatch($id));
+    }
+
+    public function processSend(Request $request, int $id): JsonResponse
+    {
+        $page    = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('per_page', 5);
+        return response()->json($this->service->processDispatchPage($id, $page, $perPage));
+    }
+
+    public function sendProgress(int $id): JsonResponse
+    {
+        return response()->json($this->service->dispatchProgress($id));
+    }
+
 }
