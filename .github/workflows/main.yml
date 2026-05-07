@@ -26,5 +26,4 @@ jobs:
             git pull origin main
             make prod-down
             make prod-up
-            make prod-migrate
 

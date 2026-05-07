@@ -1,6 +1,6 @@
 @extends('layouts.header')
 @section('content')
-<div class="container py-8">
+    <div class="card mb-3">
     <div class="row">
         <div class="col-lg-12 col-md-12 mx-auto">
             <div class="card">
@@ -85,7 +85,7 @@
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 @if($medicalRecordStatus)
-                                    <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn bg-success">
+                                    <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn btn-outline-success">
                                         Ver prontuario
                                     </a>
                                 @endif

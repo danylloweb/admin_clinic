@@ -27,7 +27,7 @@
                                 <span class="badge bg-secondary">Nao preenchido</span>
                             @elseif($record->submitted_at)
                                 <span class="badge bg-success">Preenchido</span>
-                                <small class="text-muted d-block mt-1">Em {{ optional($record->submitted_at)->format('d/m/Y H:i') }}</small>
+                                <small class="text-muted d-block mt-1">Em {{ \Carbon\Carbon::parse($record->submitted_at)->format('d/m/Y H:i') }}</small>
                             @else
                                 <span class="badge bg-warning text-dark">Pendente</span>
                             @endif
