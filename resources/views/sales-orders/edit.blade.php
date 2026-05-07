@@ -782,10 +782,12 @@
 
     window.openEditScheduleModal = async function(scheduleId, procedureName, procedureId) {
         const modalEl = document.getElementById('modal-edit-schedule');
+        const procedureIdInput = document.getElementById('edit-schedule-procedure-id');
         document.getElementById('edit-schedule-id').value = scheduleId;
         document.getElementById('edit-schedule-patient').value = currentOrder?.patient_name || '-';
         document.getElementById('edit-schedule-procedure-search').value = procedureName || '';
-        document.getElementById('edit-schedule-procedure-id').value = procedureId || '';
+        procedureIdInput.value = procedureId || '';
+        procedureIdInput.dataset.originalProcedureId = procedureId || '';
         document.getElementById('edit-schedule-date').value = '';
         document.getElementById('edit-schedule-time').value = '';
         document.getElementById('edit-schedule-status').value = 'Marcado';
@@ -798,6 +800,10 @@
         try {
             const data = await apiGet(`{{ url('/') }}/schedules/${scheduleId}`);
             const s = data.data ?? data;
+            if (s.procedure_id) {
+                procedureIdInput.value = s.procedure_id;
+                procedureIdInput.dataset.originalProcedureId = s.procedure_id;
+            }
             document.getElementById('edit-schedule-date').value = s.date_real || s.date || '';
             document.getElementById('edit-schedule-time').value = String(s.time || '').slice(0, 5);
             document.getElementById('edit-schedule-status').value = s.status || 'Marcado';
@@ -845,7 +851,14 @@
 
     document.getElementById('btn-save-edit-schedule').addEventListener('click', async function() {
         const scheduleId = document.getElementById('edit-schedule-id').value;
-        const procedureId = document.getElementById('edit-schedule-procedure-id').value;
+        const procedureIdInput = document.getElementById('edit-schedule-procedure-id');
+        let procedureId = procedureIdInput.value;
+        if (!procedureId) {
+            procedureId = procedureIdInput.dataset.originalProcedureId || '';
+            if (procedureId) {
+                procedureIdInput.value = procedureId;
+            }
+        }
         const date = document.getElementById('edit-schedule-date').value;
         const time = document.getElementById('edit-schedule-time').value;
         const status = document.getElementById('edit-schedule-status').value;
