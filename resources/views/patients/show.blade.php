@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
-                                @if($medicalRecordStatus)
+                                @if($medicalRecordStatus != "nao_gerado" && !empty($medicalRecordPanel['submitted_at']))
                                     <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn btn-outline-success">
                                         Ver prontuario
                                     </a>
