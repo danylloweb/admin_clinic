@@ -108,12 +108,20 @@ class PatientsController extends Controller
         $patient       = $this->service->find($id, true);
         $photo         = $this->service->getlinkImageByPhone($patient->chat_id);
         $medicalRecord = $this->patientMedicalRecordService->findWhere(['patient_id' => $id],true);
+       if ($medicalRecord){
+           $medicalRecordPanel = [
+               'status'       => $medicalRecord->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
+               'link'         => $medicalRecord->publicUrl(),
+               'submitted_at' => $medicalRecord->submitted_at ?? null,
+           ];
+       }else{
+           $medicalRecordPanel = [
+               'status'       => 'nao_gerado',
+               'link'         => "",
+               'submitted_at' => null,
+           ];
+       }
 
-        $medicalRecordPanel = [
-            'status'       => $medicalRecord?->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
-            'link'         => $medicalRecord?->publicUrl(),
-            'submitted_at' => $medicalRecord?->submitted_at ?? null,
-        ];
         return view('patients.show', [
             'title'    => 'Paciente',
             'subtitle' => 'Detalhe do(a) Paciente',

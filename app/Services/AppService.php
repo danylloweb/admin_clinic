@@ -383,7 +383,7 @@ class AppService
      */
     public function getlinkImageByPhone($phone):mixed
     {
-        return Cache::store('redis')->tags('imageProfile')->remember($phone, 1220000, function () use ($phone) {
+        return Cache::store('redis')->tags('imageProfile')->remember($phone, 120, function () use ($phone) {
             return $this->getImageToContactWhatsApp($phone);
         });
     }

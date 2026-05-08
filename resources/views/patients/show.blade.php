@@ -63,7 +63,8 @@
                     <hr class="my-4">
 
                     @php
-                        $medicalRecordStatus = $medicalRecordPanel['submitted_at'] ?? 'nao_gerado';
+                        $medicalRecordSubmittedAt = $medicalRecordPanel['submitted_at'] ?? 'nao_gerado';
+                        $medicalRecordStatus = $medicalRecordPanel['status'];
                         $medicalRecordLink = $medicalRecordPanel['link'] ?? '';
                     @endphp
 
@@ -73,10 +74,10 @@
                                 <h5 class="mb-1">Prontuário digital</h5>
                                 <p class="mb-2 text-muted">Gere um link único para o paciente preencher o prontuário pelo celular. O token permanece válido até o envio do formulário.</p>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="badge {{ $medicalRecordStatus ? 'bg-success' : 'bg-black' }}" id="medical-record-status-badge">
-                                        {{ $medicalRecordStatus  ? 'Preenchido' : 'Não gerado' }}
+                                    <span class="badge {{ $medicalRecordStatus != "nao_gerado" ? 'bg-success' : 'bg-black' }}" id="medical-record-status-badge">
+                                        {{ $medicalRecordStatus != "nao_gerado" ? 'Preenchido' : 'Não gerado' }}
                                     </span>
-                                    @if($medicalRecordStatus)
+                                    @if($medicalRecordStatus != "nao_gerado" && !empty($medicalRecordPanel['submitted_at']))
                                         <small class="text-white" id="medical-record-submitted-at">Preenchido em {{ \Carbon\Carbon::parse($medicalRecordPanel['submitted_at'])->format('d/m/Y H:i:s') }}</small>
                                     @else
                                         <small class="text-white" id="medical-record-submitted-at"></small>
