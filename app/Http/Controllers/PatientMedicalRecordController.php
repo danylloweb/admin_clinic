@@ -6,6 +6,7 @@ use App\Entities\Patient;
 use App\Entities\PatientMedicalRecord;
 use App\Http\Requests\PatientMedicalRecordCreateRequest;
 use App\Services\PatientService;
+use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\JsonResponse;
@@ -128,6 +129,7 @@ class PatientMedicalRecordController extends Controller
 
         $record->fill($data);
         $record->lgpd_consent = true;
+        $record->submitted_at = Carbon::now();
         $record->token_generated_at = null;
         $record->save();
 
