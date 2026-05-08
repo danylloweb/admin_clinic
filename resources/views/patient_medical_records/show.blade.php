@@ -91,7 +91,7 @@
                     <div class="col-md-4"><small class="text-muted">Hipertensao arterial</small><div>{{ $record?->arterial_hypertension ?: '-' }}</div></div>
                     <div class="col-md-6"><small class="text-muted">Medicacoes</small><div class="border rounded p-2 mt-1">{{ $record?->use_medication ?: '-' }}</div></div>
                     <div class="col-md-6"><small class="text-muted">Alergias</small><div class="border rounded p-2 mt-1">{{ $record?->have_allergies ?: '-' }}</div></div>
-                    <div class="col-md-12"><small class="text-muted">Hormonos/anabolizantes</small><div class="border rounded p-2 mt-1">{{ $record?->use_anabolic_hormones ?: '-' }}</div></div>
+                    <div class="col-md-12"><small class="text-muted">Hormonios/Contraceptivos/Anabolizantes</small><div class="border rounded p-2 mt-1">{{ $record?->use_anabolic_hormones ?: '-' }}</div></div>
                 </div>
             </div>
         </div>

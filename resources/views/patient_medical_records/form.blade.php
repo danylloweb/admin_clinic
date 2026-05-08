@@ -453,7 +453,7 @@
                         <textarea id="have_allergies" name="have_allergies" placeholder="Se sim, informe quais">{{ old('have_allergies', $record->have_allergies) }}</textarea>
                     </div>
                     <div>
-                        <label for="use_anabolic_hormones">Usa hormônios ou anabolizantes?</label>
+                        <label for="use_anabolic_hormones">Usa hormônios/Contraceptivos ou anabolizantes?</label>
                         <textarea id="use_anabolic_hormones" name="use_anabolic_hormones" placeholder="Se sim, detalhe">{{ old('use_anabolic_hormones', $record->use_anabolic_hormones) }}</textarea>
                     </div>
                     <div>
