@@ -151,9 +151,9 @@ class CampaignService extends AppService
                 $message = str_replace('{name}', $name, $message);
 
                 if (!empty($campaign->url_image)) {
-                    $this->sendImageToWhatsApp("558185879004@c.us", (string) $campaign->url_image, $message);
+                    $this->sendImageToWhatsApp($chatId, (string) $campaign->url_image, $message);
                 } else {
-                    $this->sendMessageToWhatsApp("558185879004@c.us", $message);
+                    $this->sendMessageToWhatsApp($chatId, $message);
                 }
 
                 $state['sent'] = (int) ($state['sent'] ?? 0) + 1;
