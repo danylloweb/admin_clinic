@@ -61,6 +61,7 @@
 
         let timer = null;
         let isPaused = false;
+        let isStarting = false;
         let currentPage = 1;
         let state = {
             total: 0,
@@ -116,7 +117,7 @@
             renderProgress(data);
             showToast('Disparo iniciado com sucesso.', 'success');
             currentPage = 1;
-            isPaused = false;
+            isStarting = false;
             startAutoProcessing();
         }
 
@@ -183,6 +184,8 @@
         }
 
         function finishDispatch() {
+            isStarting = false;
+            isPaused = false;
             startBtn.disabled = false;
             pauseBtn.disabled = true;
             resumeBtn.disabled = true;
@@ -190,18 +193,23 @@
         }
 
         function updateButtonStates() {
-            const isRunning = timer !== null && !isPaused;
-            startBtn.disabled = isRunning || state.running;
-            pauseBtn.disabled = !isRunning;
-            resumeBtn.disabled = !isPaused;
-            messagesPerBatchInput.disabled = isRunning || state.running;
+            const hasActiveDispatch = isStarting || timer !== null || !!state.running;
+
+            startBtn.disabled = hasActiveDispatch;
+            pauseBtn.disabled = !hasActiveDispatch || isPaused;
+            resumeBtn.disabled = !hasActiveDispatch || !isPaused;
+            messagesPerBatchInput.disabled = hasActiveDispatch;
         }
 
         startBtn.addEventListener('click', async function () {
-            startBtn.disabled = true;
+            isStarting = true;
+            isPaused = false;
+            updateButtonStates();
+
             try {
                 await startDispatch();
             } catch (e) {
+                isStarting = false;
                 showToast(e.message || 'Erro ao iniciar.', 'danger');
                 finishDispatch();
             }
@@ -214,7 +222,7 @@
         resumeBtn.addEventListener('click', function () {
             resumeDispatch();
         });
-
+        updateButtonStates();
         getProgress().catch(() => {});
     })();
 </script>

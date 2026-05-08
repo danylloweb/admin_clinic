@@ -27,9 +27,7 @@
 
                             <div class="flex-grow-1 d-flex flex-column">
                                 <label for="description" class="form-label">Descrição</label>
-                                <div class="border quill flex-grow-1 mb-3">
-                                    <div class="quill-inner" id="description-editor" contenteditable="true"></div>
-                                </div>
+                                <textarea class="form-control flex-grow-1" id="description" name="description" rows="8" style="resize: vertical;"></textarea>
                             </div>
                         </div>
 
@@ -39,7 +37,7 @@
                         </div>
                     </div>
 
-                    <input type="hidden" name="description" id="description">
+                    {{-- description read directly from textarea --}}
 
                     <div class="mt-10">
                         <button type="submit" class="btn btn-success">
@@ -92,7 +90,7 @@
                 name: form.name.value,
                 date: form.date.value,
                 url_image: form.url_image.value || null,
-                description: form.description.value
+                description: document.getElementById('description').value
             };
 
             fetch('{{ route("campaigns.store") }}', {
@@ -129,8 +127,6 @@
             enableForm(form, "Criar Campanha");
             return false;
         }
-        const quillContent = $('#description-editor').html().trim().replace(/<(.|\n)*?>/g, '').trim();
-        $('#description').val(quillContent);
         return true;
     }
     </script>
