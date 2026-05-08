@@ -127,7 +127,7 @@ class PatientMedicalRecordController extends Controller
         $data = $request->validated();
 
         $record->fill($data);
-        $record->lgpd_consent = (bool) ($data['lgpd_consent'] ?? false);
+        $record->lgpd_consent = true;
         $record->token_generated_at = null;
         $record->save();
 

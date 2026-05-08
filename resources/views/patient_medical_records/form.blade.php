@@ -513,7 +513,7 @@
                     </div>
                     <div>
                         <label for="signature_name" class="required">Nome completo para assinatura</label>
-                        <input type="text" id="signature_name" required name="signature_name" value="{{ old('signature_name', $record->signature_name ?: ($patient->social_name ?: $patient->name)) }}" placeholder="Digite seu nome completo">
+                        <input type="text" id="signature_name"  name="signature_name" value="{{ old('signature_name', $record->signature_name ?: ($patient->social_name ?: $patient->name)) }}" placeholder="Digite seu nome completo">
                     </div>
                 </div>
             </section>

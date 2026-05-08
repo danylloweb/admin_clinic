@@ -41,7 +41,6 @@ class PatientMedicalRecordCreateRequest extends FormRequest
             'arterial_hypertension' => ['nullable', 'in:Sim,Não'],
             'blood_type' => ['nullable', 'in:A+,B+,AB+,O+,A-,B-,AB-,O-,Outros'],
             'observation' => ['nullable', 'string'],
-            'lgpd_consent' => ['required', 'accepted'],
             'signature_name' => ['required', 'string', 'max:255'],
         ];
     }
