@@ -27,7 +27,7 @@
 
                             <div class="flex-grow-1 d-flex flex-column">
                                 <label for="description" class="form-label">Descrição</label>
-                                <div class="border quill flex-grow-1" style="min-height: 200px;">
+                                <div class="border quill flex-grow-1 mb-3">
                                     <div class="quill-inner" id="description-editor" contenteditable="true"></div>
                                 </div>
                             </div>
@@ -41,7 +41,7 @@
 
                     <input type="hidden" name="description" id="description">
 
-                    <div class="mt-4">
+                    <div class="mt-10">
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-save me-1"></i> Criar campanha
                         </button>
