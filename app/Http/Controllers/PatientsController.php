@@ -107,7 +107,7 @@ class PatientsController extends Controller
     {
         $patient       = $this->service->find($id, true);
         $photo         = $this->service->getlinkImageByPhone($patient->chat_id);
-        $medicalRecord = $this->patientMedicalRecordService->findWhere(['patient_id' => $id])->first();
+        $medicalRecord = $this->patientMedicalRecordService->findWhere(['patient_id' => $id],true);
 
         $medicalRecordPanel = [
             'status'       => $medicalRecord?->isSubmitted() ? 'preenchido' : ($medicalRecord?->hasPendingToken() ? 'pendente' : 'nao_gerado'),
