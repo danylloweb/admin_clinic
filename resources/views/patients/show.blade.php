@@ -84,21 +84,31 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ route('panel.facial-evaluations.index', ['patientId' => $patient->id]) }}" class="btn btn-outline-info">
-                                    Ver avaliacoes faciais
-                                </a>
-                                @if($medicalRecordStatus != "nao_gerado" && !empty($medicalRecordPanel['submitted_at']))
-                                    <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn btn-outline-success">
-                                        Ver prontuario
+                            <div class="d-flex flex-column gap-2 w-100 w-lg-auto">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{{ route('panel.facial-evaluations.index', ['patientId' => $patient->id]) }}" class="btn btn-outline-info">
+                                        Avaliacoes faciais
                                     </a>
-                                @endif
-                                <button type="button" class="btn btn-outline-primary" id="generateMedicalRecordLinkBtn">
-                                    {{ $medicalRecordStatus ? 'Gerar novo link' : 'Gerar link' }}
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary" id="copyMedicalRecordLinkBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
-                                    Copiar link
-                                </button>
+                                    <a href="{{ route('panel.body-evaluations.index', ['patientId' => $patient->id]) }}" class="btn btn-outline-primary">
+                                        Avaliacoes corporais
+                                    </a>
+                                    @if($medicalRecordStatus != "nao_gerado" && !empty($medicalRecordPanel['submitted_at']))
+                                        <a href="{{ route('panel.patient.medical-record.show', ['patientId' => $patient->id]) }}" class="btn btn-outline-success">
+                                            Ver prontuario
+                                        </a>
+                                    @endif
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary" id="generateMedicalRecordLinkBtn">
+                                        {{ $medicalRecordStatus ? 'Gerar novo link' : 'Gerar link' }}
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="copyMedicalRecordLinkBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
+                                        Copiar link
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" id="shareMedicalRecordWhatsappBtn" {{ empty($medicalRecordLink) ? 'disabled' : '' }}>
+                                        Enviar WhatsApp
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -187,7 +197,9 @@
 
                     updateMedicalRecordStatus(payload.status || 'pendente');
                     copyMedicalRecordLinkBtn.disabled = !(payload.link);
-                    shareMedicalRecordWhatsappBtn.disabled = !(payload.link);
+                    if (shareMedicalRecordWhatsappBtn) {
+                        shareMedicalRecordWhatsappBtn.disabled = !(payload.link);
+                    }
                     generateMedicalRecordLinkBtn.innerText = 'Gerar novo link';
                 }else{
                     showToast('Não foi possível gerar o link do prontuário.', 'danger');

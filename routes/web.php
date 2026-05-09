@@ -7,6 +7,7 @@ use App\Http\Controllers\PatientMedicalRecordController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProceduresController;
 use App\Http\Controllers\FacialEvaluationsController;
+use App\Http\Controllers\BodyEvaluationsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,10 @@ Route::get('/prontuario/status/{token}', [PatientMedicalRecordController::class,
 // Rotas públicas para assinatura de ficha de avaliação facial
 Route::get('/facial-evaluation/{token}', [FacialEvaluationsController::class, 'showSignatureForm'])->name('facial-evaluation.sign');
 Route::post('/facial-evaluation/{token}/sign', [FacialEvaluationsController::class, 'processSignature'])->name('facial-evaluation.process-sign');
+
+// Rotas públicas para assinatura de ficha de avaliação corporal
+Route::get('/body-evaluation/{token}', [BodyEvaluationsController::class, 'showSignatureForm'])->name('body-evaluation.sign');
+Route::post('/body-evaluation/{token}/sign', [BodyEvaluationsController::class, 'processSignature'])->name('body-evaluation.process-sign');
 
 Route::middleware(['jwt.web'])->group(function () {
     Route::get('/dashboard',[PanelController::class,'dashboard'])->name('dashboard');
@@ -63,5 +68,16 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::delete('/panel-facial-evaluations-delete/{id}', [FacialEvaluationsController::class, 'destroy'])->name('panel.facial-evaluations.destroy');
     Route::post('/panel-facial-evaluations-generate-token/{id}', [FacialEvaluationsController::class, 'generateSignatureToken'])->name('panel.facial-evaluations.generate-token');
     Route::post('/panel-facial-evaluations-send-link/{id}', [FacialEvaluationsController::class, 'sendSignatureLink'])->name('panel.facial-evaluations.send-link');
+
+    // Rotas autenticadas para ficha de avaliação corporal
+    Route::get('/panel-body-evaluations-index/{patientId}', [BodyEvaluationsController::class, 'panelIndex'])->name('panel.body-evaluations.index');
+    Route::get('/panel-body-evaluations-create/{patientId}', [BodyEvaluationsController::class, 'create'])->name('panel.body-evaluations.create');
+    Route::post('/panel-body-evaluations-store', [BodyEvaluationsController::class, 'store'])->name('panel.body-evaluations.store');
+    Route::get('/panel-body-evaluations-show/{id}', [BodyEvaluationsController::class, 'show'])->name('panel.body-evaluations.show');
+    Route::get('/panel-body-evaluations-edit/{id}', [BodyEvaluationsController::class, 'edit'])->name('panel.body-evaluations.edit');
+    Route::put('/panel-body-evaluations-update/{id}', [BodyEvaluationsController::class, 'update'])->name('panel.body-evaluations.update');
+    Route::delete('/panel-body-evaluations-delete/{id}', [BodyEvaluationsController::class, 'destroy'])->name('panel.body-evaluations.destroy');
+    Route::post('/panel-body-evaluations-generate-token/{id}', [BodyEvaluationsController::class, 'generateSignatureToken'])->name('panel.body-evaluations.generate-token');
+    Route::post('/panel-body-evaluations-send-link/{id}', [BodyEvaluationsController::class, 'sendSignatureLink'])->name('panel.body-evaluations.send-link');
 });
 

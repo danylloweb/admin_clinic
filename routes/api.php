@@ -58,6 +58,7 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('all-chats', 'FollowUpMessagesController@getAllChats');
     Route::get('get-chat', 'FollowUpMessagesController@getChat');
     Route::get('panel-facial-evaluations', 'FacialEvaluationsController@index');
+    Route::get('panel-body-evaluations', 'BodyEvaluationsController@index');
 
 });
 Route::any('{any}', function () {
