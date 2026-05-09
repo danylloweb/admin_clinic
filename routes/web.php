@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CampaignsController;
 use App\Http\Controllers\PanelController;
+use App\Http\Controllers\UploadsController;
 use App\Http\Controllers\PatientMedicalRecordController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProceduresController;
@@ -36,6 +37,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::post('/panel-campaign-send/{id}/start', [CampaignsController::class, 'startSend'])->name('panel.campaign.send.start');
     Route::post('/panel-campaign-send/{id}/process', [CampaignsController::class, 'processSend'])->name('panel.campaign.send.process');
     Route::get('/panel-campaign-send/{id}/progress', [CampaignsController::class, 'sendProgress'])->name('panel.campaign.send.progress');
+    Route::post('/panel-uploads-store', [UploadsController::class, 'store'])->name('panel.uploads.store');
     Route::get('/panel-patients-index',[PanelController::class,'patientIndex'])->name('panel.patient.index');
     Route::get('/panel-patients-create',[PanelController::class,'patientCreate'])->name('panel.patient.create');
     Route::get('/panel-patients-show/{id}',[PatientsController::class,'patientShow'])->name('panel.patient.show');

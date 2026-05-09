@@ -246,6 +246,7 @@
                                             <i class="fas fa-camera me-1"></i>Abrir camera
                                         </button>
                                         <img id="preview-front" class="img-fluid mt-2 rounded" style="max-height: 200px; display: none;" src="" alt="Foto frontal">
+                                        <small id="upload-status-front" class="d-block mt-2 text-muted"></small>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Perfil Direito</label>
@@ -255,6 +256,7 @@
                                             <i class="fas fa-camera me-1"></i>Abrir camera
                                         </button>
                                         <img id="preview-right" class="img-fluid mt-2 rounded" style="max-height: 200px; display: none;" src="" alt="Perfil direito">
+                                        <small id="upload-status-right" class="d-block mt-2 text-muted"></small>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Perfil Esquerdo</label>
@@ -264,6 +266,7 @@
                                             <i class="fas fa-camera me-1"></i>Abrir camera
                                         </button>
                                         <img id="preview-left" class="img-fluid mt-2 rounded" style="max-height: 200px; display: none;" src="" alt="Perfil esquerdo">
+                                        <small id="upload-status-left" class="d-block mt-2 text-muted"></small>
                                     </div>
                                 </div>
                             </div>
@@ -326,103 +329,45 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Mascaras
         const cpfInput = document.querySelector('.cpf-mask');
         const hasIMask = typeof window.IMask !== 'undefined';
 
-        if (hasIMask) {
-            if (cpfInput) {
-                new IMask(cpfInput, { mask: '000.000.000-00' });
-            }
-
-            document.querySelectorAll('.phone-mask').forEach((el) => {
-                new IMask(el, { mask: '(00) 00000-0000' });
-            });
-        } else {
-            // Fallback simples para nao quebrar o restante do script.
-            const onlyDigits = (value) => String(value || '').replace(/\D/g, '');
-            const formatCpf = (value) => {
-                const v = onlyDigits(value).slice(0, 11);
-                if (v.length <= 3) return v;
-                if (v.length <= 6) return `${v.slice(0, 3)}.${v.slice(3)}`;
-                if (v.length <= 9) return `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`;
-                return `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`;
-            };
-            const formatPhone = (value) => {
-                const v = onlyDigits(value).slice(0, 11);
-                if (v.length <= 2) return `(${v}`;
-                if (v.length <= 7) return `(${v.slice(0, 2)}) ${v.slice(2)}`;
-                return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
-            };
-
-            if (cpfInput) {
-                cpfInput.addEventListener('input', (e) => {
-                    e.target.value = formatCpf(e.target.value);
-                });
-            }
-
-            document.querySelectorAll('.phone-mask').forEach((el) => {
-                el.addEventListener('input', (e) => {
-                    e.target.value = formatPhone(e.target.value);
-                });
-            });
-        }
-
-        const photoConfig = {
-            front: {
-                previewId: 'preview-front',
-                hiddenId: 'photo-front-base64',
-                payloadKey: 'photo_front',
-            },
-            right: {
-                previewId: 'preview-right',
-                hiddenId: 'photo-right-base64',
-                payloadKey: 'photo_profile_right',
-            },
-            left: {
-                previewId: 'preview-left',
-                hiddenId: 'photo-left-base64',
-                payloadKey: 'photo_profile_left',
-            },
-        };
-
-        function applyPhotoData(target, base64) {
-            const config = photoConfig[target];
-            if (!config) return;
-
-            const preview = document.getElementById(config.previewId);
-            const hidden = document.getElementById(config.hiddenId);
-
-            if (hidden) hidden.value = base64 || '';
-            if (preview) {
-                preview.src = base64 || '';
-                preview.style.display = base64 ? 'block' : 'none';
-            }
-        }
-
-        // Upload fallback (galeria/arquivo) converte para base64 para envio JSON.
-        document.querySelectorAll('.photo-input').forEach((input) => {
-            input.addEventListener('change', function (e) {
-                const target = e.currentTarget.dataset.target;
-                const file = e.currentTarget.files?.[0];
-                if (!file) {
-                    applyPhotoData(target, '');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    applyPhotoData(target, event.target.result);
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-
-        // Camera capture
+        const uploadEndpoint = '{{ route("panel.uploads.store") }}';
+        const saveBtn = document.getElementById('saveBtn');
         const modalEl = document.getElementById('camera-capture-modal');
         const cameraVideo = document.getElementById('camera-video');
         const cameraCanvas = document.getElementById('camera-canvas');
         const captureBtn = document.getElementById('capture-photo-btn');
+        const cameraModal = (window.bootstrap && modalEl) ? new bootstrap.Modal(modalEl) : null;
+
+        let stream = null;
+        let activeTarget = null;
+        let pendingUploads = 0;
+
+        const photoConfig = {
+            front: { previewId: 'preview-front', hiddenId: 'photo-front-base64', statusId: 'upload-status-front' },
+            right: { previewId: 'preview-right', hiddenId: 'photo-right-base64', statusId: 'upload-status-right' },
+            left: { previewId: 'preview-left', hiddenId: 'photo-left-base64', statusId: 'upload-status-left' },
+        };
+
+        function onlyDigits(value) {
+            return String(value || '').replace(/\D/g, '');
+        }
+
+        function formatCpf(value) {
+            const v = onlyDigits(value).slice(0, 11);
+            if (v.length <= 3) return v;
+            if (v.length <= 6) return `${v.slice(0, 3)}.${v.slice(3)}`;
+            if (v.length <= 9) return `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6)}`;
+            return `${v.slice(0, 3)}.${v.slice(3, 6)}.${v.slice(6, 9)}-${v.slice(9)}`;
+        }
+
+        function formatPhone(value) {
+            const v = onlyDigits(value).slice(0, 11);
+            if (v.length <= 2) return `(${v}`;
+            if (v.length <= 7) return `(${v.slice(0, 2)}) ${v.slice(2)}`;
+            return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+        }
 
         function normalizeModalLayering() {
             if (!modalEl) return;
@@ -442,23 +387,148 @@
             document.body.style.paddingRight = '';
         }
 
-        normalizeModalLayering();
-         const cameraModal = (window.bootstrap && modalEl) ? new bootstrap.Modal(modalEl) : null;
+        function setPhotoPreview(target, src) {
+            const config = photoConfig[target];
+            if (!config) return;
 
-        let stream = null;
-        let activeTarget = null;
-
-        function openFilePicker(target) {
-            const input = document.querySelector(`.photo-input[data-target="${target}"]`);
-            if (input) {
-                input.click();
+            const preview = document.getElementById(config.previewId);
+            if (preview) {
+                preview.src = src || '';
+                preview.style.display = src ? 'block' : 'none';
             }
         }
 
-        async function openCamera(target) {
-             activeTarget = target;
+        function setPhotoUrl(target, url) {
+            const config = photoConfig[target];
+            if (!config) return;
 
-            // Camera API requires secure context (https/localhost).
+            const hidden = document.getElementById(config.hiddenId);
+            if (hidden) hidden.value = url || '';
+        }
+
+        function setPhotoStatus(target, text = '', type = 'muted') {
+            const config = photoConfig[target];
+            if (!config) return;
+
+            const el = document.getElementById(config.statusId);
+            if (!el) return;
+
+            el.className = `d-block mt-2 text-${type}`;
+            el.textContent = text;
+        }
+
+        function updateSaveState() {
+            if (!saveBtn) return;
+
+            if (pendingUploads > 0) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Enviando arquivos...';
+                return;
+            }
+
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Ficha';
+        }
+
+        async function uploadPhotoFile(target, file) {
+            if (!file) {
+                setPhotoUrl(target, '');
+                setPhotoPreview(target, '');
+                setPhotoStatus(target, '');
+                return null;
+            }
+
+            const tempUrl = URL.createObjectURL(file);
+            setPhotoPreview(target, tempUrl);
+            setPhotoStatus(target, 'Enviando arquivo...', 'warning');
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'facial-evaluations');
+            formData.append('prefix', target);
+
+            pendingUploads++;
+            updateSaveState();
+
+            try {
+                const response = await fetch(uploadEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || result.error) {
+                    throw new Error(result.message || 'Erro ao enviar arquivo.');
+                }
+
+                setPhotoUrl(target, result.url);
+                setPhotoPreview(target, result.url);
+                setPhotoStatus(target, 'Arquivo enviado com sucesso.', 'success');
+                return result.url;
+            } catch (error) {
+                setPhotoUrl(target, '');
+                setPhotoPreview(target, '');
+                setPhotoStatus(target, error.message || 'Erro ao enviar arquivo.', 'danger');
+                showToast(error.message || 'Erro ao enviar arquivo.', 'danger');
+                return null;
+            } finally {
+                pendingUploads--;
+                updateSaveState();
+                URL.revokeObjectURL(tempUrl);
+            }
+        }
+
+        normalizeModalLayering();
+
+        if (cpfInput) {
+            if (hasIMask) {
+                new IMask(cpfInput, { mask: '000.000.000-00' });
+            } else {
+                cpfInput.addEventListener('input', (e) => {
+                    e.target.value = formatCpf(e.target.value);
+                });
+            }
+        }
+
+        document.querySelectorAll('.phone-mask').forEach((el) => {
+            if (hasIMask) {
+                new IMask(el, { mask: '(00) 00000-0000' });
+            } else {
+                el.addEventListener('input', (e) => {
+                    e.target.value = formatPhone(e.target.value);
+                });
+            }
+        });
+
+        document.querySelectorAll('.photo-input').forEach((input) => {
+            input.addEventListener('change', async function (e) {
+                const target = e.currentTarget.dataset.target;
+                const file = e.currentTarget.files?.[0];
+
+                if (!file) {
+                    setPhotoUrl(target, '');
+                    setPhotoPreview(target, '');
+                    setPhotoStatus(target, '');
+                    return;
+                }
+
+                await uploadPhotoFile(target, file);
+            });
+        });
+
+        function openFilePicker(target) {
+            const input = document.querySelector(`.photo-input[data-target="${target}"]`);
+            if (input) input.click();
+        }
+
+        async function openCamera(target) {
+            activeTarget = target;
+
             if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 showToast('Camera indisponivel neste ambiente. Vou abrir a galeria/arquivo.', 'warning');
                 openFilePicker(target);
@@ -479,7 +549,6 @@
                 cleanupModalArtifacts();
                 normalizeModalLayering();
 
-                // First try front camera on mobile; fallback to any available camera.
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: { ideal: 'user' } },
@@ -495,11 +564,11 @@
                 cameraVideo.srcObject = stream;
                 cameraModal.show();
                 normalizeModalLayering();
-             } catch (error) {
-                 showToast('Nao foi possivel acessar a camera. Vou abrir a galeria/arquivo.', 'danger');
-                 openFilePicker(target);
-             }
-         }
+            } catch (error) {
+                showToast('Nao foi possivel acessar a camera. Vou abrir a galeria/arquivo.', 'danger');
+                openFilePicker(target);
+            }
+        }
 
         function stopCamera() {
             if (stream) {
@@ -511,8 +580,7 @@
 
         document.querySelectorAll('.open-camera-btn').forEach((btn) => {
             btn.addEventListener('click', function () {
-                const target = this.dataset.target;
-                openCamera(target);
+                openCamera(this.dataset.target);
             });
         });
 
@@ -524,23 +592,30 @@
 
             cameraCanvas.width = cameraVideo.videoWidth;
             cameraCanvas.height = cameraVideo.videoHeight;
+
             const ctx = cameraCanvas.getContext('2d');
             ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
-            const base64 = cameraCanvas.toDataURL('image/jpeg', 0.9);
-            applyPhotoData(activeTarget, base64);
-            cameraModal.hide();
+
+            cameraCanvas.toBlob(async function (blob) {
+                if (!blob) {
+                    showToast('Nao foi possivel capturar a imagem.', 'danger');
+                    return;
+                }
+
+                const file = new File([blob], `${activeTarget}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+                cameraModal.hide();
+                await uploadPhotoFile(activeTarget, file);
+            }, 'image/jpeg', 0.9);
         });
 
         if (modalEl) {
-            modalEl.addEventListener('shown.bs.modal', function () {
-                normalizeModalLayering();
-            });
-             modalEl.addEventListener('hidden.bs.modal', function () {
-                 stopCamera();
-                 activeTarget = null;
+            modalEl.addEventListener('shown.bs.modal', normalizeModalLayering);
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                stopCamera();
+                activeTarget = null;
                 cleanupModalArtifacts();
-             });
-         }
+            });
+        }
 
         // Mostrar/ocultar notas de problemas
         document.querySelectorAll('.problem-check').forEach(check => {
@@ -568,6 +643,11 @@
 
 
         async function saveFacialEvaluation() {
+            if (pendingUploads > 0) {
+                showToast('Aguarde o envio das imagens antes de salvar.', 'warning');
+                return;
+            }
+
             const form = document.getElementById('facialEvaluationForm');
             const formData = new FormData(form);
 

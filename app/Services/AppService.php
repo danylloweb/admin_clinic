@@ -453,9 +453,9 @@ class AppService
     {
         try {
             if ($this->canUseS3Disk()) {
-                $path = config('APP_NAME').$file_name_content;
+                $path = $file_name_content;
                 Storage::disk('s3')->put($path, $content);
-                return Storage::disk('s3')->url($file_name_content);
+                return Storage::disk('s3')->url($path);
             }
         } catch (\Throwable $exception) {
             Log::warning('S3 upload unavailable, using public disk fallback: '.$exception->getMessage());
