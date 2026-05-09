@@ -57,6 +57,7 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('schedule-calendar', 'SchedulesController@calendar');
     Route::get('all-chats', 'FollowUpMessagesController@getAllChats');
     Route::get('get-chat', 'FollowUpMessagesController@getChat');
+    Route::get('panel-facial-evaluations', 'FacialEvaluationsController@index');
 
 });
 Route::any('{any}', function () {

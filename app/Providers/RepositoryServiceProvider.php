@@ -43,6 +43,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(\App\Repositories\FollowUpScheduleMessageRepository::class, \App\Repositories\FollowUpScheduleMessageRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\ScheduleNetPromoterScoreRepository::class, \App\Repositories\ScheduleNetPromoterScoreRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\PatientMedicalRecordRepository::class, \App\Repositories\PatientMedicalRecordRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\FacialEvaluationRepository::class, \App\Repositories\FacialEvaluationRepositoryEloquent::class);
         //:end-bindings:
     }
 }

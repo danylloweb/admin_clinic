@@ -50,4 +50,14 @@ class Patient extends Model implements Transformable
         return $this->hasOne(PatientMedicalRecord::class, 'patient_id', 'id');
     }
 
+    public function facialEvaluations()
+    {
+        return $this->hasMany(FacialEvaluation::class, 'patient_id', 'id');
+    }
+
+    public function latestFacialEvaluation()
+    {
+        return $this->hasOne(FacialEvaluation::class, 'patient_id', 'id')->latestOfMany();
+    }
+
 }
