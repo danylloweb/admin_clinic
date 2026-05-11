@@ -76,14 +76,14 @@ class CampaignsController extends Controller
 
     public function startSend(int $id): JsonResponse
     {
-        return response()->json($this->service->startDispatch($id));
+        $response = $this->service->startDispatch($id);
+        $this->runArtisanAsync('campaign:run', ['--campaignId' => $id]);
+        return response()->json($response);
     }
 
     public function processSend(Request $request, int $id): JsonResponse
     {
-        $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 5);
-        return response()->json($this->service->processDispatchPage($id, $page, $perPage));
+        return response()->json($this->service->dispatchProgress($id));
     }
 
     public function sendProgress(int $id): JsonResponse

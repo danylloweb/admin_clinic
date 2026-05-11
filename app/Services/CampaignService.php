@@ -71,21 +71,20 @@ class CampaignService extends AppService
     public function startDispatch(int $campaignId): array
     {
         $campaign = $this->repository->skipPresenter()->find($campaignId);
-        $total = Patient::query()->count();
 
         $state = [
-            'campaign_id' => $campaignId,
-            'campaign_name' => $campaign->name,
-            'total' => $total,
-            'sent' => 0,
-            'failed' => 0,
-            'processed' => 0,
+            'campaign_id'     => $campaignId,
+            'campaign_name'   => $campaign->name,
+            'total'           => 1029,
+            'sent'            => 0,
+            'failed'          => 0,
+            'processed'       => 0,
             'last_patient_id' => 0,
-            'running' => true,
-            'finished' => false,
-            'started_at' => now()->toDateTimeString(),
-            'finished_at' => null,
-            'updated_at' => now()->toDateTimeString(),
+            'running'         => true,
+            'finished'        => false,
+            'started_at'      => now()->toDateTimeString(),
+            'finished_at'     => null,
+            'updated_at'      => now()->toDateTimeString(),
         ];
 
         Cache::put($this->dispatchCacheKey($campaignId), $state, now()->addHours(12));
@@ -96,17 +95,17 @@ class CampaignService extends AppService
     public function dispatchProgress(int $campaignId): array
     {
         return Cache::get($this->dispatchCacheKey($campaignId), [
-            'campaign_id' => $campaignId,
-            'total' => 0,
-            'sent' => 0,
-            'failed' => 0,
-            'processed' => 0,
+            'campaign_id'     => $campaignId,
+            'total'           => 0,
+            'sent'            => 0,
+            'failed'          => 0,
+            'processed'       => 0,
             'last_patient_id' => 0,
-            'running' => false,
-            'finished' => false,
-            'started_at' => null,
-            'finished_at' => null,
-            'updated_at' => null,
+            'running'         => false,
+            'finished'        => false,
+            'started_at'      => null,
+            'finished_at'     => null,
+            'updated_at'      => null,
         ]);
     }
 
@@ -150,11 +149,11 @@ class CampaignService extends AppService
                 $message = $campaign->description;
                 $message = str_replace('{name}', $name, $message);
 
-                if (!empty($campaign->url_image)) {
-                    $this->sendImageToWhatsApp($chatId, (string) $campaign->url_image, $message);
-                } else {
-                    $this->sendMessageToWhatsApp($chatId, $message);
-                }
+//                if (!empty($campaign->url_image)) {
+//                    $this->sendImageToWhatsApp($chatId, (string) $campaign->url_image, $message);
+//                } else {
+//                    $this->sendMessageToWhatsApp($chatId, $message);
+//                }
 
                 $state['sent'] = (int) ($state['sent'] ?? 0) + 1;
             } catch (\Throwable $exception) {
@@ -243,7 +242,7 @@ class CampaignService extends AppService
         return $state;
     }
 
-    private function dispatchCacheKey(int $campaignId): string
+    public function dispatchCacheKey(int $campaignId): string
     {
         return 'campaign_dispatch_'.$campaignId;
     }
