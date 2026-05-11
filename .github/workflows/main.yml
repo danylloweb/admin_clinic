@@ -25,6 +25,6 @@ jobs:
             git reset --hard origin/main
             git pull origin main
             make prod-down
-            make prod-up
+            make prod-build
             make prod-cache
 
