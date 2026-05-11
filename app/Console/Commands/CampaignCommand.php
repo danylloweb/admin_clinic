@@ -45,11 +45,11 @@ class CampaignCommand extends Command
         $state['total'] = count($patients);
         $this->updateCache($campaignId, $state);
 
-        $message = $camp->description;
+
 
         foreach ($patients as $patient) {
             $name    = $patient->social_name ?: $patient->name;
-            $message = str_replace('{name}', $name, $message);
+            $message = str_replace('{name}', $name, $camp->description);
             $this->campaignService->sendImageToWhatsApp($patient->chat_id, $image, $message);
             $state['sent']++;
             $state['processed']++;
