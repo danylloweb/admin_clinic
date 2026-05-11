@@ -12,8 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-//         $schedule->command('health:run')->everyMinute();
-         $schedule->command('health:run')->everyMinute()->withoutOverlapping();
+        $schedule->command('message-confirmation:run')->dailyAt('07:00');
     }
 
     /**

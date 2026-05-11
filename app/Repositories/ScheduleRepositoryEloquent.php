@@ -74,4 +74,20 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
         }
         return $list_patients;
     }
+    public function getPatientsToday(): array
+    {
+
+        $now = now();
+        $list_patients = [];
+        $query = $this->model();
+        $patientsWithSchedules = $query::where('date', $now->toDateString())
+            ->with('patient')
+            ->get()
+            ->groupBy('patient.id');
+
+        foreach ($patientsWithSchedules as $schedules) {
+            $list_patients[] = $schedules[0]->patient;
+        }
+        return $list_patients;
+    }
 }

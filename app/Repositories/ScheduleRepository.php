@@ -12,4 +12,5 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 interface ScheduleRepository extends RepositoryInterface
 {
     public function getPatientsByLaser(): array;
+    public function getPatientsToday(): array;
 }

@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Entities\Patient;
 use App\Criterias\AppRequestCriteria;
 use App\Repositories\CampaignRepository;
+use App\Repositories\PatientRepository;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Prettus\Repository\Exceptions\RepositoryException;
 
 /**
  * CampaignService
@@ -20,8 +20,10 @@ class CampaignService extends AppService
 
     /**
      * @param CampaignRepository $repository
+     * @param PatientRepository $patientRepository
      */
-    public function __construct(CampaignRepository $repository)
+    public function __construct(CampaignRepository                 $repository,
+                                private readonly PatientRepository $patientRepository)
     {
         $this->repository = $repository;
     }
@@ -29,7 +31,7 @@ class CampaignService extends AppService
     /**
      * @param int $limit
      * @return mixed
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function all(int $limit = 20): mixed
     {
@@ -71,11 +73,12 @@ class CampaignService extends AppService
     public function startDispatch(int $campaignId): array
     {
         $campaign = $this->repository->skipPresenter()->find($campaignId);
-
+        $not        = [75,549,238,251,253,412,322,426,635,180,181,217,214,230];
+        $patients   = $this->patientRepository->skipPresenter()->findWhereNotIn('id',$not);
         $state = [
             'campaign_id'     => $campaignId,
             'campaign_name'   => $campaign->name,
-            'total'           => 1029,
+            'total'           => count($patients),
             'sent'            => 0,
             'failed'          => 0,
             'processed'       => 0,
@@ -107,139 +110,6 @@ class CampaignService extends AppService
             'finished_at'     => null,
             'updated_at'      => null,
         ]);
-    }
-
-    public function processDispatchPage(int $campaignId, int $page = 1, int $perPage = 5): array
-    {
-        $state = $this->dispatchProgress($campaignId);
-        if ($state['finished'] ?? false) {
-            return $state;
-        }
-
-        $campaign = $this->repository->skipPresenter()->find($campaignId);
-        if (empty($state['started_at'])) {
-            $state['campaign_name'] = $campaign->name;
-            $state['total'] = Patient::query()->count();
-            $state['started_at'] = now()->toDateTimeString();
-            $state['running'] = true;
-        }
-
-        $perPage = max(1, min($perPage, 100));
-        $offset = ($page - 1) * $perPage;
-
-        $patients = Patient::query()
-            ->orderBy('id')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get(['id', 'name', 'social_name', 'phone', 'chat_id']);
-
-        if ($patients->isEmpty()) {
-            $state['running'] = false;
-            $state['finished'] = true;
-            $state['finished_at'] = now()->toDateTimeString();
-            $state['updated_at'] = now()->toDateTimeString();
-            Cache::put($this->dispatchCacheKey($campaignId), $state, now()->addHours(12));
-            return $state;
-        }
-
-        foreach ($patients as $patient) {
-            try {
-                $name    = $patient->social_name ?: $patient->name;
-                $chatId  = $patient->chat_id;
-                $message = $campaign->description;
-                $message = str_replace('{name}', $name, $message);
-
-//                if (!empty($campaign->url_image)) {
-//                    $this->sendImageToWhatsApp($chatId, (string) $campaign->url_image, $message);
-//                } else {
-//                    $this->sendMessageToWhatsApp($chatId, $message);
-//                }
-
-                $state['sent'] = (int) ($state['sent'] ?? 0) + 1;
-            } catch (\Throwable $exception) {
-                $state['failed'] = (int) ($state['failed'] ?? 0) + 1;
-                Log::warning('Campaign dispatch error campaign='.$campaignId.' patient='.$patient->id.' '.$exception->getMessage());
-            }
-
-            $state['processed'] = (int) ($state['processed'] ?? 0) + 1;
-        }
-
-        $state['running'] = true;
-        $state['updated_at'] = now()->toDateTimeString();
-
-        if (count($patients) < $perPage) {
-            $state['running'] = false;
-            $state['finished'] = true;
-            $state['finished_at'] = now()->toDateTimeString();
-        }
-
-        Cache::put($this->dispatchCacheKey($campaignId), $state, now()->addHours(12));
-        return $state;
-    }
-
-    public function processNextDispatchBatch(int $campaignId, int $batchSize = 20): array
-    {
-        $state = $this->dispatchProgress($campaignId);
-        if ($state['finished'] ?? false) {
-            return $state;
-        }
-
-        $campaign = $this->repository->skipPresenter()->find($campaignId);
-        if (empty($state['started_at'])) {
-            $state['campaign_name'] = $campaign->name;
-            $state['total'] = Patient::query()->count();
-            $state['started_at'] = now()->toDateTimeString();
-            $state['running'] = true;
-        }
-        $lastPatientId = (int) ($state['last_patient_id'] ?? 0);
-        $patients = Patient::query()
-            ->where('id', '>', $lastPatientId)
-            ->orderBy('id')
-            ->limit(max(1, min($batchSize, 100)))
-            ->get(['id', 'name', 'social_name', 'phone', 'chat_id']);
-
-        if ($patients->isEmpty()) {
-            $state['running'] = false;
-            $state['finished'] = true;
-            $state['finished_at'] = now()->toDateTimeString();
-            $state['updated_at'] = now()->toDateTimeString();
-            Cache::put($this->dispatchCacheKey($campaignId), $state, now()->addHours(12));
-            return $state;
-        }
-
-        foreach ($patients as $patient) {
-            try {
-                $name = $patient->social_name ?: $patient->name;
-                $chatId = $patient->chat_id ?: $this->getContactIdByPhone((string) $patient->phone);
-                $message = "Ola {$name}, tudo bem? {$campaign->description}";
-
-                if (!empty($campaign->url_image)) {
-                    $this->sendImageToWhatsApp("558185879004@c.us", (string) $campaign->url_image, $message);
-                } else {
-                    $this->sendMessageToWhatsApp("558185879004@c.us", $message);
-                }
-
-                $state['sent'] = (int) ($state['sent'] ?? 0) + 1;
-            } catch (\Throwable $exception) {
-                $state['failed'] = (int) ($state['failed'] ?? 0) + 1;
-                Log::warning('Campaign dispatch error campaign='.$campaignId.' patient='.$patient->id.' '.$exception->getMessage());
-            }
-
-            $state['processed'] = (int) ($state['processed'] ?? 0) + 1;
-            $state['last_patient_id'] = $patient->id;
-        }
-
-        $state['running'] = true;
-        $state['updated_at'] = now()->toDateTimeString();
-
-        if (count($patients) < $batchSize) {
-            $state['running'] = false;
-            $state['finished'] = true;
-            $state['finished_at'] = now()->toDateTimeString();
-        }
-
-        Cache::put($this->dispatchCacheKey($campaignId), $state, now()->addHours(12));
-        return $state;
     }
 
     public function dispatchCacheKey(int $campaignId): string
