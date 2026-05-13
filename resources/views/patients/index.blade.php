@@ -284,7 +284,7 @@
                     };
 
                     const orderColumnIndex = data.order[0].column;
-                    const orderDir = data.order[0].dir;
+                    const orderDir = data.order[0].dir ?? 'desc';
                     const orderBy = columnMap[orderColumnIndex] || 'id';
 
                     $.ajax({
@@ -293,7 +293,7 @@
                         data: {
                             limit: limit,
                             orderBy: orderBy,
-                            sortedBy: orderDir,
+                            sortedBy: orderDir || 'desc',
                             page: page,
                             search: search
                         },

@@ -17,8 +17,8 @@ use App\Validators\PatientValidator;
 class PatientRepositoryEloquent extends AppRepository implements PatientRepository
 {
     protected $fieldSearchable = [
-        'name'          => 'like',
-        'phone'          => 'like',
+        'name'  => 'like',
+        'phone' => 'like',
     ];
 
     /**
@@ -28,7 +28,7 @@ class PatientRepositoryEloquent extends AppRepository implements PatientReposito
      */
     protected $fieldsRules = [
         'name'           => ['string', 'max:20'],
-        'phone'           => ['numeric', 'max:12'],
+        'phone'          => ['string', 'max:12'],
     ];
 
     /**

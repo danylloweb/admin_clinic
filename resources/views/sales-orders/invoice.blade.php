@@ -80,10 +80,10 @@
             </table>
 
             <div class="invoice-totals">
-                <div class="invoice-totals-row"><span>Subtotal</span><span>R$ {{ number_format($subtotal, 2, ',', '.') }}</span></div>
-                <div class="invoice-totals-row"><span>Valor em PIX</span><span>R$ {{ number_format($pixAmount, 2, ',', '.') }}</span></div>
+{{--                <div class="invoice-totals-row"><span>Subtotal</span><span>R$ {{ number_format($subtotal, 2, ',', '.') }}</span></div>--}}
+{{--                <div class="invoice-totals-row"><span>Valor em PIX</span><span>R$ {{ number_format($pixAmount, 2, ',', '.') }}</span></div>--}}
                 <div class="invoice-totals-row"><span>Valor em Debito</span><span>R$ {{ number_format($debitAmount, 2, ',', '.') }}</span></div>
-                <div class="invoice-totals-row"><span>Credito total</span><span>R$ {{ number_format($creditTotal, 2, ',', '.') }}</span></div>
+                <div class="invoice-totals-row"><span>Total</span><span>R$ {{ number_format($creditTotal, 2, ',', '.') }}</span></div>
                 <div class="invoice-totals-row"><strong>Parcela</strong><strong>R$ {{ number_format($installmentAmount, 2, ',', '.') }}</strong></div>
             </div>
 
