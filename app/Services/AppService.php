@@ -420,7 +420,27 @@ class AppService
                 'msgId'       => $msgId
             ];
             $options = ['form_params' => $params ];
-            $request = new Request('POST', 'https://api.ultramsg.com/instance33014/messages/audio', $this->getHeaderUltra());
+            $request = new Request('POST', 'https://api.ultramsg.com/instance33014/messages/document', $this->getHeaderUltra());
+            $res     = $this->getHttpClient()->sendAsync($request, $options)->wait();
+            return json_decode($res->getBody());
+        } catch (GuzzleException $e) {
+            Log::info($e->getMessage());
+            return ['error' => true,'message' => $e->getMessage()];
+        }
+    }
+
+    public function sendFileToWhatsApp(string $phone, string $file, string $file_name, string $msg = ""): mixed
+    {
+        try {
+            $params = [
+                'token'       => '19kudd3ash52qthi',
+                'to'          => $phone,
+                'document'    => $file,
+                'caption'     => $msg,
+                'filename'    => $file_name
+            ];
+            $options = ['form_params' => $params ];
+            $request = new Request('POST', 'https://api.ultramsg.com/instance33014/messages/document', $this->getHeaderUltra());
             $res     = $this->getHttpClient()->sendAsync($request, $options)->wait();
             return json_decode($res->getBody());
         } catch (GuzzleException $e) {

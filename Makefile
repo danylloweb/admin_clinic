@@ -50,5 +50,7 @@ prod-cache: check-compose
 prod-migrate: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic php artisan migrate --force
 
+prod-composer-update: check-compose
+	$(COMPOSE_PROD) exec -T app-clinic composer update --ignore-platform-reqs
 
 #yes | php artisan make:entity

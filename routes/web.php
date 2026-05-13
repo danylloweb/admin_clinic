@@ -54,6 +54,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-sales-orders-index',[PanelController::class,'salesOrderIndex'])->name('panel.sales-order.index');
     Route::get('/panel-sales-orders-create',[PanelController::class,'salesOrderCreate'])->name('panel.sales-order.create');
     Route::match(['get', 'post'], '/panel-sales-orders-invoice',[PanelController::class,'salesOrderInvoice'])->name('panel.sales-order.invoice');
+    Route::get('/panel-sales-orders-send-invoice-whatsapp/{id}', [PanelController::class, 'sendSalesOrderInvoiceWhatsapp'])->name('panel.sales-order.invoice.send-whatsapp');
     Route::get('/panel-sales-orders-edit/{id}',[PanelController::class,'salesOrderEdit'])->name('panel.sales-order.edit');
     Route::get('/panel-users-index',[PanelController::class,'usersIndex'])->name('panel.users.index');
     Route::get('/panel-users-edit/{id}',[PanelController::class,'usersEdit'])->name('panel.users.edit');

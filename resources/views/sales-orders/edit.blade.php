@@ -160,6 +160,7 @@
 <script>
     const ORDER_ID = {{ (int) $orderId }};
     const MODAL_IDS = ['modal-create-patient', 'modal-schedule', 'modal-edit-schedule'];
+    const SEND_INVOICE_WHATSAPP_ROUTE = '{{ route('panel.sales-order.invoice.send-whatsapp', ['id' => '__ID__']) }}';
 
     const typePaymentLabels = {1:'PIX', 2:'Cartão de Crédito', 3:'Cartão de Débito', 4:'Dinheiro'};
     const statusLabels = {0:'Inicial', 1:'Pago', 2:'Cancelado', 3:'Parcial', 4:'Finalizado'};
@@ -534,7 +535,10 @@
             </div>
 
             <div class="mt-3 d-flex gap-2">
-                <button type="button" class="btn btn-outline-primary" onclick="openEditInvoicePreview()">Gerar documento</button>
+                <button type="button" class="btn btn-outline-primary" onclick="openEditInvoicePreview()">Gerar Pdf</button>
+                <button type="button" class="btn btn-outline-success" onclick="sendInvoicePdfToWhatsapp(this)">
+                    <i class="ph ph-whatsapp-logo"></i> Enviar PDF
+                </button>
                 <a href="{{ route('panel.sales-order.index') }}" class="btn btn-secondary">Voltar</a>
             </div>
         `;
@@ -706,6 +710,43 @@
                 qty: Number(item.qty || 0),
             }))),
         });
+    };
+
+    window.sendInvoicePdfToWhatsapp = async function(button) {
+        if (!currentOrder) {
+            showToast('Nao foi possivel carregar os dados do pedido.', 'danger');
+            return;
+        }
+
+        const previousText = button?.innerHTML;
+        if (button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="ph ph-spinner-gap"></i> Enviando...';
+        }
+
+        try {
+            const endpoint = SEND_INVOICE_WHATSAPP_ROUTE.replace('__ID__', String(ORDER_ID));
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin'
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || payload.error) {
+                showToast(payload.message || 'Falha ao enviar invoice PDF para o WhatsApp.', 'danger');
+                return;
+            }
+
+            showToast(payload.message || 'Invoice PDF enviada com sucesso.', 'success');
+        } catch (error) {
+            showToast(error.message || 'Erro de rede ao enviar invoice PDF.', 'danger');
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = previousText;
+            }
+        }
     };
 
     document.getElementById('btn-save-schedule').addEventListener('click', async function() {

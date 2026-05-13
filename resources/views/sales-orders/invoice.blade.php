@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-    <link rel="stylesheet" href="{{ asset('accordion.8001c1c2.css') }}">
-    <link rel="stylesheet" href="{{ asset('app.css') }}">
+    @if(empty($isPdf))
+        <link rel="stylesheet" href="{{ asset('accordion.8001c1c2.css') }}">
+        <link rel="stylesheet" href="{{ asset('app.css') }}">
+    @endif
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,15 +26,21 @@
 </head>
 <body>
 <div class="invoice-wrap">
-    <div class="no-print mb-3 text-end">
-        <button type="button" class="btn btn-secondary me-2" onclick="window.close()">Fechar</button>
-        <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir</button>
-    </div>
+    @if(empty($isPdf))
+        <div class="no-print mb-3 text-end">
+            <button type="button" class="btn btn-secondary me-2" onclick="window.close()">Fechar</button>
+            <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir</button>
+        </div>
+    @endif
 
     <div class="card">
         <div class="card-body p-8 print-content">
             <div class="mb-6">
-                <img src="https://renovarestetica.com.br/Invertida-03.png" width="190" alt="Renovar">
+                @if(empty($isPdf))
+                    <img src="https://renovarestetica.com.br/Invertida-03.png" width="190" alt="Renovar">
+                @else
+                    <h2 style="margin:0; font-size:20px;">Renovar Estetica</h2>
+                @endif
             </div>
 
             <div class="invoice-head">
