@@ -53,4 +53,6 @@ prod-migrate: check-compose
 prod-composer-update: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic composer update --ignore-platform-reqs
 
+prod-restart: check-compose
+	$(COMPOSE_PROD) restart
 #yes | php artisan make:entity

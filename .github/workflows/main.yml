@@ -22,10 +22,7 @@ jobs:
           envs: ENVPROD
           script: |
             cd /var/www/html/admin_clinic
-            git reset --hard origin/main
             git pull origin main
-            make prod-down
-            make prod-up
-            make prod-composer-update
+            make prod-restart
             make prod-cache
 

@@ -420,14 +420,14 @@ class PanelController extends Controller
 
         /** @var SalesOrder $order */
 
-        $phone = (string) ($order->patient->phone ?? '');
+        $phone = (string) ($order->patient->chat_id ?? '');
         if (trim($phone) === '') {
             return response()->json(['error' => true, 'message' => 'Paciente sem telefone cadastrado.'], 422);
         }
 
         $invoiceData = $this->buildInvoicePayloadFromOrder($order);
         $pdfContent  = $this->buildSimplePdfInvoice($invoiceData);
-        $fileName    = 'invoice-pedido-' . str_pad((string) $order->id, 6, '0', STR_PAD_LEFT) . '.pdf';
+        $fileName    = 'Pedido-' . str_pad((string) $order->id, 6, '0', STR_PAD_LEFT) . '.pdf';
         $path        = 'invoices/' . $fileName;
 
         $appService = app(AppService::class);
@@ -437,7 +437,7 @@ class PanelController extends Controller
         }
 
         $chatId = $order->patient->chat_id ?: $appService->getContactIdByPhone($phone);
-        $caption = 'Segue seu invoice em PDF. Pedido #' . str_pad((string) $order->id, 6, '0', STR_PAD_LEFT);
+        $caption = 'Segue seu Pedido #' . str_pad((string) $order->id, 6, '0', STR_PAD_LEFT);
         $response = $appService->sendFileToWhatsApp($chatId, $fileUrl, $fileName, $caption);
 
         $responseData = is_array($response) ? $response : (array) $response;
@@ -466,65 +466,72 @@ class PanelController extends Controller
             3 => 'Elo',
         ];
 
-        $installments = max(1, (int) $order->qty_installments);
-        $subtotal = (float) $order->amount;
-        $pixAmount = $subtotal >= 250 ? $subtotal - ($subtotal * 0.05) : $subtotal;
-        $debitAmount = (float) $order->getDebitAmount();
-        $installmentBase = $subtotal / $installments;
-        $installmentTax = (float) $order->getInstallmentTax();
+        $installments      = max(1, (int) $order->qty_installments);
+        $subtotal          = (float) $order->amount;
+        $pixAmount         = $subtotal >= 250 ? $subtotal - ($subtotal * 0.05) : $subtotal;
+        $debitAmount       = (float) $order->getDebitAmount();
+        $installmentBase   = $subtotal / $installments;
+        $installmentTax    = (float) $order->getInstallmentTax();
         $installmentAmount = $installmentBase + ($installmentBase * $installmentTax);
-        $creditTotal = $installmentAmount * $installments;
+        $creditTotal       = $installmentAmount * $installments;
 
         $items = [];
         foreach ($order->salesOrderItems as $item) {
             $items[] = [
-                'name' => (string) ($item->procedure_name ?? '-'),
-                'qty' => (int) ($item->qty ?? 0),
+                'name'  => (string) ($item->procedure_name ?? '-'),
+                'qty'   => (int) ($item->qty ?? 0),
                 'price' => (float) ($item->price ?? 0),
             ];
         }
 
         return [
-            'number' => str_pad((string) $order->id, 6, '0', STR_PAD_LEFT),
-            'social_name' => (string) ($order->patient->social_name ?: $order->patient->name ?: 'Paciente'),
-            'patient_name' => (string) ($order->patient->name ?: 'Paciente'),
-            'phone' => (string) ($order->patient->phone ?: '-'),
-            'date' => optional($order->created_at)->format('d/m/Y') ?: now()->format('d/m/Y'),
-            'payment_label' => $paymentLabelMap[(int) $order->type_payment] ?? 'Nao informado',
-            'brand_label' => $brandLabelMap[(int) $order->brand_card] ?? 'Nao informado',
-            'qty_installments' => $installments,
-            'subtotal' => $subtotal,
-            'pix_amount' => $pixAmount,
-            'debit_amount' => $debitAmount,
-            'credit_total' => $creditTotal,
+            'number'             => str_pad((string) $order->id, 6, '0', STR_PAD_LEFT),
+            'social_name'        => (string) ($order->patient->social_name ?: $order->patient->name ?: 'Paciente'),
+            'patient_name'       => (string) ($order->patient->name ?: 'Paciente'),
+            'phone'              => (string) ($order->patient->phone ?: '-'),
+            'date'               => optional($order->created_at)->format('d/m/Y') ?: now()->format('d/m/Y'),
+            'payment_label'      => $paymentLabelMap[(int) $order->type_payment] ?? 'Nao informado',
+            'brand_label'        => $brandLabelMap[(int) $order->brand_card] ?? 'Nao informado',
+            'qty_installments'   => $installments,
+            'subtotal'           => $subtotal,
+            'pix_amount'         => $pixAmount,
+            'debit_amount'       => $debitAmount,
+            'credit_total'       => $creditTotal,
             'installment_amount' => $installmentAmount,
-            'items' => $items,
+            'items'              => $items,
         ];
     }
 
     private function buildSimplePdfInvoice(array $invoice): string
     {
-        $html = view('sales-orders.invoice', [
-            'documentTitle' => 'Pedido de Venda #' . ($invoice['number'] ?? '-'),
-            'socialName' => $invoice['social_name'] ?? 'Paciente',
-            'patientName' => $invoice['patient_name'] ?? 'Paciente',
-            'phone' => $invoice['phone'] ?? '-',
-            'date' => $invoice['date'] ?? now()->format('d/m/Y'),
-            'paymentLabel' => $invoice['payment_label'] ?? 'Nao informado',
-            'brandLabel' => $invoice['brand_label'] ?? 'Nao informado',
-            'qtyInstallments' => (int) ($invoice['qty_installments'] ?? 1),
-            'subtotal' => (float) ($invoice['subtotal'] ?? 0),
-            'pixAmount' => (float) ($invoice['pix_amount'] ?? 0),
-            'debitAmount' => (float) ($invoice['debit_amount'] ?? 0),
-            'creditTotal' => (float) ($invoice['credit_total'] ?? 0),
+        $html = view('sales-orders.invoice-pdf', [
+            'documentTitle'     => 'Pedido de Venda #' . ($invoice['number'] ?? '-'),
+            'socialName'        => $invoice['social_name'] ?? 'Paciente',
+            'patientName'       => $invoice['patient_name'] ?? 'Paciente',
+            'phone'             => $invoice['phone'] ?? '-',
+            'date'              => $invoice['date'] ?? now()->format('d/m/Y'),
+            'paymentLabel'      => $invoice['payment_label'] ?? 'Nao informado',
+            'brandLabel'        => $invoice['brand_label'] ?? 'Nao informado',
+            'qtyInstallments'   => (int) ($invoice['qty_installments'] ?? 1),
+            'subtotal'          => (float) ($invoice['subtotal'] ?? 0),
+            'pixAmount'         => (float) ($invoice['pix_amount'] ?? 0),
+            'debitAmount'       => (float) ($invoice['debit_amount'] ?? 0),
+            'creditTotal'       => (float) ($invoice['credit_total'] ?? 0),
             'installmentAmount' => (float) ($invoice['installment_amount'] ?? 0),
-            'items' => $invoice['items'] ?? [],
-            'isPdf' => true,
+            'items'             => $invoice['items'] ?? [],
+            'logoDataUri'       => $this->getInvoiceLogoDataUri(),
         ])->render();
 
         return Pdf::loadHTML($html)
             ->setPaper('a4')
             ->output();
+    }
+
+    private function getInvoiceLogoDataUri(): ?string
+    {
+        return Cache::forever('invoice_logo_data_uri', function () {
+            return config('logo.uri');
+        });
     }
 
     public function usersIndex(): View|Factory|Application
