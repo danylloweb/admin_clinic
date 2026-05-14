@@ -293,9 +293,6 @@
         </p>
     </div>
 
-    <div class="footer">
-        Renovar Estética · Documento gerado automaticamente para envio ao paciente
-    </div>
 </div>
 </body>
 </html>

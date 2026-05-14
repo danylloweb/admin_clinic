@@ -529,9 +529,9 @@ class PanelController extends Controller
 
     private function getInvoiceLogoDataUri(): ?string
     {
-//        return Cache::forever('invoice_logo_data_uri', function () {
+        return Cache::rememberForever('invoice_logo_data_uri', function () {
             return config('logo.uri');
-//        });
+        });
     }
 
     public function usersIndex(): View|Factory|Application
