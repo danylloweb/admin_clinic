@@ -42,7 +42,7 @@ class ScheduleMessageConfirmationCommand extends Command
         $camp     = $this->campaignService->find(4,true);
 
         foreach ($patients as $patient) {
-            $message = "Bom dia! ☀️ $patient->social_name ✨" .$camp->description;
+            $message = "Bom dia! ☀️ $patient->social_name ✨ " .$camp->description;
             $this->campaignService->sendMessageToWhatsApp($patient->chat_id, $message);
         }
     }

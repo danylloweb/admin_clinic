@@ -39,7 +39,7 @@ class CampaignLaserWaxingCommand extends Command
     public function handle()
     {
         $patients = $this->scheduleRepository->skipPresenter()->getPatientsByLaser();
-        $camp     = $this->campaignService->find(2,true);
+        $camp     = $this->campaignService->find(16,true);
         $image    = $camp->url_image;
         $caption  = $camp->description;
         foreach ($patients as $patient) {

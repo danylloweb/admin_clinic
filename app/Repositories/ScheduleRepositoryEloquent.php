@@ -61,7 +61,7 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
     {
         $list_patients = [];
         $query = $this->model();
-        $patientsWithSchedules = $query::where('date', '2023-12-09')
+        $patientsWithSchedules = $query::where('date', '2026-05-16')
             ->whereHas('procedure', function ($query) {
                 $query->where('procedure_type_id', 4);
             })
@@ -70,7 +70,7 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
             ->groupBy('patient.id');
 
         foreach ($patientsWithSchedules as $schedules) {
-            $list_patients[] = $schedules[0]->patient->phone;
+            $list_patients[] = $schedules[0]->patient->chat_id;
         }
         return $list_patients;
     }
