@@ -81,6 +81,7 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
         $list_patients = [];
         $query = $this->model();
         $patientsWithSchedules = $query::where('date', $now->toDateString())
+            ->where('status', 'Marcado')
             ->with('patient')
             ->get()
             ->groupBy('patient.id');

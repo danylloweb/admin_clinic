@@ -468,7 +468,7 @@ class PanelController extends Controller
 
         $installments      = max(1, (int) $order->qty_installments);
         $subtotal          = (float) $order->amount;
-        $pixAmount         = $subtotal >= 250 ? $subtotal - ($subtotal * 0.05) : $subtotal;
+//        $pixAmount         = $subtotal >= 250 ? $subtotal - ($subtotal * 0.05) : $subtotal;
         $debitAmount       = (float) $order->getDebitAmount();
         $installmentBase   = $subtotal / $installments;
         $installmentTax    = (float) $order->getInstallmentTax();
@@ -494,7 +494,7 @@ class PanelController extends Controller
             'brand_label'        => $brandLabelMap[(int) $order->brand_card] ?? 'Nao informado',
             'qty_installments'   => $installments,
             'subtotal'           => $subtotal,
-            'pix_amount'         => $pixAmount,
+            'pix_amount'         => $subtotal,
             'debit_amount'       => $debitAmount,
             'credit_total'       => $creditTotal,
             'installment_amount' => $installmentAmount,

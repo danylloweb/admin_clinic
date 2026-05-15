@@ -1,7 +1,7 @@
 <aside id="sidebar">
     <button type="button" id="sidebar-close" class="icon sidebar-close"><i class="fs-5 ph ph-x"></i> <span
             class="visually-hidden">Fechar Menu</span></button>
-    <a class="d-none d-sm-flex logo" href="{{ route('dashboard') }}">Renovar Admin 2.0</a>
+    <a class="d-none d-sm-flex logo" href="{{ route('dashboard') }}">Renovar</a>
     <div data-scrollbar>
         <ul class="menu">
             <li class="menu-title">Dashboards</li>
