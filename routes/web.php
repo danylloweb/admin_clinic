@@ -33,6 +33,7 @@ Route::post('/body-evaluation/{token}/sign', [BodyEvaluationsController::class, 
 Route::middleware(['jwt.web'])->group(function () {
     Route::get('/dashboard',[PanelController::class,'dashboard'])->name('dashboard');
     Route::get('/panel-schedules-index',[PanelController::class,'scheduleIndex'])->name('panel.schedules.index');
+    Route::get('/panel-schedules-print',[PanelController::class,'schedulesPrintPage'])->name('panel.schedules.print');
     Route::get('/panel-schedules-calendar',[PanelController::class,'scheduleCalendar'])->name('panel.schedules.calendar');
     Route::get('/panel-procedures-index',[PanelController::class,'procedureIndex'])->name('panel.procedures.index');
     Route::get('/panel-campaigns-index',[PanelController::class,'campaignIndex'])->name('panel.campaigns.index');

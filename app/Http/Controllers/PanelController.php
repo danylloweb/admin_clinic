@@ -283,6 +283,53 @@ class PanelController extends Controller
         ]);
     }
 
+    public function schedulesPrintPage(Request $request): View|Factory|Application
+    {
+        $query = Schedule::query()
+            ->with(['patient', 'procedure']);
+
+        // Aplicar filtros se existirem
+        if ($request->filled('patient_id')) {
+            $query->where('patient_id', $request->input('patient_id'));
+        }
+
+        if ($request->filled('procedure_id')) {
+            $query->where('procedure_id', $request->input('procedure_id'));
+        }
+
+        if ($request->filled('procedure_type_id')) {
+            $query->whereHas('procedure', function ($q) {
+                $q->where('procedure_type_id', request('procedure_type_id'));
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('start')) {
+            $query->whereDate('date', '>=', $request->input('start'));
+        }
+
+        if ($request->filled('end')) {
+            $query->whereDate('date', '<=', $request->input('end'));
+        }
+
+        $schedules = $query->orderBy('date', 'desc')->orderBy('time', 'asc')->get();
+
+        $filterInfo = null;
+        if ($request->filled('start') && $request->filled('end')) {
+            $start = \Carbon\Carbon::parse($request->input('start'))->format('d/m/Y');
+            $end = \Carbon\Carbon::parse($request->input('end'))->format('d/m/Y');
+            $filterInfo = "{$start} a {$end}";
+        }
+
+        return view('schedules.print', [
+            'schedules' => $schedules,
+            'filterInfo' => $filterInfo,
+        ]);
+    }
+
     /**
      * @return View|Factory|Application
      */

@@ -56,6 +56,7 @@
                 <div class="col-md-4 d-flex align-items-end gap-2">
                     <button id="btn-apply-filters" class="btn btn-primary">Filtrar</button>
                     <button id="btn-clear-filters" class="btn btn-secondary">Limpar</button>
+                    <button id="btn-print-schedules" class="btn btn-info" title="Visualizar e imprimir agendamentos"><i class="ph ph-printer me-1"></i>Imprimir</button>
                 </div>
             </div>
 
@@ -104,6 +105,24 @@
                     </tr>
                     </thead>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-print-schedules" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Imprimir Agendamentos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="print-schedules-content" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Conteúdo preenchido dinamicamente -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="btn-execute-print" onclick="window.print()"><i class="ph ph-printer me-1"></i>Imprimir</button>
+                </div>
             </div>
         </div>
     </div>
@@ -401,6 +420,42 @@
                 } catch (error) {
                     console.error(error);
                 }
+            }
+
+            function openPrintModal() {
+                // Build URL with current filters
+                const params = new URLSearchParams();
+
+                if (state.patientId) {
+                    params.append('patient_id', state.patientId);
+                }
+
+                if (state.procedureId) {
+                    params.append('procedure_id', state.procedureId);
+                }
+
+                const startDate = document.getElementById('filter-start-date').value;
+                if (startDate) {
+                    params.append('start', startDate);
+                }
+
+                const endDate = document.getElementById('filter-end-date').value;
+                if (endDate) {
+                    params.append('end', endDate);
+                }
+
+                const status = document.getElementById('filter-status').value;
+                if (status) {
+                    params.append('status', status);
+                }
+
+                const procedureType = document.getElementById('filter-procedure-type').value;
+                if (procedureType) {
+                    params.append('procedure_type_id', procedureType);
+                }
+
+                const url = `{{ route('panel.schedules.print') }}?${params.toString()}`;
+                window.open(url, '_blank');
             }
 
             async function loadProcedureTypes() {
@@ -825,6 +880,7 @@
             document.getElementById('btn-save-confirm-attendance').addEventListener('click', saveAttendanceConfirmation);
             document.getElementById('btn-save-edit-schedule').addEventListener('click', saveScheduleEdition);
             document.getElementById('edit-schedule-status').addEventListener('change', syncEditProfessionalRequirement);
+            document.getElementById('btn-print-schedules').addEventListener('click', openPrintModal);
             document.getElementById('modal-confirm-attendance').addEventListener('shown.bs.modal', function () { normalizeModalLayering('modal-confirm-attendance'); });
             document.getElementById('modal-confirm-attendance').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
             document.getElementById('modal-edit-schedule').addEventListener('shown.bs.modal', function () { normalizeModalLayering('modal-edit-schedule'); });
