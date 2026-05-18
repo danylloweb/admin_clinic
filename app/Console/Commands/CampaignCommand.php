@@ -25,7 +25,7 @@ class CampaignCommand extends Command
      * @var string
      */
     protected $description = 'Command description';
-
+    // 558185879004@c.us
     public function __construct(PatientRepository $patientRepository,
                                 CampaignService $campaignService)
     {
