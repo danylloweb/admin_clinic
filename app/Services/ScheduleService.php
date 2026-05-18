@@ -123,7 +123,7 @@ class ScheduleService extends AppService
             $this->patientService->sendWarningWhatsApp($data['patient_id'], $date_warning,$procedure->message_schedule??null);
         }
 
-        $this->sendNotificationToEmployers($data['date'], $data['time'], $procedure->name);
+//        $this->sendNotificationToEmployers($data['date'], $data['time'], $procedure->name);
         return $schedule;
     }
 

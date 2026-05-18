@@ -14,6 +14,7 @@ use App\Presenters\SalesOrderDetailPresenter;
 use App\Repositories\ProcedureRepository;
 use App\Repositories\SalesOrderItemRepository;
 use App\Repositories\SalesOrderRepository;
+use Prettus\Repository\Exceptions\RepositoryException;
 
 /**
  * SalesOrderService
@@ -27,8 +28,8 @@ class SalesOrderService extends AppService
     /**
      * @var SalesOrderItemRepository
      */
-    protected $salesOrderItemRepository;
-    protected $procedureRepository;
+    protected SalesOrderItemRepository $salesOrderItemRepository;
+    protected ProcedureRepository $procedureRepository;
 
     /**
      * @param SalesOrderRepository $repository
@@ -39,15 +40,15 @@ class SalesOrderService extends AppService
                                 SalesOrderItemRepository $salesOrderItemRepository,
                                 ProcedureRepository $procedureRepository)
     {
-        $this->repository = $repository;
+        $this->repository               = $repository;
         $this->salesOrderItemRepository = $salesOrderItemRepository;
-        $this->procedureRepository = $procedureRepository;
+        $this->procedureRepository      = $procedureRepository;
     }
 
     /**
      * @param int $limit
      * @return mixed
-     * @throws \Prettus\Repository\Exceptions\RepositoryException
+     * @throws RepositoryException
      */
     public function all(int $limit = 20)
     {

@@ -213,12 +213,18 @@
                     <div class="section-title">Condições de pagamento</div>
                     <div class="label">Forma de pagamento</div>
                     <div class="value">{{ $paymentLabel }}</div>
-
                     <div class="label">Bandeira</div>
-                    <div class="value">{{ $brandLabel }}</div>
-
+                    @if($paymentLabel == "PIX")
+                        <div class="value">--</div>
+                    @else
+                        <div class="value">{{ $brandLabel }}</div>
+                    @endif
                     <div class="label">Parcelamento</div>
+                    @if($paymentLabel == "PIX")
+                        <div class="value">--</div>
+                    @else
                     <div class="value">{{ $qtyInstallments }}x</div>
+                    @endif
                 </div>
             </td>
         </tr>
