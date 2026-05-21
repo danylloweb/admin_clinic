@@ -787,13 +787,16 @@
                 if (!res.ok) {
                     const errorResponse = await res.json().catch(() => ({}));
                     showToast(errorResponse.message || 'Erro ao salvar pedido', 'danger');
-                    return;
+                } else{
+                    let responseOk = await res.json();
+                    let id = responseOk.id;
+                    showToast('Pedido criado com sucesso', 'success');
+                    setTimeout(() => {
+                        window.location.href = '{{ url('panel-sales-orders-edit') }}/' + id;
+                    }, 1000);
                 }
 
-                showToast('Pedido criado com sucesso', 'success');
-                setTimeout(() => {
-                    window.location.href = '{{ route('panel.sales-order.index') }}';
-                }, 900);
+
             } catch (error) {
                 showToast('Erro de rede ao salvar pedido', 'danger');
             } finally {

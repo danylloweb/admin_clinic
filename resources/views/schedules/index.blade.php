@@ -232,6 +232,137 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modal-edit-payment" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Pagamento do Pedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                    <input type="hidden" id="edit-payment-order-id">
+                    <input type="hidden" id="edit-payment-schedule-id">
+
+                    <div class="row g-4">
+                        <!-- Left side: Order info and items -->
+                        <div class="col-lg-6">
+                            <h6 class="fw-semibold mb-3">Informações do Pedido</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Paciente</label>
+                                <input type="text" id="edit-payment-patient-name" class="form-control" disabled>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select id="edit-payment-status" class="form-select">
+                                    <option value="0">Inicial</option>
+                                    <option value="1">Pago</option>
+                                    <option value="2">Cancelado</option>
+                                    <option value="3">Parcial</option>
+                                    <option value="4">Finalizado</option>
+                                </select>
+                            </div>
+
+                            <h6 class="fw-bold mb-3 mt-4">Itens do Pedido</h6>
+                            <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table">
+                                        <tr>
+                                            <th>Procedimento</th>
+                                            <th>Qtd</th>
+                                            <th>Valor</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="edit-payment-items-body">
+                                        <tr><td colspan="4" class="text-center text-muted">Carregando...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="alert alert-light mt-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Subtotal:</strong>
+                                    <span id="edit-payment-subtotal">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right side: Payment editor -->
+                        <div class="col-lg-6">
+                            <h6 class="fw-semibold mb-3">Dados de Pagamento</h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tipo de Pagamento</label>
+                                <select id="edit-payment-type" class="form-select" onchange="recalculateSalePayment()">
+                                    <option value="1">PIX</option>
+                                    <option value="2">Cartão de Crédito</option>
+                                    <option value="3">Cartão de Débito</option>
+                                    <option value="4">Dinheiro</option>
+                                </select>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Bandeira do Cartão</label>
+                                    <select id="edit-payment-brand" class="form-select" onchange="recalculateSalePayment()">
+                                        <option value="1">MasterCard</option>
+                                        <option value="2">Visa</option>
+                                        <option value="3">Elo</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Parcelas</label>
+                                    <select id="edit-payment-installments" class="form-select" onchange="onPaymentInstallmentsChange()">
+                                        <option value="1">1x</option>
+                                        <option value="2">2x</option>
+                                        <option value="3">3x</option>
+                                        <option value="4">4x</option>
+                                        <option value="5">5x</option>
+                                        <option value="6">6x</option>
+                                        <option value="7">7x</option>
+                                        <option value="8">8x</option>
+                                        <option value="9">9x</option>
+                                        <option value="10">10x</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="card mt-4 bg-light border-0">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3 text-black">Valores Calculados</h6>
+                                    <div class="row g-2 text-black">
+                                        <div class="col-6">
+                                            <small class="text-black">PIX:</small>
+                                            <div class="fw-bold" id="edit-payment-pix">R$ 0,00</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-black">Débito:</small>
+                                            <div class="fw-bold" id="edit-payment-debit">R$ 0,00</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-black">Total Crédito:</small>
+                                            <div class="fw-bold text-primary" id="edit-payment-credit-total">R$ 0,00</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-black">Valor da Parcela:</small>
+                                            <div class="fw-bold text-success" id="edit-payment-installment">R$ 0,00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btn-save-edit-payment">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -517,6 +648,180 @@
                 normalizeModalLayering('modal-edit-schedule');
                 editScheduleModal.show();
                 normalizeModalLayering('modal-edit-schedule');
+            }
+
+            function getTaxByMasterCard() {
+                return { 1: 0.0449, 2: 0.0999, 3: 0.1199, 4: 0.1299, 5: 0.1399, 6: 0.1499, 7: 0.1599, 8: 0.1699, 9: 0.1799, 10: 0.1899 };
+            }
+
+            function getTaxByEloCard() {
+                return { 1: 0.0568, 2: 0.1138, 3: 0.1338, 4: 0.1438, 5: 0.1538, 6: 0.1638, 7: 0.1738, 8: 0.1838, 9: 0.1938, 10: 0.2038 };
+            }
+
+            function getPaymentTax(brand, installments) {
+                const map = Number(brand) < 2 ? getTaxByMasterCard() : getTaxByEloCard();
+                return map[Number(installments)] || 0;
+            }
+
+            function getDebitTax(brand) {
+                return Number(brand) <= 2 ? 0.0269 : 0.0388;
+            }
+
+            function formatMoneyValue(value) {
+                const amount = parseMoneyValue(value);
+                return 'R$ ' + amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function parseMoneyValue(value) {
+                if (typeof value === 'number') {
+                    return Number.isFinite(value) ? value : 0;
+                }
+
+                const normalized = String(value ?? '')
+                    .replace(/\./g, '')
+                    .replace(',', '.')
+                    .replace(/[^0-9.-]/g, '');
+
+                const parsed = parseFloat(normalized);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function recalculateSalePayment() {
+                const typePayment = Number(document.getElementById('edit-payment-type').value || 1);
+                const brand = Number(document.getElementById('edit-payment-brand').value || 1);
+                const installments = Number(document.getElementById('edit-payment-installments').value || 1);
+                const subtotal = Number(window.currentPaymentSubtotal || 0);
+
+                const pixAmount = subtotal >= 250 ? subtotal - (subtotal * 0.05) : subtotal;
+                const debitTax = getDebitTax(brand);
+                const debitAmount = subtotal + (subtotal * debitTax);
+                const installmentTax = getPaymentTax(brand, installments);
+                const installmentBase = installments > 0 ? (subtotal / installments) : subtotal;
+                const installmentAmount = installmentBase + (installmentBase * installmentTax);
+                const creditTotal = installmentAmount * installments;
+
+                document.getElementById('edit-payment-pix').innerText = formatMoneyValue(pixAmount);
+                document.getElementById('edit-payment-debit').innerText = formatMoneyValue(debitAmount);
+                document.getElementById('edit-payment-credit-total').innerText = formatMoneyValue(creditTotal);
+                document.getElementById('edit-payment-installment').innerText = formatMoneyValue(installmentAmount);
+            }
+
+            function onPaymentInstallmentsChange() {
+                const installments = Number(document.getElementById('edit-payment-installments').value || 1);
+                if (installments > 1) {
+                    document.getElementById('edit-payment-type').value = '2';
+                }
+                recalculateSalePayment();
+            }
+
+            async function openEditPaymentModal(scheduleId, saleId) {
+                document.getElementById('edit-payment-order-id').value = saleId;
+                document.getElementById('edit-payment-schedule-id').value = scheduleId;
+
+                try {
+                    const response = await fetch(`{{ url('/') }}/salesOrders/${saleId}`, { credentials: 'same-origin' });
+                    if (!response.ok) throw new Error('Erro ao carregar pedido');
+
+                    const data = await response.json();
+                    const order = data.data;
+
+                    // Load patient name and status
+                    document.getElementById('edit-payment-patient-name').value = order.patient_name || '-';
+                    document.getElementById('edit-payment-status').value = order.status || 0;
+
+                    // Load order items
+                    const itemsBody = document.getElementById('edit-payment-items-body');
+                    const items = Array.isArray(order.items) ? order.items : [];
+
+                    itemsBody.innerHTML = items.map(item => {
+                        const unitPrice = parseMoneyValue(item.price);
+                        const lineTotal = item.price_total !== undefined
+                            ? parseMoneyValue(item.price_total)
+                            : unitPrice * (item.qty || 0);
+
+                        return `
+                        <tr>
+                            <td>${item.procedure_name || '-'}</td>
+                            <td>${item.qty || 0}</td>
+                            <td>${formatMoneyValue(unitPrice)}</td>
+                            <td>${formatMoneyValue(lineTotal)}</td>
+                        </tr>
+                    `;
+                    }).join('');
+
+                    if (!items.length) {
+                        itemsBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum item encontrado</td></tr>';
+                    }
+
+                    const subtotal = items.reduce((sum, item) => {
+                        if (item.price_total !== undefined) {
+                            return sum + parseMoneyValue(item.price_total);
+                        }
+
+                        return sum + (parseMoneyValue(item.price) * (item.qty || 0));
+                    }, 0);
+                    window.currentPaymentSubtotal = subtotal;
+                    document.getElementById('edit-payment-subtotal').innerText = formatMoneyValue(subtotal);
+
+                    // Set current payment info
+                    document.getElementById('edit-payment-type').value = order.type_payment || 1;
+                    document.getElementById('edit-payment-brand').value = order.brand_card || 1;
+                    document.getElementById('edit-payment-installments').value = order.qty_installments || 1;
+
+                    normalizeModalLayering('modal-edit-payment');
+                    const modal = new bootstrap.Modal(document.getElementById('modal-edit-payment'));
+                    modal.show();
+                    normalizeModalLayering('modal-edit-payment');
+
+                    recalculateSalePayment();
+                } catch (error) {
+                    showToast('Erro ao carregar dados do pagamento: ' + error.message, 'danger');
+                }
+            }
+
+            async function savePaymentChanges() {
+                const orderId = document.getElementById('edit-payment-order-id').value;
+                const typePayment = Number(document.getElementById('edit-payment-type').value);
+                const brandCard = Number(document.getElementById('edit-payment-brand').value);
+                const qtyInstallments = Number(document.getElementById('edit-payment-installments').value);
+                const status = Number(document.getElementById('edit-payment-status').value);
+                const saveButton = document.getElementById('btn-save-edit-payment');
+
+                const previousText = saveButton.innerText;
+                saveButton.disabled = true;
+                saveButton.innerText = 'Salvando...';
+
+                try {
+                    const response = await fetch(`{{ url('/') }}/salesOrders/${orderId}`, {
+                        method: 'PUT',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type_payment: typePayment,
+                            brand_card: brandCard,
+                            qty_installments: qtyInstallments,
+                            status: status
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.message || 'Erro ao salvar');
+                    }
+
+                    showToast('Pagamento alterado com sucesso', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modal-edit-payment'));
+                    if (modal) modal.hide();
+                    table.ajax.reload();
+                } catch (error) {
+                    showToast('Erro: ' + error.message, 'danger');
+                } finally {
+                    saveButton.disabled = false;
+                    saveButton.innerText = previousText;
+                }
             }
 
             async function saveScheduleEdition() {
@@ -860,6 +1165,7 @@
                                 }
 
                                 if (row.sale_id) {
+                                    buttons.push(`<button type="button" class="btn btn-sm btn-warning btn-edit-payment" data-id="${row.id}" data-sale-id="${row.sale_id}" title="Editar pagamento"><i class="ph ph-currency-circle-dollar"></i></button>`);
                                     buttons.push(`<a href="/panel-sales-orders-edit/${row.sale_id}" class="btn btn-sm btn-outline-primary" title="Abrir pedido"><i class="ph ph-shopping-bag-open"></i></a>`);
                                 }
 
@@ -881,14 +1187,18 @@
             document.getElementById('btn-save-edit-schedule').addEventListener('click', saveScheduleEdition);
             document.getElementById('edit-schedule-status').addEventListener('change', syncEditProfessionalRequirement);
             document.getElementById('btn-print-schedules').addEventListener('click', openPrintModal);
+            document.getElementById('btn-save-edit-payment').addEventListener('click', savePaymentChanges);
             document.getElementById('modal-confirm-attendance').addEventListener('shown.bs.modal', function () { normalizeModalLayering('modal-confirm-attendance'); });
             document.getElementById('modal-confirm-attendance').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
             document.getElementById('modal-edit-schedule').addEventListener('shown.bs.modal', function () { normalizeModalLayering('modal-edit-schedule'); });
             document.getElementById('modal-edit-schedule').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
+            document.getElementById('modal-edit-payment').addEventListener('shown.bs.modal', function () { normalizeModalLayering('modal-edit-payment'); });
+            document.getElementById('modal-edit-payment').addEventListener('hidden.bs.modal', cleanupModalArtifacts);
 
             document.getElementById('datatable-schedules').addEventListener('click', function (event) {
                 const confirmButton = event.target.closest('.btn-confirm-attendance');
                 const editButton = event.target.closest('.btn-edit-schedule');
+                const editPaymentButton = event.target.closest('.btn-edit-payment');
 
                 if (editButton) {
                     const rowData = table.row(editButton.closest('tr')).data();
@@ -898,6 +1208,13 @@
                     }
 
                     openEditScheduleModal(rowData);
+                    return;
+                }
+
+                if (editPaymentButton) {
+                    const scheduleId = editPaymentButton.getAttribute('data-id');
+                    const saleId = editPaymentButton.getAttribute('data-sale-id');
+                    openEditPaymentModal(scheduleId, saleId);
                     return;
                 }
 
