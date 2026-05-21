@@ -551,7 +551,7 @@
 
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: { ideal: 'user' } },
+                        video: { facingMode: { ideal: 'environment' } },
                         audio: false,
                     });
                 } catch (_) {
