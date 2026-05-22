@@ -502,7 +502,7 @@
                 } else {
                     showToast('Ficha salva com sucesso!', 'success');
                     setTimeout(() => {
-                        window.location.href = `{{ route('panel.facial-evaluations.index', ['id' => $patient->id]) }}`;
+                        window.location.href = `{{ route('panel.facial-evaluations.index', ['patientId' => $patient->id]) }}`;
                     }, 1500);
                 }
             } catch (error) {

@@ -6,9 +6,12 @@
             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                 <h3 class="card-title fs-5 mb-0">Fichas de Avaliação Facial</h3>
                 @if($patient)
-                    <a href="{{ route('panel.facial-evaluations.create', ['patientId' => $patient->id]) }}" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus"></i>Nova Ficha
-                    </a>
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <a href="{{ route('panel.patient.show', ['id' => $patient->id]) }}" class="btn btn-secondary btn-lg">Voltar</a>
+                        <a href="{{ route('panel.facial-evaluations.create', ['patientId' => $patient->id]) }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i>Nova Ficha
+                        </a>
+                    </div>
                 @endif
             </div>
 
@@ -18,7 +21,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Data Criação</th>
-                        <th>Tipo de Pele</th>
+                        <th>Objetivo</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -75,11 +78,10 @@
                     }
                 },
                 {
-                    data: 'skin_type',
+                    data: 'patient_objective',
                     render: function (value) {
                         if (!value) return '<span class="text-muted">-</span>';
-                        const label = String(value).charAt(0).toUpperCase() + String(value).slice(1);
-                        return `<span class="badge bg-info">${label}</span>`;
+                        return `${value}`;
                     }
                 },
                 {
@@ -98,21 +100,12 @@
                     orderable: false,
                     searchable: false,
                     render: function (_, __, row) {
-                        const showUrl = `{{ url('/panel-facial-evaluations-show') }}/${row.id}`;
                         const editUrl = `{{ url('/panel-facial-evaluations-edit') }}/${row.id}`;
-                        const canSend = !(row.signed_at || row.consent_accepted);
                         return `
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="${showUrl}" class="btn btn-info" title="Visualizar">
-                                    <i class="fas fa-eye"></i>
-                                </a>
                                 <a href="${editUrl}" class="btn btn-warning" title="Editar">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-edit me-1"></i>Editar
                                 </a>
-                                ${canSend ? `<button type="button" class="btn btn-primary" onclick="sendSignatureLink(${row.id})" title="Enviar Link"><i class="fab fa-whatsapp"></i></button>` : ''}
-                                <button type="button" class="btn btn-danger" onclick="deleteEvaluation(${row.id})" title="Excluir">
-                                    <i class="fas fa-trash"></i>
-                                </button>
                             </div>
                         `;
                     }

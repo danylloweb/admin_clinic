@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use App\Repositories\FacialEvaluationRepository;
 use App\Validators\FacialEvaluationValidator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
+use Prettus\Validator\Contracts\ValidatorInterface;
 use Carbon\Carbon;
 
 /**
@@ -37,20 +39,13 @@ class FacialEvaluationsController extends Controller
      * @param FacialEvaluationValidator $validator
      * @param PatientService $patientService
      */
-    public function __construct(FacialEvaluationService   $service,
-                                FacialEvaluationValidator $validator,
-                                private PatientService    $patientService)
+    public function __construct(FacialEvaluationService         $service,
+                                FacialEvaluationValidator       $validator,
+                                private readonly PatientService $patientService)
     {
         $this->service   = $service;
         $this->validator = $validator;
     }
-
-    /**
-     * Abre a pagina index.blade de avaliacoes faciais.
-     *
-     * @param int $patientId
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
-     */
 
 
     /**
@@ -95,6 +90,28 @@ class FacialEvaluationsController extends Controller
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        try {
+            $payload = $this->normalizePayload($request->all());
+            $this->validator->with($payload)->passesOrFail(ValidatorInterface::RULE_CREATE);
+            return response()->json($this->service->create($payload));
+        } catch (\Exception $exception) {
+            return $this->sendBadResponse($exception);
+        }
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        try {
+            $payload = $this->normalizePayload($request->all());
+            $this->validator->with($payload)->passesOrFail(ValidatorInterface::RULE_UPDATE);
+            return response()->json($this->service->update($payload, $id));
+        } catch (\Exception $exception) {
+            return $this->sendBadResponse($exception);
+        }
+    }
+
     /**
      * Abre o formulario para editar uma ficha facial.
      *
@@ -115,7 +132,27 @@ class FacialEvaluationsController extends Controller
             return redirect()->route('panel.patient.index')->with('error', 'Paciente da ficha não encontrado.');
         }
 
-        return view('facial-evaluations.edit', compact('patient', 'facialEvaluation'));
+        return view('facial-evaluations.edit', [
+            'title' => 'Editar avaliacao facial',
+            'subtitle' => 'Painel de Controle',
+            'patient' => $patient,
+            'facialEvaluation' => $facialEvaluation,
+        ]);
+    }
+
+    public function panelShow(int $id)
+    {
+        $facialEvaluation = $this->service->find($id, true);
+
+        if (!$facialEvaluation) {
+            return redirect()->route('panel.patient.index')->with('error', 'Ficha de avaliação não encontrada.');
+        }
+
+        return view('facial-evaluations.show', [
+            'title' => 'Visualizar avaliacao facial',
+            'subtitle' => 'Painel de Controle',
+            'facialEvaluation' => $facialEvaluation,
+        ]);
     }
 
 
@@ -281,5 +318,38 @@ class FacialEvaluationsController extends Controller
                  'message' => 'Erro ao preparar link: ' . $e->getMessage()
              ], 422);
          }
+
+     }
+
+     private function normalizePayload(array $payload): array
+     {
+         $booleanFields = [
+             'acne',
+             'melasma',
+             'wrinkles',
+             'flaccidity',
+             'spots',
+             'dilated_pores',
+             'consent_accepted',
+         ];
+
+         foreach ($booleanFields as $field) {
+             $payload[$field] = filter_var($payload[$field] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+         }
+
+         foreach (['oiliness', 'hydration', 'sensitivity', 'patient_id', 'professional_id'] as $field) {
+             if (array_key_exists($field, $payload) && $payload[$field] !== null && $payload[$field] !== '') {
+                 $payload[$field] = (int) $payload[$field];
+             }
+         }
+
+         if (isset($payload['treatment_plan']) && is_array($payload['treatment_plan'])) {
+             $sessions = $payload['treatment_plan']['sessions'] ?? null;
+             if ($sessions !== null && $sessions !== '') {
+                 $payload['treatment_plan']['sessions'] = (int) $sessions;
+             }
+         }
+
+         return $payload;
      }
 }

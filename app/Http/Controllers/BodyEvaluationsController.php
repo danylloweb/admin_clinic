@@ -12,7 +12,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Repositories\BodyEvaluationRepository;
 use App\Validators\BodyEvaluationValidator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
+use Prettus\Validator\Contracts\ValidatorInterface;
 use Carbon\Carbon;
 
 /**
@@ -88,6 +91,52 @@ class BodyEvaluationsController extends Controller
         ]);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        try {
+            $payload = $this->normalizePayload($request->all());
+            $this->validator->with($payload)->passesOrFail(ValidatorInterface::RULE_CREATE);
+            return response()->json($this->service->create($payload));
+        } catch (\Prettus\Validator\Exceptions\ValidatorException $exception) {
+            $errors = $exception->getMessageBag();
+            Log::error('Erro de validacao ao criar ficha corporal', ['errors' => $errors]);
+            return response()->json([
+                'error' => true,
+                'message' => 'Erros de validacao encontrados',
+                'errors' => $errors->toArray()
+            ], 422);
+        } catch (\Exception $exception) {
+            Log::error('Erro ao criar ficha corporal: ' . $exception->getMessage());
+            return response()->json([
+                'error' => true,
+                'message' => $exception->getMessage()
+            ], 422);
+        }
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        try {
+            $payload = $this->normalizePayload($request->all());
+            $this->validator->with($payload)->passesOrFail(ValidatorInterface::RULE_UPDATE);
+            return response()->json($this->service->update($payload, $id));
+        } catch (\Prettus\Validator\Exceptions\ValidatorException $exception) {
+            $errors = $exception->getMessageBag();
+            Log::error('Erro de validacao ao atualizar ficha corporal', ['errors' => $errors]);
+            return response()->json([
+                'error' => true,
+                'message' => 'Erros de validacao encontrados',
+                'errors' => $errors->toArray()
+            ], 422);
+        } catch (\Exception $exception) {
+            Log::error('Erro ao atualizar ficha corporal: ' . $exception->getMessage());
+            return response()->json([
+                'error' => true,
+                'message' => $exception->getMessage()
+            ], 422);
+        }
+    }
+
     /**
      * Armazena uma nova ficha corporal.
      *
@@ -116,7 +165,40 @@ class BodyEvaluationsController extends Controller
             return redirect()->route('panel.patient.index')->with('error', 'Paciente da ficha não encontrado.');
         }
 
-        return view('body-evaluations.show', compact('patient', 'bodyEvaluation'));
+        return view('body-evaluations.form', [
+            'title' => 'Editar avaliação corporal',
+            'subtitle' => 'Painel de Controle',
+            'patient' => $patient,
+            'bodyEvaluation' => $bodyEvaluation,
+        ]);
+    }
+
+    /**
+     * Visualiza uma ficha corporal.
+     *
+     * @param int $id
+     * @return View|RedirectResponse
+     */
+    public function panelShow(int $id)
+    {
+        $bodyEvaluation = $this->service->find($id, true);
+
+        if (!$bodyEvaluation) {
+            return redirect()->route('panel.patient.index')->with('error', 'Ficha de avaliação não encontrada.');
+        }
+
+        $patient = $this->patientService->find($bodyEvaluation->patient_id, true);
+
+        if (!$patient) {
+            return redirect()->route('panel.patient.index')->with('error', 'Paciente da ficha não encontrado.');
+        }
+
+        return view('body-evaluations.show', [
+            'title' => 'Visualizar avaliação corporal',
+            'subtitle' => 'Painel de Controle',
+            'patient' => $patient,
+            'bodyEvaluation' => $bodyEvaluation,
+        ]);
     }
 
     /**
@@ -278,6 +360,40 @@ class BodyEvaluationsController extends Controller
                 'message' => 'Erro ao preparar link: ' . $e->getMessage()
             ], 422);
         }
+    }
+
+    private function normalizePayload(array $payload): array
+    {
+        foreach (['weight', 'height', 'fat_percentage', 'muscle_mass'] as $field) {
+            if (array_key_exists($field, $payload) && $payload[$field] !== null && $payload[$field] !== '') {
+                $payload[$field] = (float) $payload[$field];
+            }
+        }
+
+        foreach (['patient_id', 'professional_id'] as $field) {
+            if (array_key_exists($field, $payload) && $payload[$field] !== null && $payload[$field] !== '') {
+                $payload[$field] = (int) $payload[$field];
+            }
+        }
+
+        foreach (['liquid_retention', 'consent_accepted'] as $field) {
+            $payload[$field] = filter_var($payload[$field] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+        }
+
+        foreach (['objectives', 'perimetry', 'cellulite', 'flaccidity', 'body_map_areas', 'medical_history', 'treatment_plan', 'evolution_sessions'] as $field) {
+            if (!array_key_exists($field, $payload) || $payload[$field] === null || $payload[$field] === '') {
+                continue;
+            }
+
+            if (is_string($payload[$field])) {
+                $decoded = json_decode($payload[$field], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $payload[$field] = $decoded;
+                }
+            }
+        }
+
+        return $payload;
     }
 }
 

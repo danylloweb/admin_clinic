@@ -47,7 +47,7 @@
 
                         <!-- Seção: Queixa Principal -->
                         <div class="card mb-4 border-2 border-warning">
-                            <div class="card-header bg-warning text-dark">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-comment-dots me-2"></i>Queixa Principal</h5>
                             </div>
                             <div class="card-body">
@@ -57,7 +57,7 @@
 
                         <!-- Seção: Tipo de Pele -->
                         <div class="card mb-4 border-2 border-success">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-droplet me-2"></i>Tipo de Pele</h5>
                             </div>
                             <div class="card-body">
@@ -78,7 +78,7 @@
 
                         <!-- Seção: Avaliação de Pele -->
                         <div class="card mb-4 border-2 border-secondary">
-                            <div class="card-header bg-secondary text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-magnifying-glass me-2"></i>Avaliação de Pele</h5>
                             </div>
                             <div class="card-body">
@@ -135,7 +135,7 @@
 
                         <!-- Seção: Fototipo de Fitzpatrick -->
                         <div class="card mb-4 border-2 border-danger">
-                            <div class="card-header bg-danger text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-palette me-2"></i>Fototipo de Fitzpatrick</h5>
                             </div>
                             <div class="card-body">
@@ -152,7 +152,7 @@
 
                         <!-- Seção: Histórico Estético -->
                         <div class="card mb-4 border-2 border-purple">
-                            <div class="card-header bg-purple text-white" style="background-color: #6f42c1;">
+                            <div class="card-header bg-info text-white" style="background-color: #6f42c1;">
                                 <h5 class="mb-0"><i class="fas fa-history me-2"></i>Histórico Estético</h5>
                             </div>
                             <div class="card-body">
@@ -184,7 +184,7 @@
 
                         <!-- Seção: Medicamentos em Uso -->
                         <div class="card mb-4 border-2 border-warning">
-                            <div class="card-header bg-warning text-dark">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-pills me-2"></i>Medicamentos em Uso</h5>
                             </div>
                             <div class="card-body">
@@ -194,7 +194,7 @@
 
                         <!-- Seção: Objetivo do Paciente -->
                         <div class="card mb-4 border-2 border-success">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Objetivo do Paciente</h5>
                             </div>
                             <div class="card-body">
@@ -204,7 +204,7 @@
 
                         <!-- Seção: Plano de Tratamento -->
                         <div class="card mb-4 border-2 border-secondary">
-                            <div class="card-header bg-secondary text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-stethoscope me-2"></i>Plano de Tratamento</h5>
                             </div>
                             <div class="card-body">
@@ -233,7 +233,7 @@
 
                         <!-- Seção: Registro Fotográfico -->
                         <div class="card mb-4 border-2 border-danger">
-                            <div class="card-header bg-danger text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-camera me-2"></i>Registro Fotográfico</h5>
                             </div>
                             <div class="card-body">
@@ -274,7 +274,7 @@
 
                         <!-- Seção: Termo de Consentimento -->
                         <div class="card mb-4 border-2 border-primary">
-                            <div class="card-header bg-primary text-white">
+                            <div class="card-header bg-info text-white">
                                 <h5 class="mb-0"><i class="fas fa-file-contract me-2"></i>Termo de Consentimento</h5>
                             </div>
                             <div class="card-body">
@@ -665,16 +665,42 @@
                 observations: formData.get('treatment_observations')
             };
 
+            if (!formData.get('patient_id')) {
+                showToast('Paciente nao informado para a avaliacao.', 'danger');
+                return;
+            }
+
+            if (!formData.get('professional_id')) {
+                showToast('Profissional nao informado. Atualize a pagina e tente novamente.', 'danger');
+                return;
+            }
+
+            if (!formData.get('chief_complaint')) {
+                showToast('Preencha a queixa principal.', 'danger');
+                return;
+            }
+
+            if (!formData.get('skin_type')) {
+                showToast('Selecione o tipo de pele.', 'danger');
+                return;
+            }
+
+            if (!formData.get('consent_accepted')) {
+                showToast('E necessario aceitar o termo de consentimento.', 'danger');
+                return;
+            }
+
             const data = {
                 patient_id: formData.get('patient_id'),
+                professional_id: formData.get('professional_id'),
                 cpf: formData.get('cpf'),
                 email: formData.get('email'),
                 whatsapp: formData.get('whatsapp'),
                 chief_complaint: formData.get('chief_complaint'),
                 skin_type: formData.get('skin_type'),
-                oiliness: parseInt(formData.get('oiliness')),
-                hydration: parseInt(formData.get('hydration')),
-                sensitivity: parseInt(formData.get('sensitivity')),
+                oiliness: parseInt(formData.get('oiliness') || '0', 10),
+                hydration: parseInt(formData.get('hydration') || '0', 10),
+                sensitivity: parseInt(formData.get('sensitivity') || '0', 10),
                 acne: !!formData.get('acne'),
                 acne_notes: formData.get('acne_notes'),
                 melasma: !!formData.get('melasma'),
@@ -715,7 +741,7 @@
 
                 const result = await response.json();
 
-                if (result.error) {
+                if (!response.ok || result.error) {
                     showToast(result.message || 'Erro ao salvar', 'danger');
                 } else {
                     showToast('Ficha salva com sucesso!', 'success');

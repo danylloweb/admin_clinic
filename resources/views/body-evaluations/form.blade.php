@@ -2,6 +2,9 @@
 @section('content')
 @php
     $isEdit = !empty($bodyEvaluation) && !empty($bodyEvaluation->id);
+    $professionalId = $isEdit
+        ? ($bodyEvaluation->professional_id ?? auth()->id())
+        : auth()->id();
 
     $perimetry = $bodyEvaluation->perimetry ?? [];
     $cellulite = $bodyEvaluation->cellulite ?? [];
@@ -35,7 +38,6 @@
                         @endif
 
                         <input type="hidden" name="patient_id" value="{{ $patient->id }}">
-                        <input type="hidden" name="professional_id" value="{{ auth()->id() }}">
 
                         <input type="hidden" name="perimetry" id="perimetry-hidden">
                         <input type="hidden" name="cellulite" id="cellulite-hidden">
@@ -47,7 +49,7 @@
                         <input type="hidden" name="treatment_plan" id="treatment-plan-hidden">
 
                         <div class="card mb-4 border-2">
-                            <div class="card-header bg-info text-white">
+                            <div class="card-header bg-success text-white">
                                 <h5 class="mb-0"><i class="fas fa-user me-2"></i>Dados do Paciente</h5>
                             </div>
                             <div class="card-body">
@@ -67,114 +69,8 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="card mb-4 border-2 border-success">
-                            <div class="card-header bg-success text-white">
-                                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Medidas Corporais e IMC</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Peso (kg)</label>
-                                        <input type="number" name="weight" class="form-control js-weight" step="0.1" value="{{ $bodyEvaluation->weight ?? '' }}">
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label">Altura (cm)</label>
-                                        <input type="number" name="height" class="form-control js-height" step="0.1" value="{{ $bodyEvaluation->height ?? '' }}">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label class="form-label">IMC</label>
-                                        <input type="text" id="bmi-display" class="form-control" readonly>
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label class="form-label">Gordura (%)</label>
-                                        <input type="number" name="fat_percentage" class="form-control" step="0.1" value="{{ $bodyEvaluation->fat_percentage ?? '' }}">
-                                    </div>
-                                    <div class="col-md-2 mb-3">
-                                        <label class="form-label">Musculatura (%)</label>
-                                        <input type="number" name="muscle_mass" class="form-control" step="0.1" value="{{ $bodyEvaluation->muscle_mass ?? '' }}">
-                                    </div>
-                                </div>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="liquid_retention" id="liquid-retention" value="1" {{ !empty($bodyEvaluation->liquid_retention) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="liquid-retention">Retencao de liquidos</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card mb-4 border-2 border-secondary">
-                            <div class="card-header bg-secondary text-white">
-                                <h5 class="mb-0"><i class="fas fa-ruler me-2"></i>Perimetria (cm)</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    @foreach([
-                                        'bust' => 'Busto',
-                                        'waist' => 'Cintura',
-                                        'hip' => 'Quadril',
-                                        'thigh_r' => 'Coxa direita',
-                                        'thigh_l' => 'Coxa esquerda',
-                                        'calf_r' => 'Panturrilha direita',
-                                        'calf_l' => 'Panturrilha esquerda',
-                                        'arm_r' => 'Braco direito'
-                                    ] as $key => $label)
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label">{{ $label }}</label>
-                                            <input type="number" class="form-control js-perimetry" data-key="{{ $key }}" step="0.1" value="{{ $perimetry[$key] ?? '' }}">
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card mb-4 border-2 border-danger">
-                            <div class="card-header bg-danger text-white">
-                                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Celulite</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Grau</label>
-                                        <select id="cellulite-grade" class="form-select">
-                                            <option value="">Selecionar</option>
-                                            @foreach(['I', 'II', 'III', 'IV'] as $grade)
-                                                <option value="{{ $grade }}" {{ ($cellulite['grade'] ?? '') === $grade ? 'selected' : '' }}>{{ $grade }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label d-block">Tipo</label>
-                                        @foreach(['fibrosa' => 'Fibrosa', 'edematosa' => 'Edematosa', 'flaccida' => 'Flaccida'] as $value => $label)
-                                            <div class="form-check">
-                                                <input class="form-check-input js-cellulite-type" type="checkbox" value="{{ $value }}" id="cellulite-{{ $value }}" {{ in_array($value, $cellulite['types'] ?? []) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="cellulite-{{ $value }}">{{ $label }}</label>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card mb-4 border-2 border-warning">
-                            <div class="card-header bg-warning text-dark">
-                                <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Flacidez</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Tissular: <span id="flac-tissue-label">{{ (int)($flaccidity['tissue'] ?? 5) }}</span></label>
-                                        <input type="range" class="form-range" id="flac-tissue" min="0" max="10" value="{{ (int)($flaccidity['tissue'] ?? 5) }}">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">Muscular: <span id="flac-muscle-label">{{ (int)($flaccidity['muscle'] ?? 5) }}</span></label>
-                                        <input type="range" class="form-range" id="flac-muscle" min="0" max="10" value="{{ (int)($flaccidity['muscle'] ?? 5) }}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="card mb-4 border-2 border-info">
-                            <div class="card-header bg-info text-white">
+                            <div class="card-header bg-success text-white">
                                 <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Mapa Corporal Feminino (pontos de medida)</h5>
                             </div>
                             <div class="card-body">
@@ -219,13 +115,13 @@
 
                                     <div class="col-lg-5">
                                         <div class="border rounded p-3 mb-3 bg-light-subtle">
-                                            <label class="form-label mb-2">Ponto selecionado</label>
-                                            <div id="point-selected-label" class="fw-semibold mb-2 text-muted">Clique em um ponto no corpo</div>
+                                            <label class="form-label mb-2 text-black">Ponto selecionado</label>
+                                            <div id="point-selected-label" class="fw-semibold mb-2 text-black">Clique em um ponto no corpo</div>
                                             <div class="input-group">
                                                 <input type="number" step="0.1" id="point-measure-input" class="form-control" placeholder="Valor da medida (cm)">
                                                 <button type="button" class="btn btn-primary" id="point-save-btn">Aplicar</button>
                                             </div>
-                                            <small class="text-muted d-block mt-2">A medida aplicada atualiza automaticamente a tabela de Perimetria.</small>
+                                            <small class="text-black d-block mt-2">A medida aplicada atualiza automaticamente a tabela de Perimetria.</small>
                                         </div>
 
                                         <label class="form-label">Pontos marcados</label>
@@ -235,8 +131,96 @@
                             </div>
                         </div>
 
+                        <div class="card mb-4 border-2 border-secondary">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-ruler me-2"></i>Perimetria (cm)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    @foreach([
+                                        'bust' => 'Busto',
+                                        'waist' => 'Cintura',
+                                        'hip' => 'Quadril',
+                                        'thigh_r' => 'Coxa direita',
+                                        'thigh_l' => 'Coxa esquerda',
+                                        'calf_r' => 'Panturrilha direita',
+                                        'calf_l' => 'Panturrilha esquerda',
+                                        'arm_r' => 'Braco direito'
+                                    ] as $key => $label)
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label">{{ $label }}</label>
+                                            <input type="number" class="form-control js-perimetry" data-key="{{ $key }}" step="0.1" value="{{ $perimetry[$key] ?? '' }}">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4 border-2 border-success">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Medidas Corporais e IMC</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Peso (kg)</label>
+                                        <input type="number" name="weight" class="form-control js-weight" step="0.1" value="{{ $bodyEvaluation->weight ?? '' }}">
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Altura (cm)</label>
+                                        <input type="number" name="height" class="form-control js-height" step="0.1" value="{{ $bodyEvaluation->height ?? '' }}">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label class="form-label">IMC</label>
+                                        <input type="text" id="bmi-display" class="form-control" readonly>
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label class="form-label">Gordura (%)</label>
+                                        <input type="number" name="fat_percentage" class="form-control" step="0.1" value="{{ $bodyEvaluation->fat_percentage ?? '' }}">
+                                    </div>
+                                    <div class="col-md-2 mb-3">
+                                        <label class="form-label">Musculatura (%)</label>
+                                        <input type="number" name="muscle_mass" class="form-control" step="0.1" value="{{ $bodyEvaluation->muscle_mass ?? '' }}">
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="liquid_retention" id="liquid-retention" value="1" {{ !empty($bodyEvaluation->liquid_retention) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="liquid-retention">Retencao de liquidos</label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="card mb-4 border-2 border-danger">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Celulite</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Grau</label>
+                                        <select id="cellulite-grade" class="form-select">
+                                            <option value="">Selecionar</option>
+                                            @foreach(['I', 'II', 'III', 'IV'] as $grade)
+                                                <option value="{{ $grade }}" {{ ($cellulite['grade'] ?? '') === $grade ? 'selected' : '' }}>{{ $grade }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label d-block">Tipo</label>
+                                        @foreach(['fibrosa' => 'Fibrosa', 'edematosa' => 'Edematosa', 'flaccida' => 'Flaccida'] as $value => $label)
+                                            <div class="form-check">
+                                                <input class="form-check-input js-cellulite-type" type="checkbox" value="{{ $value }}" id="cellulite-{{ $value }}" {{ in_array($value, $cellulite['types'] ?? []) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="cellulite-{{ $value }}">{{ $label }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card mb-4" style="border:2px solid #6f42c1;">
-                            <div class="card-header text-white" style="background:#6f42c1;">
+                            <div class="card-header bg-success text-white" style="background:#6f42c1;">
                                 <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Evolucao</h5>
                             </div>
                             <div class="card-body">
@@ -246,15 +230,15 @@
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered align-middle">
                                         <thead class="table-light">
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Peso</th>
-                                                <th>Gordura%</th>
-                                                <th>Musculatura%</th>
-                                                <th>Medidas</th>
-                                                <th>Notas</th>
-                                                <th></th>
-                                            </tr>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Peso</th>
+                                            <th>Gordura%</th>
+                                            <th>Musculatura%</th>
+                                            <th>Medidas</th>
+                                            <th>Notas</th>
+                                            <th></th>
+                                        </tr>
                                         </thead>
                                         <tbody id="evolution-tbody"></tbody>
                                     </table>
@@ -262,8 +246,26 @@
                             </div>
                         </div>
 
+                        <div class="card mb-4 border-2 border-warning">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Flacidez</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Tissular: <span id="flac-tissue-label">{{ (int)($flaccidity['tissue'] ?? 5) }}</span></label>
+                                        <input type="range" class="form-range" id="flac-tissue" min="0" max="10" value="{{ (int)($flaccidity['tissue'] ?? 5) }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Muscular: <span id="flac-muscle-label">{{ (int)($flaccidity['muscle'] ?? 5) }}</span></label>
+                                        <input type="range" class="form-range" id="flac-muscle" min="0" max="10" value="{{ (int)($flaccidity['muscle'] ?? 5) }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card mb-4 border-2 border-info">
-                            <div class="card-header bg-info text-white"><h5 class="mb-0">Objetivos</h5></div>
+                            <div class="card-header bg-success text-white"><h5 class="mb-0">Objetivos</h5></div>
                             <div class="card-body">
                                 @foreach([
                                     'reduce-weight' => 'Reducao de peso',
@@ -283,7 +285,7 @@
                         </div>
 
                         <div class="card mb-4 border-2 border-warning">
-                            <div class="card-header bg-warning text-dark"><h5 class="mb-0">Historico Medico</h5></div>
+                            <div class="card-header bg-success text-white"><h5 class="mb-0">Historico Medico</h5></div>
                             <div class="card-body">
                                 @foreach([
                                     'hypertension' => 'Hipertensao',
@@ -302,7 +304,7 @@
                         </div>
 
                         <div class="card mb-4 border-2 border-secondary">
-                            <div class="card-header bg-secondary text-white"><h5 class="mb-0">Procedimentos Anteriores</h5></div>
+                            <div class="card-header bg-success text-white"><h5 class="mb-0">Procedimentos Anteriores</h5></div>
                             <div class="card-body">
                                 <textarea class="form-control" name="previous_procedures" rows="3">{{ $bodyEvaluation->previous_procedures ?? '' }}</textarea>
                             </div>
@@ -316,7 +318,7 @@
                         </div>
 
                         <div class="card mb-4 border-2 border-primary">
-                            <div class="card-header bg-primary text-white"><h5 class="mb-0">Fotos</h5></div>
+                            <div class="card-header bg-success text-white"><h5 class="mb-0">Fotos</h5></div>
                             <div class="card-body">
                                 <div class="row g-3">
                                     @foreach([
@@ -340,7 +342,7 @@
                         </div>
 
                         <div class="card mb-4 border-2 border-danger">
-                            <div class="card-header bg-danger text-white"><h5 class="mb-0">Consentimento</h5></div>
+                            <div class="card-header bg-success text-white"><h5 class="mb-0">Consentimento</h5></div>
                             <div class="card-body">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="consent_accepted" id="consent_accepted" value="1" {{ !empty($bodyEvaluation->consent_accepted) ? 'checked' : '' }}>
@@ -434,6 +436,27 @@
         let activeCameraTarget = null;
         let cameraStream = null;
         let activePointElement = null;
+        const cameraModalEl = document.getElementById('cameraModal');
+        const cameraModal = cameraModalEl ? new bootstrap.Modal(cameraModalEl) : null;
+
+        function normalizeCameraModalLayering() {
+            if (!cameraModalEl) return;
+            if (cameraModalEl.parentElement !== document.body) {
+                document.body.appendChild(cameraModalEl);
+            }
+
+            cameraModalEl.style.zIndex = '1060';
+            document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+                backdrop.style.zIndex = '1050';
+            });
+        }
+
+        function cleanupModalArtifacts() {
+            document.querySelectorAll('.modal-backdrop').forEach((backdrop) => backdrop.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
 
         function toggleSaveState() {
             const blocked = pendingUploads.count > 0;
@@ -619,18 +642,28 @@
 
         async function openCamera(target) {
             activeCameraTarget = target;
-            const modalEl = document.getElementById('cameraModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
+
+            if (!cameraModal) {
+                showToast('Nao foi possivel inicializar o modal da camera.', 'danger');
+                return;
+            }
+
+            cleanupModalArtifacts();
+            normalizeCameraModalLayering();
+            cameraModal.show();
+            normalizeCameraModalLayering();
 
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' } },
+                    audio: false
+                });
                 const video = document.getElementById('cameraVideo');
                 video.srcObject = cameraStream;
                 video.play();
             } catch (error) {
-                modal.hide();
-                alert('Nao foi possivel abrir a camera.');
+                cameraModal.hide();
+                showToast('Nao foi possivel abrir a camera.', 'danger');
             }
         }
 
@@ -695,11 +728,18 @@
             canvas.toBlob(function (blob) {
                 uploadPhoto(blob, activeCameraTarget);
                 stopCamera();
-                bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+                if (cameraModal) cameraModal.hide();
             }, 'image/jpeg', 0.9);
         });
 
-        document.getElementById('cameraModal').addEventListener('hidden.bs.modal', stopCamera);
+        if (cameraModalEl) {
+            cameraModalEl.addEventListener('shown.bs.modal', normalizeCameraModalLayering);
+            cameraModalEl.addEventListener('hidden.bs.modal', function () {
+                stopCamera();
+                activeCameraTarget = null;
+                cleanupModalArtifacts();
+            });
+        }
 
         [weightInput, heightInput].forEach((el) => el.addEventListener('input', calculateBMI));
         document.querySelectorAll('.js-perimetry').forEach((el) => el.addEventListener('input', syncPerimetry));
@@ -710,9 +750,10 @@
         document.querySelectorAll('.js-medical').forEach((el) => el.addEventListener('change', syncMedicalHistory));
 
         form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
             if (pendingUploads.count > 0) {
-                e.preventDefault();
-                alert('Aguarde o termino do upload das fotos antes de salvar.');
+                showToast('Aguarde o termino do upload das fotos antes de salvar.', 'warning');
                 return;
             }
 
@@ -724,7 +765,103 @@
             syncEvolution();
             syncTreatmentPlan();
             renderSelectedAreas();
+
+            saveBodyEvaluation();
         });
+
+        async function saveBodyEvaluation() {
+            const formData = new FormData(form);
+
+            const parseJsonField = (id, fallback) => {
+                const raw = document.getElementById(id)?.value;
+                if (!raw) return fallback;
+                try {
+                    return JSON.parse(raw);
+                } catch (_) {
+                    return fallback;
+                }
+            };
+
+            if (!formData.get('patient_id')) {
+                showToast('Paciente nao informado.', 'danger');
+                return;
+            }
+
+
+
+            if (!formData.get('consent_accepted')) {
+                showToast('E necessario aceitar o consentimento para salvar.', 'danger');
+                return;
+            }
+
+            const payload = {
+                patient_id: Number(formData.get('patient_id')),
+                professional_id: @json($professionalId),
+                weight: formData.get('weight') !== '' ? Number(formData.get('weight')) : null,
+                height: formData.get('height') !== '' ? Number(formData.get('height')) : null,
+                fat_percentage: formData.get('fat_percentage') !== '' ? Number(formData.get('fat_percentage')) : null,
+                muscle_mass: formData.get('muscle_mass') !== '' ? Number(formData.get('muscle_mass')) : null,
+                liquid_retention: !!formData.get('liquid_retention'),
+                previous_procedures: formData.get('previous_procedures') || null,
+                consent_accepted: !!formData.get('consent_accepted'),
+                photo_front: formData.get('photo_front') || null,
+                photo_profile_right: formData.get('photo_profile_right') || null,
+                photo_profile_left: formData.get('photo_profile_left') || null,
+                objectives: parseJsonField('objectives-hidden', []),
+                perimetry: parseJsonField('perimetry-hidden', {}),
+                cellulite: parseJsonField('cellulite-hidden', {}),
+                flaccidity: parseJsonField('flaccidity-hidden', {}),
+                body_map_areas: parseJsonField('body-map-areas-hidden', []),
+                medical_history: parseJsonField('medical-history-hidden', []),
+                evolution_sessions: parseJsonField('evolution-sessions-hidden', []),
+                treatment_plan: parseJsonField('treatment-plan-hidden', []),
+            };
+
+            const isEdit = {{ $isEdit ? 'true' : 'false' }};
+            const url = isEdit
+                ? '{{ route('panel.body-evaluations.update', ['id' => $bodyEvaluation->id ?? 0]) }}'
+                : '{{ route('panel.body-evaluations.store') }}';
+            const method = isEdit ? 'PUT' : 'POST';
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || result.error) {
+                    let errorMsg = result.message || 'Erro ao salvar avaliacao corporal.';
+                    if (result.errors) {
+                        const errorList = Object.entries(result.errors)
+                            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                            .join('\n');
+                        errorMsg = errorList || errorMsg;
+                    }
+                    showToast(errorMsg, 'danger');
+                    console.error('Validation errors:', result.errors);
+                    return;
+                }
+
+                showToast('Avaliacao corporal salva com sucesso!', 'success');
+                setTimeout(() => {
+                    window.location.href = '{{ route('panel.body-evaluations.index', ['patientId' => $patient->id]) }}';
+                }, 1200);
+            } catch (error) {
+                showToast('Erro ao salvar: ' + error.message, 'danger');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar';
+            }
+        }
 
         if (Array.isArray(initialEvolution) && initialEvolution.length) {
             initialEvolution.forEach((item) => {

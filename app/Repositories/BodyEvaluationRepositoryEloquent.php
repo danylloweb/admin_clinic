@@ -2,13 +2,12 @@
 
 namespace App\Repositories;
 
-use App\Presenters\FacialEvaluationPresenter;
-use App\Validators\FacialEvaluationValidator;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\BodyEvaluationRepository;
 use App\Entities\BodyEvaluation;
 use App\Validators\BodyEvaluationValidator;
+use App\Presenters\BodyEvaluationPresenter;
 
 /**
  * Class BodyEvaluationRepositoryEloquent.
@@ -27,11 +26,9 @@ class BodyEvaluationRepositoryEloquent extends AppRepository implements BodyEval
         return BodyEvaluation::class;
     }
 
-
     public function validator()
     {
-
-        return FacialEvaluationValidator::class;
+        return BodyEvaluationValidator::class;
     }
 
     /**
@@ -39,7 +36,6 @@ class BodyEvaluationRepositoryEloquent extends AppRepository implements BodyEval
      */
     public function presenter()
     {
-        return FacialEvaluationPresenter::class;
+        return BodyEvaluationPresenter::class;
     }
-
 }

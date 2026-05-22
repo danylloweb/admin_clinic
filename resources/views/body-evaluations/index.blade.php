@@ -5,9 +5,12 @@
         <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
             <h3 class="card-title fs-5 mb-0">Fichas de Avaliacao Corporal</h3>
             @if($patient)
-                <a href="{{ route('panel.body-evaluations.create', ['patientId' => $patient->id]) }}" class="btn btn-primary">
-                    <i class="fas fa-plus me-1"></i>Nova Avaliacao
-                </a>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <a href="{{ route('panel.patient.show', ['id' => $patient->id]) }}" class="btn btn-secondary btn-lg">Voltar</a>
+                    <a href="{{ route('panel.body-evaluations.create', ['patientId' => $patient->id]) }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-1"></i>Nova Avaliacao
+                    </a>
+                </div>
             @endif
         </div>
 
@@ -16,8 +19,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Data Criacao</th>
-                        <th>Profissional</th>
+                        <th>Objetivo</th>
                         <th>IMC</th>
                         <th>Peso</th>
                         <th>Gordura %</th>
@@ -66,21 +68,7 @@
             },
             columns: [
                 { data: 'id', render: (data) => `<strong>#${data}</strong>` },
-                {
-                    data: 'created_at',
-                    render: function (value) {
-                        if (!value) return '-';
-                        const dt = new Date(value);
-                        return Number.isNaN(dt.getTime()) ? value : dt.toLocaleString('pt-BR');
-                    }
-                },
-                {
-                    data: 'professional',
-                    orderable: false,
-                    render: function (value) {
-                        return value?.name || '<span class="text-muted">-</span>';
-                    }
-                },
+                { data: 'treatment_plan' },
                 {
                     data: null,
                     orderable: false,
@@ -110,12 +98,12 @@
                     orderable: false,
                     searchable: false,
                     render: function (_, __, row) {
-                        const showUrl = `{{ url('/panel-body-evaluations-show') }}/${row.id}`;
                         const editUrl = `{{ url('/panel-body-evaluations-edit') }}/${row.id}`;
                         return `
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="${showUrl}" class="btn btn-info" title="Visualizar"><i class="fas fa-eye"></i></a>
-                                <a href="${editUrl}" class="btn btn-warning" title="Editar"><i class="fas fa-edit"></i></a>
+                                <a href="${editUrl}" class="btn btn-primary" title="Editar">
+                                   Abrir
+                                </a>
                             </div>
                         `;
                     }

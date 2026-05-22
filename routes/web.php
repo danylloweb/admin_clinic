@@ -64,7 +64,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-facial-evaluations-index/{patientId}', [FacialEvaluationsController::class, 'panelIndex'])->name('panel.facial-evaluations.index');
     Route::get('/panel-facial-evaluations-create/{patientId}', [FacialEvaluationsController::class, 'create'])->name('panel.facial-evaluations.create');
     Route::post('/panel-facial-evaluations-store', [FacialEvaluationsController::class, 'store'])->name('panel.facial-evaluations.store');
-    Route::get('/panel-facial-evaluations-show/{id}', [FacialEvaluationsController::class, 'show'])->name('panel.facial-evaluations.show');
+    Route::get('/panel-facial-evaluations-show/{id}', [FacialEvaluationsController::class, 'panelShow'])->name('panel.facial-evaluations.show');
     Route::get('/panel-facial-evaluations-edit/{id}', [FacialEvaluationsController::class, 'edit'])->name('panel.facial-evaluations.edit');
     Route::put('/panel-facial-evaluations-update/{id}', [FacialEvaluationsController::class, 'update'])->name('panel.facial-evaluations.update');
     Route::delete('/panel-facial-evaluations-delete/{id}', [FacialEvaluationsController::class, 'destroy'])->name('panel.facial-evaluations.destroy');
@@ -75,7 +75,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-body-evaluations-index/{patientId}', [BodyEvaluationsController::class, 'panelIndex'])->name('panel.body-evaluations.index');
     Route::get('/panel-body-evaluations-create/{patientId}', [BodyEvaluationsController::class, 'create'])->name('panel.body-evaluations.create');
     Route::post('/panel-body-evaluations-store', [BodyEvaluationsController::class, 'store'])->name('panel.body-evaluations.store');
-    Route::get('/panel-body-evaluations-show/{id}', [BodyEvaluationsController::class, 'show'])->name('panel.body-evaluations.show');
+    Route::get('/panel-body-evaluations-show/{id}', [BodyEvaluationsController::class, 'panelShow'])->name('panel.body-evaluations.show');
     Route::get('/panel-body-evaluations-edit/{id}', [BodyEvaluationsController::class, 'edit'])->name('panel.body-evaluations.edit');
     Route::put('/panel-body-evaluations-update/{id}', [BodyEvaluationsController::class, 'update'])->name('panel.body-evaluations.update');
     Route::delete('/panel-body-evaluations-delete/{id}', [BodyEvaluationsController::class, 'destroy'])->name('panel.body-evaluations.destroy');
