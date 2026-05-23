@@ -20,7 +20,7 @@
                     <form id="facialEvaluationForm" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="patient_id" value="{{ $patient->id ?? '' }}">
-                        <input type="hidden" name="professional_id" value="{{ auth()->user()->id ?? '' }}">
+                        <input type="hidden" name="professional_id" value="{{ $professional_id }}">
 
                         <!-- Seção: Dados do Paciente -->
                         <div class="card mb-4 border-2">

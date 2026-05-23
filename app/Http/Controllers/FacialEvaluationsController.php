@@ -75,18 +75,19 @@ class FacialEvaluationsController extends Controller
      * @param int $patientId
      * @return View|RedirectResponse
      */
-    public function create(int $patientId)
+    public function create(int $patientId,Request $request)
     {
         $patient = $this->patientService->find($patientId, true);
 
         if (!$patient) {
             return redirect()->route('panel.patient.index')->with('error', 'Paciente não encontrado.');
         }
-
+        $professional_id = $request->attributes->get('user_jwt')->id ?? 1;
         return view('facial-evaluations.form', [
-            'title' => 'Cadastro de avaliação facial',
+            'title'    => 'Cadastro de avaliação facial',
             'subtitle' => 'Painel de Controle',
-            'patient' => $patient,
+            'patient'  => $patient,
+            'professional_id'  => $professional_id,
         ]);
     }
 
@@ -118,7 +119,7 @@ class FacialEvaluationsController extends Controller
      * @param int $id
      * @return View|RedirectResponse
      */
-    public function edit(int $id)
+    public function edit(int $id, Request $request): JsonResponse
     {
         $facialEvaluation = $this->service->find($id, true);
 
@@ -131,27 +132,29 @@ class FacialEvaluationsController extends Controller
         if (!$patient) {
             return redirect()->route('panel.patient.index')->with('error', 'Paciente da ficha não encontrado.');
         }
-
+        $professional_id = $request->attributes->get('user_jwt')->id ?? 1;
         return view('facial-evaluations.edit', [
             'title' => 'Editar avaliacao facial',
             'subtitle' => 'Painel de Controle',
             'patient' => $patient,
             'facialEvaluation' => $facialEvaluation,
+            'professional_id'  => $professional_id,
         ]);
     }
 
-    public function panelShow(int $id)
+    public function panelShow(int $id,Request $request): View
     {
         $facialEvaluation = $this->service->find($id, true);
 
         if (!$facialEvaluation) {
             return redirect()->route('panel.patient.index')->with('error', 'Ficha de avaliação não encontrada.');
         }
-
+        $professional_id = $request->attributes->get('user_jwt')->id ?? 1;
         return view('facial-evaluations.show', [
             'title' => 'Visualizar avaliacao facial',
             'subtitle' => 'Painel de Controle',
             'facialEvaluation' => $facialEvaluation,
+            'professional_id'  => $professional_id,
         ]);
     }
 
