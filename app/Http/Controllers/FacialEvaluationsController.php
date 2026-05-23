@@ -119,7 +119,7 @@ class FacialEvaluationsController extends Controller
      * @param int $id
      * @return View|RedirectResponse
      */
-    public function edit(int $id, Request $request): JsonResponse
+    public function edit(int $id, Request $request)
     {
         $facialEvaluation = $this->service->find($id, true);
 
@@ -138,7 +138,7 @@ class FacialEvaluationsController extends Controller
             'subtitle' => 'Painel de Controle',
             'patient' => $patient,
             'facialEvaluation' => $facialEvaluation,
-            'professional_id'  => $professional_id,
+            'professional_id'  => $professional_id
         ]);
     }
 
