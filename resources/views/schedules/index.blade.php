@@ -1159,6 +1159,7 @@
                                 const buttons = [];
 
                                 buttons.push(`<button type="button" class="btn btn-sm btn-outline-secondary btn-edit-schedule" data-id="${row.id}" title="Editar agendamento"><i class="ph ph-pencil-simple-line"></i></button>`);
+                                buttons.push(`<a href="/panel-attendances-open-by-schedule/${row.id}" class="btn btn-sm btn-outline-info" title="Abrir Atendimento"><i class="ph ph-clipboard-text"></i></a>`);
 
                                 if (row.status !== 'Confirmado') {
                                     buttons.push(`<button type="button" class="btn btn-sm btn-success btn-confirm-attendance" data-id="${row.id}" title="Confirmar atendimento"><i class="ph ph-check"></i></button>`);

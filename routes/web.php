@@ -8,6 +8,7 @@ use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProceduresController;
 use App\Http\Controllers\FacialEvaluationsController;
 use App\Http\Controllers\BodyEvaluationsController;
+use App\Http\Controllers\AestheticProcedureEvolutionsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -81,5 +82,17 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::delete('/panel-body-evaluations-delete/{id}', [BodyEvaluationsController::class, 'destroy'])->name('panel.body-evaluations.destroy');
     Route::post('/panel-body-evaluations-generate-token/{id}', [BodyEvaluationsController::class, 'generateSignatureToken'])->name('panel.body-evaluations.generate-token');
     Route::post('/panel-body-evaluations-send-link/{id}', [BodyEvaluationsController::class, 'sendSignatureLink'])->name('panel.body-evaluations.send-link');
+
+    // Rotas autenticadas para atendimento (evolucao de procedimentos esteticos)
+    Route::get('/panel-attendances-index/{patientId}', [AestheticProcedureEvolutionsController::class, 'panelIndex'])->name('panel.attendances.index');
+    Route::get('/panel-attendances-open-by-schedule/{scheduleId}', [AestheticProcedureEvolutionsController::class, 'openBySchedule'])->name('panel.attendances.open-by-schedule');
+    Route::get('/panel-attendances-create/{patientId}', [AestheticProcedureEvolutionsController::class, 'create'])->name('panel.attendances.create');
+    Route::post('/panel-attendances-store', [AestheticProcedureEvolutionsController::class, 'store'])->name('panel.attendances.store');
+    Route::get('/panel-attendances-show/{id}', [AestheticProcedureEvolutionsController::class, 'panelShow'])->name('panel.attendances.show');
+    Route::get('/panel-attendances-edit/{id}', [AestheticProcedureEvolutionsController::class, 'edit'])->name('panel.attendances.edit');
+    Route::put('/panel-attendances-update/{id}', [AestheticProcedureEvolutionsController::class, 'update'])->name('panel.attendances.update');
+    Route::delete('/panel-attendances-delete/{id}', [AestheticProcedureEvolutionsController::class, 'destroy'])->name('panel.attendances.destroy');
+    Route::get('/panel-attendances-print/{id}', [AestheticProcedureEvolutionsController::class, 'print'])->name('panel.attendances.print');
+    Route::get('/panel-attendances-export-pdf/{id}', [AestheticProcedureEvolutionsController::class, 'exportPdf'])->name('panel.attendances.export-pdf');
 });
 
