@@ -24,6 +24,5 @@ jobs:
             cd /var/www/html/admin_clinic
             git pull origin main
             make prod-restart
-            make prod-migrate
             make prod-cache
 
