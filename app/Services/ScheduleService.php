@@ -7,6 +7,7 @@ use App\Criterias\FilterByDateEndScheduleCriteria;
 use App\Criterias\FilterByDateScheduleCriteria;
 use App\Criterias\FilterByDateStartScheduleCriteria;
 use App\Criterias\FilterByPatientScheduleCriteria;
+use App\Criterias\FilterByProfessionalScheduleCriteria;
 use App\Criterias\FilterByProcedureScheduleCriteria;
 use App\Criterias\FilterByStatusCriteria;
 use App\Criterias\FilterByTypeProcedureScheduleCriteria;
@@ -76,6 +77,7 @@ class ScheduleService extends AppService
             ->pushCriteria(app(FilterByProcedureScheduleCriteria::class))
             ->pushCriteria(app(FilterByStatusCriteria::class))
             ->pushCriteria(app(FilterByPatientScheduleCriteria::class))
+            ->pushCriteria(app(FilterByProfessionalScheduleCriteria::class))
 //            ->pushCriteria(app(FilterByDateScheduleCriteria::class))
             ->pushCriteria(app(FilterByDateStartScheduleCriteria::class))
             ->pushCriteria(app(FilterByDateEndScheduleCriteria::class))

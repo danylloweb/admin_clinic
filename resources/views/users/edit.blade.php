@@ -23,6 +23,7 @@
 <script>
     const USER_ID = {{ (int) $userId }};
     let currentUser = null;
+    let professionalSchedulesTable = null;
 
     async function apiGet(url) {
         const res = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
@@ -118,6 +119,44 @@
                 <button type="button" class="btn btn-primary" id="btn-save-user">Salvar alterações</button>
                 <a href="{{ route('panel.users.index') }}" class="btn btn-secondary">Voltar</a>
             </div>
+
+            <hr class="my-4">
+
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0">Agendamentos atendidos</h6>
+                    <span class="badge ">Profissional #${USER_ID}</span>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="filter-schedules-start-date" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Final Date</label>
+                        <input type="date" id="filter-schedules-final-date" class="form-control">
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end gap-2">
+                        <button type="button" id="btn-filter-schedules" class="btn btn-outline-primary">Filtrar</button>
+                        <button type="button" id="btn-clear-filter-schedules" class="btn btn-outline-secondary">Limpar</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="datatable-professional-schedules" class="table table-bordered table-striped align-middle" style="width:100%">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Procedimento</th>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Status</th>
+                            <th>Ação</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
         `;
 
         document.getElementById('edit-user-photo-input').addEventListener('change', function () {
@@ -140,6 +179,97 @@
         });
 
         document.getElementById('btn-save-user').addEventListener('click', saveUser);
+
+        document.getElementById('btn-filter-schedules').addEventListener('click', function () {
+            if (professionalSchedulesTable) {
+                professionalSchedulesTable.ajax.reload();
+            }
+        });
+
+        document.getElementById('btn-clear-filter-schedules').addEventListener('click', function () {
+            document.getElementById('filter-schedules-start-date').value = '';
+            document.getElementById('filter-schedules-final-date').value = '';
+            if (professionalSchedulesTable) {
+                professionalSchedulesTable.ajax.reload();
+            }
+        });
+
+        initProfessionalSchedulesTable();
+    }
+
+    function initProfessionalSchedulesTable() {
+        const tableSelector = '#datatable-professional-schedules';
+        if (!window.jQuery || !$(tableSelector).length) {
+            return;
+        }
+
+        if ($.fn.DataTable.isDataTable(tableSelector)) {
+            $(tableSelector).DataTable().destroy();
+        }
+
+        professionalSchedulesTable = $(tableSelector).DataTable({
+            processing: true,
+            serverSide: true,
+            searching: true,
+            order: [[0, 'desc']],
+            ajax: function (data, callback) {
+                const page = Math.floor(data.start / data.length) + 1;
+                const limit = data.length === -1 ? 15 : data.length;
+                const search = data.search.value;
+                const columnMap = { 0: 'id', 1: 'patient.name', 2: 'procedure.name', 3: 'date', 4: 'time', 5: 'status' };
+                const orderBy = columnMap[data.order?.[0]?.column] || 'id';
+                const sortedBy = data.order?.[0]?.dir || 'desc';
+
+                $.ajax({
+                    url: `{{ url('/') }}/schedules`,
+                    method: 'GET',
+                    data: {
+                        professional_id: USER_ID,
+                        status: 'Confirmado',
+                        start_date: document.getElementById('filter-schedules-start-date')?.value || '',
+                        final_date: document.getElementById('filter-schedules-final-date')?.value || '',
+                        page,
+                        limit,
+                        search,
+                        orderBy,
+                        sortedBy
+                    },
+                    success: function (response) {
+                        callback({
+                            recordsTotal: response.meta?.pagination?.total || 0,
+                            recordsFiltered: response.meta?.pagination?.total || 0,
+                            data: response.data || []
+                        });
+                    },
+                    error: function () {
+                        callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+                    }
+                });
+            },
+            columns: [
+                { data: 'id', render: (v) => `<strong>#${v}</strong>` },
+                { data: 'patient_name', render: (v) => v || '-' },
+                { data: 'procedure_name', render: (v) => v || '-' },
+                { data: 'date', render: (v) => v || '-' },
+                { data: 'time', render: (v) => v || '-' },
+                { data: 'status_title', render: (v) => v || '-' },
+                {
+                    data: null,
+                    orderable: false,
+                    searchable: false,
+                    render: (_, __, row) => {
+                        const openAttendanceUrl = `{{ route('panel.attendances.open-by-schedule', ['scheduleId' => '__SCHEDULE__']) }}`
+                            .replace('__SCHEDULE__', row.id);
+                        return `
+                            <a href="${openAttendanceUrl}" class="btn btn-sm btn-outline-primary" title="Abrir atendimento">
+                                Abrir atendimento
+                            </a>
+                        `;
+                    }
+                }
+            ],
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' }
+        });
     }
 
     async function saveUser() {
