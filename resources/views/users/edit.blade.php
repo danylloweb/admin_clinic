@@ -141,6 +141,34 @@
                         <button type="button" id="btn-clear-filter-schedules" class="btn btn-outline-secondary">Limpar</button>
                     </div>
                 </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-primary bg-opacity-10 h-100">
+                            <div class="card-body">
+                                <div class="small text-muted">Total confirmado</div>
+                                <div id="schedule-total-price" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-success bg-opacity-10 h-100">
+                            <div class="card-body">
+                                <div class="small text-muted">Custo confirmado</div>
+                                <div id="schedule-total-cost" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-warning bg-opacity-10 h-100">
+                            <div class="card-body">
+                                <div class="small text-muted">% Estimada</div>
+                                <div id="schedule-estimate-cost" class="fs-5 fw-semibold text-body-emphasis">R$ 0,00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table id="datatable-professional-schedules" class="table table-bordered table-striped align-middle" style="width:100%">
                         <thead>
@@ -235,6 +263,7 @@
                         sortedBy
                     },
                     success: function (response) {
+                        updateScheduleTotals(response.total || {});
                         callback({
                             recordsTotal: response.meta?.pagination?.total || 0,
                             recordsFiltered: response.meta?.pagination?.total || 0,
@@ -242,6 +271,7 @@
                         });
                     },
                     error: function () {
+                        updateScheduleTotals({});
                         callback({ recordsTotal: 0, recordsFiltered: 0, data: [] });
                     }
                 });
@@ -270,6 +300,20 @@
             ],
             language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json' }
         });
+    }
+
+    function updateScheduleTotals(total) {
+        const totalPriceEl = document.getElementById('schedule-total-price');
+        const totalCostEl = document.getElementById('schedule-total-cost');
+        const estimateCostEl = document.getElementById('schedule-estimate-cost');
+
+        if (!totalPriceEl || !totalCostEl || !estimateCostEl) {
+            return;
+        }
+
+        totalPriceEl.innerText = `R$ ${total.total_price || '0,00'}`;
+        totalCostEl.innerText = `R$ ${total.total_cost || '0,00'}`;
+        estimateCostEl.innerText = `R$ ${total.percent_to_professional || '0,00'}`;
     }
 
     async function saveUser() {

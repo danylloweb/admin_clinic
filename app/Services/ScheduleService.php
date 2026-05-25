@@ -99,10 +99,13 @@ class ScheduleService extends AppService
             }
         }
 
+        $percent_to_professional = $total_price * 0.40;
+
         $response['total'] = [
             'total_price'   => number_format($total_price,2,',','.'),
             'total_cost'    => number_format($total_cost,2,',','.'),
-            'estimate_cost' => number_format($estimate_price,2,',','.')
+            'estimate_cost' => number_format($estimate_price,2,',','.'),
+            'percent_to_professional' => number_format($percent_to_professional,2,',','.')
         ];
         return $response;
     }
