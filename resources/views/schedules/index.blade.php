@@ -1160,6 +1160,7 @@
 
                                 buttons.push(`<button type="button" class="btn btn-sm btn-outline-secondary btn-edit-schedule" data-id="${row.id}" title="Editar agendamento"><i class="ph ph-pencil-simple-line"></i></button>`);
                                 buttons.push(`<a href="/panel-attendances-open-by-schedule/${row.id}" class="btn btn-sm btn-outline-info" title="Abrir Atendimento"><i class="ph ph-clipboard-text"></i></a>`);
+                                buttons.push(`<a href="/panel-patients-show/${row.patient_id}" class="btn btn-sm btn-outline-primary" target="_blank" title="Editar Paciente"><i class="ph ph-user"></i></a>`);
 
                                 if (row.status !== 'Confirmado') {
                                     buttons.push(`<button type="button" class="btn btn-sm btn-success btn-confirm-attendance" data-id="${row.id}" title="Confirmar atendimento"><i class="ph ph-check"></i></button>`);
@@ -1167,7 +1168,7 @@
 
                                 if (row.sale_id) {
                                     buttons.push(`<button type="button" class="btn btn-sm btn-warning btn-edit-payment" data-id="${row.id}" data-sale-id="${row.sale_id}" title="Editar pagamento"><i class="ph ph-currency-circle-dollar"></i></button>`);
-                                    buttons.push(`<a href="/panel-sales-orders-edit/${row.sale_id}" class="btn btn-sm btn-outline-primary" title="Abrir pedido"><i class="ph ph-shopping-bag-open"></i></a>`);
+                                    buttons.push(`<a href="/panel-sales-orders-edit/${row.sale_id}" class="btn btn-sm btn-outline-primary" target="_blank" title="Abrir pedido"><i class="ph ph-shopping-bag-open"></i></a>`);
                                 }
 
                                 return buttons.length ? `<div class="d-flex gap-1">${buttons.join('')}</div>` : '-';
