@@ -40,6 +40,7 @@ class ScheduleTransformer extends TransformerAbstract
             'procedure_price_cost' => (float) ($procedure?->cost_price ?? 0),
             'patient_id'           => $model->patient_id,
             'patient_name'         => $patient?->name ?? '-',
+            'photo'                => $patient->photo ?? 'https://ui-avatars.com/api/?name='.urlencode($patient->name),
             'last_message'         => $patient?->getLastMessageByChatId(),
             'date'                 => $model->date ? Carbon::create($model->date)->format('d/m/Y') : '-',
             'date_real'            => $model->date ? Carbon::create($model->date)->format('Y-m-d') : null,

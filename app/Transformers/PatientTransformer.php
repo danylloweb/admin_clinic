@@ -30,7 +30,7 @@ class PatientTransformer extends TransformerAbstract
             'last_message'=> $model->getLastMessageByChatId(),
             'chat_id'     => $model->chat_id,
             'phone'       => $model->phone,
-            'photo'       => $this->getLinkImageByPhone($model->chat_id)->success ?? 'https://ui-avatars.com/api/?name='.urlencode($model->name),
+            'photo'       => $model->photo ?? 'https://ui-avatars.com/api/?name='.urlencode($model->name),
             'phone_link'  => str_replace(["(",")","-"],'',$model->phone),
             'sex'         => $model->sex,
             'birth_date'  => Carbon::create($model->birth_date)->format('d/m/Y'),

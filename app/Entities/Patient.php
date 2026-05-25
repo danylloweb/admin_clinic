@@ -29,6 +29,7 @@ class Patient extends Model implements Transformable
         'sex',
         'social_name',
         'chat_id',
+        'photo',
     ];
     /**
      * @var array

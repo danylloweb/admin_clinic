@@ -91,14 +91,13 @@
                 <table id="datatable-schedules" class="table table-bordered table-striped align-middle" style="width: 100%">
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Foto</th>
                         <th>Paciente</th>
                         <th>Contato</th>
                         <th>Procedimento</th>
                         <th>Valor</th>
                         <th>Data</th>
                         <th>Hora</th>
-                        <th>Profissional</th>
                         <th>Status</th>
                         <th>Pedido</th>
                         <th>Ação</th>
@@ -1092,7 +1091,13 @@
                     },
                     order: [[0, 'desc']],
                     columns: [
-                        { data: 'id' },
+                        { data: 'photo',
+                            render: function (data) {
+                                return `<img src="${data}" data-src="${data}" alt="imagem" class="img-clickable" style="width:60px; height:auto; border-radius:5px; cursor:pointer;"/>`;
+                            },
+                            orderable: false,
+                            searchable: false
+                        },
                         { data: 'patient_name', orderable: false },
                         {
                             data: 'phone',
@@ -1126,14 +1131,6 @@
                         },
                         { data: 'date' },
                         { data: 'time' },
-                        {
-                            data: 'professional',
-                            orderable: false,
-                            searchable: false,
-                            render: function (data) {
-                                return data || '-';
-                            }
-                        },
                         {
                             data: 'status_title',
                             orderable: false,
