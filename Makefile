@@ -44,8 +44,7 @@ prod-composer-install: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic composer install --ignore-platform-reqs
 
 prod-cache: check-compose
-	$(COMPOSE_PROD) exec -T app-clinic php artisan config:cache
-	$(COMPOSE_PROD) exec -T app-clinic php artisan view:cache
+	$(COMPOSE_PROD) exec -T app-clinic php artisan optimize
 
 prod-migrate: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic php artisan migrate --force
