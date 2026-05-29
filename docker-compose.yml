@@ -15,6 +15,26 @@ services:
             - redis
         networks:
             - admin_clinic
+#    mobile:
+#        build:
+#            context: ./mobile
+#            dockerfile: Dockerfile
+#        restart: unless-stopped
+#        working_dir: /usr/src/app
+#        volumes:
+#            - ./mobile:/usr/src/app
+#            - mobile_node_modules:/usr/src/app/node_modules
+#        ports:
+#            - 8081:8081
+#        stdin_open: true
+#        tty: true
+#        environment:
+#            NODE_ENV: development
+#            CI: "true"
+#            REACT_NATIVE_PACKAGER_HOSTNAME: 0.0.0.0
+#        command: ["npm", "run", "start", "--", "--host", "0.0.0.0"]
+#        networks:
+#            - admin_clinic
     mysql:
         image: mysql/mysql-server:latest
         restart: unless-stopped
@@ -109,3 +129,7 @@ services:
 networks:
     admin_clinic:
         driver: bridge
+
+volumes:
+    mobile_node_modules:
+
