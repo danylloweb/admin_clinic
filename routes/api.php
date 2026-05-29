@@ -4,6 +4,10 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Mobile\MobileChatController;
+use App\Http\Controllers\Mobile\MobileDashboardController;
+use App\Http\Controllers\Mobile\MobileUploadController;
+use Illuminate\Http\Request;
 
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::middleware('jwt.auth')->get('/dashboard-data', function () {
@@ -62,6 +66,33 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('panel-attendances', 'AestheticProcedureEvolutionsController@index');
 
 });
+Route::prefix('mobile')->middleware('jwt.auth')->group(function () {
+    Route::get('/me', function (Request $request) {
+        $user = auth('api')->user() ?? auth()->user();
+
+        if (!$user) {
+            try {
+                $user = \Tymon\JWTAuth\Facades\JWTAuth::parseToken()->authenticate();
+            } catch (\Throwable $exception) {
+                $user = null;
+            }
+        }
+
+        return response()->json(['data' => ['user' => $user]]);
+    });
+
+    Route::get('/dashboard', [MobileDashboardController::class, 'index']);
+
+    Route::resource('patients', 'PatientsController', ['create', 'edit'])->names('mobile.patients');
+
+    Route::get('/chats', [MobileChatController::class, 'index']);
+    Route::get('/chats/messages', [MobileChatController::class, 'messages']);
+    Route::post('/chats/send-text', [MobileChatController::class, 'sendText']);
+    Route::post('/chats/send-image', [MobileChatController::class, 'sendImage']);
+    Route::post('/chats/send-audio', [MobileChatController::class, 'sendAudio']);
+    Route::post('/uploads', [MobileUploadController::class, 'store']);
+});
+
 Route::any('{any}', function () {
     return response()->json(['message' => 'Unauthorized'], 401);
 })->where('any', '.*');
@@ -69,3 +100,4 @@ Route::any('{any}', function () {
 Route::fallback(function () {
     return response()->json(['message' => 'Unauthorized'], 401);
 });
+

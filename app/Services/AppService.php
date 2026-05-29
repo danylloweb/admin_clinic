@@ -420,7 +420,7 @@ class AppService
                 'msgId'       => $msgId
             ];
             $options = ['form_params' => $params ];
-            $request = new Request('POST', 'https://api.ultramsg.com/instance33014/messages/document', $this->getHeaderUltra());
+            $request = new Request('POST', 'https://api.ultramsg.com/instance33014/messages/audio', $this->getHeaderUltra());
             $res     = $this->getHttpClient()->sendAsync($request, $options)->wait();
             return json_decode($res->getBody());
         } catch (GuzzleException $e) {
