@@ -45,6 +45,7 @@ prod-composer-install: check-compose
 
 prod-cache: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic php artisan optimize
+	$(COMPOSE_PROD) exec -T app-clinic php artisan view:cache
 
 prod-migrate: check-compose
 	$(COMPOSE_PROD) exec -T app-clinic php artisan migrate --force
