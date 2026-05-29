@@ -12,8 +12,8 @@ use App\Http\Controllers\AestheticProcedureEvolutionsController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/',[PanelController::class,'login'])->name('login');
-Route::get('/login', [PanelController::class,'login'])->name('login2');
+Route::redirect('/', '/login');
+Route::get('/login', [PanelController::class,'login'])->name('login');
 Route::get('/chat', function () {
     return view('chats.index');
 });
