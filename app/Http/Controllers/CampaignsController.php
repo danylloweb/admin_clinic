@@ -91,4 +91,12 @@ class CampaignsController extends Controller
         return response()->json($this->service->dispatchProgress($id));
     }
 
+    public function sendTest(int $id): JsonResponse
+    {
+        $result = $this->service->sendTestToPatient($id, 1);
+        $status = !empty($result['error']) ? 422 : 200;
+
+        return response()->json($result, $status);
+    }
+
 }

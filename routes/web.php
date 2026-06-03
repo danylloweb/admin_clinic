@@ -41,6 +41,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-campaign-show/{id}', [CampaignsController::class, 'panelShow'])->name('panel-campaign-show');
     Route::get('/panel-campaign-create', [CampaignsController::class, 'create'])->name('panel.campaign.create');
     Route::get('/panel-campaign-send/{id}', [CampaignsController::class, 'panelSend'])->name('panel.campaign.send');
+    Route::post('/panel-campaign-send-test/{id}', [CampaignsController::class, 'sendTest'])->name('panel.campaign.send.test');
     Route::post('/panel-campaign-send/{id}/start', [CampaignsController::class, 'startSend'])->name('panel.campaign.send.start');
     Route::post('/panel-campaign-send/{id}/process', [CampaignsController::class, 'processSend'])->name('panel.campaign.send.process');
     Route::get('/panel-campaign-send/{id}/progress', [CampaignsController::class, 'sendProgress'])->name('panel.campaign.send.progress');

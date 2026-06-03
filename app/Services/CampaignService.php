@@ -117,4 +117,34 @@ class CampaignService extends AppService
         return 'campaign_dispatch_'.$campaignId;
     }
 
+    public function sendTestToPatient(int $campaignId, int $patientId = 1): array
+    {
+        try {
+            $campaign = $this->repository->skipPresenter()->find($campaignId);
+            $patient = $this->patientRepository->skipPresenter()->find($patientId);
+
+            if (empty($patient?->chat_id)) {
+                return ['error' => true, 'message' => 'Paciente de teste sem chat_id configurado.'];
+            }
+
+            $name = $patient->social_name ?: $patient->name;
+            $message = str_replace('{name}', $name, (string) $campaign->description);
+
+            $providerResponse = $this->sendImageToWhatsApp((string) $patient->chat_id, (string) $campaign->url_image, $message);
+
+            return [
+                'error' => false,
+                'message' => 'Mensagem de teste enviada com sucesso.',
+                'data' => [
+                    'campaign_id' => $campaignId,
+                    'patient_id' => $patientId,
+                    'chat_id' => $patient->chat_id,
+                    'provider_response' => $providerResponse,
+                ],
+            ];
+        } catch (\Throwable $exception) {
+            return ['error' => true, 'message' => $exception->getMessage()];
+        }
+    }
+
 }

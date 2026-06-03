@@ -49,6 +49,9 @@
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-save me-1"></i> Salvar alterações
                         </button>
+                        <button type="button" id="send-test-campaign" class="btn btn-warning ms-2">
+                            <i class="fas fa-paper-plane me-1"></i> Enviar teste
+                        </button>
                         <a href="{{ route('panel.campaign.send', ['id' => $campaign['id']]) }}" class="btn btn-primary ms-2">
                             Enviar campanha
                         </a>
@@ -62,6 +65,36 @@
 @push('scripts')
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const sendTestButton = document.getElementById('send-test-campaign');
+            if (sendTestButton) {
+                sendTestButton.addEventListener('click', function () {
+                    sendTestButton.disabled = true;
+                    sendTestButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Enviando...';
+
+                    fetch('{{ route("panel.campaign.send.test", $campaign['id']) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ campaign_id: {{ $campaign['id'] }}, patient_id: 1 })
+                    }).then(async (res) => {
+                        const data = await res.json();
+
+                        if (!res.ok || data.error) {
+                            showToast(data.message || 'Falha ao enviar mensagem de teste.', 'danger');
+                            return;
+                        }
+
+                        showToast('Teste enviado para o paciente ID 1 com sucesso!', 'success');
+                    }).catch((err) => {
+                        showToast(err.message || 'Falha ao enviar mensagem de teste.', 'danger');
+                    }).finally(() => {
+                        sendTestButton.disabled = false;
+                        sendTestButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Enviar teste';
+                    });
+                });
+            }
 
             $('#image_file').on('change', function () {
                 const file = this.files[0];
