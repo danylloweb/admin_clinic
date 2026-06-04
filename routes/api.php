@@ -4,12 +4,16 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GiftsController;
 use App\Http\Controllers\Mobile\MobileChatController;
 use App\Http\Controllers\Mobile\MobileDashboardController;
 use App\Http\Controllers\Mobile\MobileUploadController;
 use Illuminate\Http\Request;
 
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/gifts/newGift', [GiftsController::class, 'newGift'])
+    ->middleware(['throttle:gifts-public', 'gift.origin'])
+    ->name('api.gifts.newGift');
 Route::middleware('jwt.auth')->get('/dashboard-data', function () {
     $user = auth('api')->user() ?? auth()->user();
 
@@ -27,6 +31,7 @@ Route::get('startschedule', 'ForgotPasswordController@startSchedule');
 Route::get('startGetLastCommand', 'ForgotPasswordController@startGetLastCommand');
 Route::group(['middleware' => ['authGateway']], function () {
     Route::get('user-authenticated', 'UsersController@getUserLogged');
+    Route::resource('gifts', 'GiftsController', ['create', 'edit']);
     Route::resource('procedures', 'ProceduresController', ['create', 'edit']);
     Route::resource('procedureTypes', 'ProcedureTypesController', ['create', 'edit']);
     Route::resource('patients', 'PatientsController', ['create', 'edit']);

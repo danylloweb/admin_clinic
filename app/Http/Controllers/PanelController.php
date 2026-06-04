@@ -342,6 +342,15 @@ class PanelController extends Controller
         ]);
     }
 
+    public function giftIndex(): View|Factory|Application
+    {
+        return view('gifts.index', [
+            'title'       => 'Brindes',
+            'subtitle'    => 'Lista de Brindes',
+            'routeCreate' => '#',
+        ]);
+    }
+
     /**
      * @return View|Factory|Application
      */

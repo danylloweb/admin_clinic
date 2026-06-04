@@ -55,4 +55,5 @@ prod-composer-update: check-compose
 
 prod-restart: check-compose
 	$(COMPOSE_PROD) restart
+	make prod-cache
 #yes | php artisan make:entity

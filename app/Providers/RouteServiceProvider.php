@@ -25,9 +25,14 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-//        RateLimiter::for('api', function (Request $request) {
-//            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
-//        });
+        RateLimiter::for('gifts-public', function (Request $request) {
+            $source = $request->headers->get('Origin')
+                ?: $request->headers->get('Referer')
+                ?: 'unknown';
+
+            return Limit::perMinute(config('gift.throttle_per_minute', 10))
+                ->by($request->ip() . '|' . $source);
+        });
 
         $this->routes(function () {
             Route::middleware('api')

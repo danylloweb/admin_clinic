@@ -37,6 +37,7 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-schedules-print',[PanelController::class,'schedulesPrintPage'])->name('panel.schedules.print');
     Route::get('/panel-schedules-calendar',[PanelController::class,'scheduleCalendar'])->name('panel.schedules.calendar');
     Route::get('/panel-procedures-index',[PanelController::class,'procedureIndex'])->name('panel.procedures.index');
+    Route::get('/panel-gifts-index',[PanelController::class,'giftIndex'])->name('panel.gifts.index');
     Route::get('/panel-campaigns-index',[PanelController::class,'campaignIndex'])->name('panel.campaigns.index');
     Route::get('/panel-campaign-show/{id}', [CampaignsController::class, 'panelShow'])->name('panel-campaign-show');
     Route::get('/panel-campaign-create', [CampaignsController::class, 'create'])->name('panel.campaign.create');
