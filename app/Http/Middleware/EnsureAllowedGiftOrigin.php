@@ -10,12 +10,12 @@ class EnsureAllowedGiftOrigin
 {
     public function handle(Request $request, Closure $next)
     {
-        $allowedOrigins = config('gift.allowed_origins', []);
-        $requestOrigin = $this->extractRequestOrigin($request);
-
-        if (empty($allowedOrigins) || !$requestOrigin || !in_array($requestOrigin, $allowedOrigins, true)) {
-            return $this->forbidden();
-        }
+//        $allowedOrigins = config('gift.allowed_origins', []);
+//        $requestOrigin = $this->extractRequestOrigin($request);
+//
+//        if (empty($allowedOrigins) || !$requestOrigin || !in_array($requestOrigin, $allowedOrigins, true)) {
+//            return $this->forbidden();
+//        }
 
         return $next($request);
     }
