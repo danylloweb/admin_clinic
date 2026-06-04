@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
 Route::post('/gifts/newGift', [GiftsController::class, 'newGift'])
-    ->middleware(['throttle:gifts-public', 'gift.origin'])
+    ->middleware(['throttle:gifts-public'])
     ->name('api.gifts.newGift');
 Route::middleware('jwt.auth')->get('/dashboard-data', function () {
     $user = auth('api')->user() ?? auth()->user();
