@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('brand')->nullable();
             $table->string('anvisa_registration')->nullable();
             $table->string('anvisa_process')->nullable();
-            $table->string('image_url', 2048)->nullable()/
+            $table->string('image_url', 2048)->nullable();
             // Flags
             $table->boolean('requires_batch_tracking')->default(true);
             $table->boolean('requires_expiration_tracking')->default(true);
@@ -42,7 +42,6 @@ return new class extends Migration
             $table->decimal('min_temperature', 5, 2)->nullable();
             $table->decimal('max_temperature', 5, 2)->nullable();
             $table->integer('ideal_humidity')->nullable();
-
             // Compra
             $table->unsignedBigInteger('supplier_id')->nullable();
             $table->string('invoice_number')->nullable();
@@ -51,7 +50,6 @@ return new class extends Migration
             $table->decimal('unit_value', 10, 2)->default(0);
             $table->decimal('sale_value', 10, 2)->default(0);
             $table->decimal('profit_margin', 5, 2)->nullable();
-
             // Status e auditoria
             $table->boolean('status')->default(true);
             $table->string('created_by')->nullable();
@@ -59,7 +57,6 @@ return new class extends Migration
             $table->json('change_log')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
             $table->index(['category_type', 'status']);
             $table->index(['requires_patient_tracking', 'status']);
         });
