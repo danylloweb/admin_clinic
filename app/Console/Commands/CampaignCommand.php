@@ -37,7 +37,7 @@ class CampaignCommand extends Command
     {
         $campaignId = $this->option('campaignId');
         $state      = $this->campaignService->dispatchProgress($campaignId);
-        $not        = [75,549,238,251,253,412,322,426,635,180,181,217,214,230];
+        $not        = [75,549,251,412,230,448];
         $patients   = $this->patientRepository->skipPresenter()->findWhereNotIn('id',$not);
         $camp       = $this->campaignService->find($campaignId,true);
         $image      = $camp->url_image;

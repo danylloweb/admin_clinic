@@ -61,7 +61,7 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('getPatientDetail/{id}', 'PatientsController@show');
     Route::resource('followUpMessages', 'FollowUpMessagesController', ['create', 'edit']);
     Route::resource('followUpScheduleMessages', 'FollowUpScheduleMessagesController', ['create', 'edit']);
-    Route::resource('followUpSchedules', 'FollowUpSchedulesController', ['create', 'edit']);
+    Route::resource('followUpScheduleMessages', 'FollowUpScheduleMessagesController', ['create', 'edit']);
     Route::post('send-message-direct', 'FollowUpMessagesController@sendMessageDirect');
     Route::get('schedule-calendar', 'SchedulesController@calendar');
     Route::get('all-chats', 'FollowUpMessagesController@getAllChats');
@@ -69,6 +69,14 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('panel-facial-evaluations', 'FacialEvaluationsController@index');
     Route::get('panel-body-evaluations', 'BodyEvaluationsController@index');
     Route::get('panel-attendances', 'AestheticProcedureEvolutionsController@index');
+    Route::resource('products', 'ProductsController', ['create', 'edit']);
+    Route::post('product-lots', 'ProductsController@storeLot');
+    Route::put('product-lots/{id}', 'ProductsController@updateLot');
+    Route::get('products/{id}/lots', 'ProductsController@getLots');
+    Route::get('products/{id}/alerts', 'ProductsController@getAlerts');
+    Route::get('products/{id}/movements', 'ProductsController@getMovements');
+    Route::get('products/{id}/consumption-history', 'ProductsController@getConsumptionHistory');
+    Route::resource('suppliers', 'SuppliersController', ['create', 'edit']);
 
 });
 Route::prefix('mobile')->middleware('jwt.auth')->group(function () {

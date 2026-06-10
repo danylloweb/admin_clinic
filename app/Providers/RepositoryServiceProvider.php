@@ -45,6 +45,10 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(\App\Repositories\FacialEvaluationRepository::class, \App\Repositories\FacialEvaluationRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\BodyEvaluationRepository::class, \App\Repositories\BodyEvaluationRepositoryEloquent::class);
         $this->app->bind(\App\Repositories\AestheticProcedureEvolutionRepository::class, \App\Repositories\AestheticProcedureEvolutionRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\ProductRepository::class, \App\Repositories\ProductRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\ProductLotRepository::class, \App\Repositories\ProductLotRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\SupplierRepository::class, \App\Repositories\SupplierRepositoryEloquent::class);
+        $this->app->bind(\App\Repositories\ProcedureConsumptionRepository::class, \App\Repositories\ProcedureConsumptionRepositoryEloquent::class);
         //:end-bindings:
     }
 }

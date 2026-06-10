@@ -96,5 +96,17 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::delete('/panel-attendances-delete/{id}', [AestheticProcedureEvolutionsController::class, 'destroy'])->name('panel.attendances.destroy');
     Route::get('/panel-attendances-print/{id}', [AestheticProcedureEvolutionsController::class, 'print'])->name('panel.attendances.print');
     Route::get('/panel-attendances-export-pdf/{id}', [AestheticProcedureEvolutionsController::class, 'exportPdf'])->name('panel.attendances.export-pdf');
+
+    // Rotas para Produtos e Estoque
+    Route::get('/panel-products-index', [PanelController::class, 'productsIndex'])->name('panel.products.index');
+    Route::get('/panel-products-create', [PanelController::class, 'productsCreate'])->name('panel.products.create');
+    Route::get('/panel-products-show/{id}', [PanelController::class, 'productsShow'])->name('panel.products.show');
+    Route::get('/panel-products-edit/{id}', [PanelController::class, 'productsEdit'])->name('panel.products.edit');
+
+    // Rotas para Fornecedores
+    Route::get('/panel-suppliers-index', [PanelController::class, 'suppliersIndex'])->name('panel.suppliers.index');
+    Route::get('/panel-suppliers-create', [PanelController::class, 'suppliersCreate'])->name('panel.suppliers.create');
+    Route::get('/panel-suppliers-show/{id}', [PanelController::class, 'suppliersShow'])->name('panel.suppliers.show');
+    Route::get('/panel-suppliers-edit/{id}', [PanelController::class, 'suppliersEdit'])->name('panel.suppliers.edit');
 });
 

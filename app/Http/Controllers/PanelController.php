@@ -608,6 +608,77 @@ class PanelController extends Controller
         ]);
     }
 
+    public function productsIndex(): View|Factory|Application
+    {
+        return view('products.index', [
+            'title'       => 'Produtos',
+            'subtitle'    => 'Gestão de Produtos e Estoque',
+            'routeCreate' => route('panel.products.create'),
+        ]);
+    }
+
+    public function productsCreate(): View|Factory|Application
+    {
+        return view('products.create', [
+            'title'       => 'Novo Produto',
+            'subtitle'    => 'Cadastro de Produto',
+            'routeCreate' => route('panel.products.create'),
+        ]);
+    }
+
+    public function productsShow(int $id): View|Factory|Application
+    {
+        return view('products.show', [
+            'title'       => 'Produto',
+            'subtitle'    => 'Detalhes do Produto',
+            'productId'   => $id,
+        ]);
+    }
+
+    public function productsEdit(int $id): View|Factory|Application
+    {
+        return view('products.edit', [
+            'title'       => 'Editar Produto',
+            'subtitle'    => 'Atualização de Produto',
+            'productId'   => $id,
+        ]);
+    }
+
+    public function suppliersIndex(): View|Factory|Application
+    {
+        return view('suppliers.index', [
+            'title'       => 'Fornecedores',
+            'subtitle'    => 'Gestão de Fornecedores',
+            'routeCreate' => route('panel.suppliers.create'),
+        ]);
+    }
+
+    public function suppliersCreate(): View|Factory|Application
+    {
+        return view('suppliers.create', [
+            'title'       => 'Novo Fornecedor',
+            'subtitle'    => 'Cadastro de Fornecedor',
+            'routeCreate' => route('panel.suppliers.create'),
+        ]);
+    }
+
+    public function suppliersShow(int $id): View|Factory|Application
+    {
+        return view('suppliers.show', [
+            'title'       => 'Fornecedor',
+            'subtitle'    => 'Detalhes do Fornecedor',
+            'supplierId'  => $id,
+        ]);
+    }
+
+    public function suppliersEdit(int $id): View|Factory|Application
+    {
+        return view('suppliers.edit', [
+            'title'       => 'Editar Fornecedor',
+            'subtitle'    => 'Atualizando Fornecedor',
+            'supplierId'  => $id,
+        ]);
+    }
 
 
 }

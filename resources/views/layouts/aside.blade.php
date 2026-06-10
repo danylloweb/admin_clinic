@@ -10,11 +10,14 @@
             <li><a href="{{ route('panel.procedures.index') }}"> <i class="ph ph-syringe fs-1"></i> <span>Todos</span></a></li>
             <li class="menu-title">Pacientes</li>
             <li><a href="{{ route('panel.patient.index') }}"> <i class="ph ph-user-list"></i> <span>Todos</span></a></li>
-            <li class="menu-title">Operacional</li>
-            <li><a href="{{ route('panel.schedules.index') }}"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
-            <li><a href="{{ route('panel.schedules.calendar') }}"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
-            <li class="menu-title">Vendas</li>
-            <li><a href="{{ route('panel.sales-order.index') }}"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
+             <li class="menu-title">Operacional</li>
+             <li><a href="{{ route('panel.schedules.index') }}"> <i class="ph ph-calendar-blank"></i> <span>Agendamentos</span></a></li>
+             <li><a href="{{ route('panel.schedules.calendar') }}"> <i class="ph ph-calendar-blank"></i> <span>Calendario</span></a></li>
+             <li class="menu-title">Estoque</li>
+             <li><a href="{{ route('panel.products.index') }}"> <i class="ph ph-package"></i> <span>Produtos</span></a></li>
+             <li><a href="{{ route('panel.suppliers.index') }}"> <i class="ph ph-building"></i> <span>Fornecedores</span></a></li>
+             <li class="menu-title">Vendas</li>
+             <li><a href="{{ route('panel.sales-order.index') }}"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
             <li><a href="{{ route('panel.sales-order.create') }}"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>
             <li class="menu-title">Marketing</li>
             <li><a href="{{ route('panel.gifts.index') }}"> <i class="ph ph-gift"></i> <span>Brindes 🎁</span></a></li>
