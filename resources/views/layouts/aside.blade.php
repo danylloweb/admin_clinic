@@ -20,7 +20,7 @@
              <li><a href="{{ route('panel.sales-order.index') }}"> <i class="ph ph-shopping-bag-open"></i> <span>Pedido de Vendas</span></a></li>
             <li><a href="{{ route('panel.sales-order.create') }}"> <i class="ph ph-shopping-cart"></i> <span>Novo Pedido</span></a></li>
             <li class="menu-title">Marketing</li>
-            <li><a href="{{ route('panel.gifts.index') }}"> <i class="ph ph-gift"></i> <span>Brindes 🎁</span></a></li>
+            <li><a href="{{ route('panel.gifts.index') }}"> <i class="ph ph-gift"></i> <span>Leads</span></a></li>
             <li class="menu-sub"><a href> <i class="ph ph-whatsapp-logo"></i> <span>Whatsapp</span> </a>
                 <ul>
                     <li><a href="{{ route('panel.campaigns.index') }}"><i class="ph ph-whatsapp-logo"></i>Lista</a></li>

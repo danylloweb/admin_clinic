@@ -1051,8 +1051,8 @@
                             6: 'time'
                         };
 
-                        const orderColumnIndex = data.order?.[0]?.column ?? 0;
-                        const orderDir = data.order?.[0]?.dir ?? 'desc';
+                        const orderColumnIndex = data.order?.[0]?.column ?? 6;
+                        const orderDir = data.order?.[0]?.dir ?? 'asc';
                         const orderBy = columnMap[orderColumnIndex] || 'time';
 
                         $.ajax({
@@ -1063,7 +1063,7 @@
                                 page: page,
                                 search: search,
                                 orderBy: orderBy,
-                                sortedBy: orderDir || 'desc',
+                                sortedBy: orderDir || 'asc',
                                 patient_id: state.patientId || null,
                                 procedure_id: state.procedureId || null,
                                 procedure_type_id: document.getElementById('filter-procedure-type').value || null,
@@ -1089,7 +1089,7 @@
                             }
                         });
                     },
-                    order: [[0, 'desc']],
+                    order: [[6, 'asc']],
                     columns: [
                         { data: 'photo',
                             render: function (data) {

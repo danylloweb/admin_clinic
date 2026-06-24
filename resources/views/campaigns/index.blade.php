@@ -28,6 +28,7 @@
                 processing: true,
                 serverSide: true,
                 searching: true,
+                order: [[0, 'desc']],
                 ajax: function(data, callback, settings) {
                     const page = Math.floor(data.start / data.length) + 1;
                     const search = data.search.value;
