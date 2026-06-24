@@ -145,9 +145,6 @@
                         showToast(data.message,'error');
                     }
                     showToast('Campanha salva com sucesso!','success');
-                    setTimeout(() => {
-                        window.location.href = '{{ route("panel.campaigns.index") }}';
-                    }, 2000);
                 })
                     .catch(err => {
                         showToast(err.message || 'Erro ao salvar campanha', 'danger');

@@ -38,11 +38,11 @@
                         2: 'date',
                         3: 'url_image',
                         4: 'status',
-                        6: 'id'
+                        5: 'id'
                     };
 
                     const orderColumnIndex = data.order[0].column;
-                    const orderDir = data.order[0].dir;
+                    const orderDir = data.order[0].dir || 'desc';
                     const orderBy = columnMap[orderColumnIndex] || 'id';
 
                     $.ajax({
