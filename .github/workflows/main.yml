@@ -1,33 +1,74 @@
-name: Build and Deploy
+name: Deploy Production
+
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: production
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    name: Deploy VPS
     runs-on: ubuntu-latest
+
     steps:
-      - name: Repository checkout
-        uses: actions/checkout@v3.5.2
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
 
-      - name: Executing remote ssh commands using key
-        uses: appleboy/ssh-action@v0.1.10
-        env:
-          ENVPROD: ${{ secrets.ENVPROD }}
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          envs: ENVPROD
-          script: |
-            cd /var/www/html/
-            rm -rf admin_clinic
-            git clone git@github.com:danylloweb/admin_clinic.git
-            cd admin_clinic
-            git checkout -b main
-            git pull origin main
-            make prod-restart
-            make prod-migrate
-            make prod-cache
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
+          ssh-keyscan -H \
+            -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Application
+        run: |
+          ssh \
+            -o StrictHostKeyChecking=yes \
+            -p ${{ secrets.SSH_PORT }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+
+          set -e
+
+          APP_DIR="/var/www/html/admin_clinic"
+          REPO="git@github.com:danylloweb/admin_clinic.git"
+          BRANCH="main"
+
+          echo "========== INICIANDO DEPLOY =========="
+
+          mkdir -p /var/www/html
+
+          if [ ! -d "$APP_DIR/.git" ]; then
+              echo "Primeiro deploy..."
+              git clone --branch $BRANCH $REPO $APP_DIR
+          fi
+
+          cd $APP_DIR
+
+          echo "Atualizando código..."
+          git fetch origin
+          git reset --hard origin/$BRANCH
+
+          echo "Atualizando submodules..."
+          git submodule update --init --recursive
+
+          echo "Build Docker..."
+
+          docker compose down
+
+          docker compose pull
+
+          docker compose up -d --build --remove-orphans
+
+          echo "Removendo imagens antigas..."
+
+          docker image prune -af
+
+          echo "========== DEPLOY FINALIZADO =========="
+
+          EOF
