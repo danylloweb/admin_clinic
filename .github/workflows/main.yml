@@ -21,7 +21,11 @@ jobs:
           key: ${{ secrets.KEY }}
           envs: ENVPROD
           script: |
-            cd /var/www/html/admin_clinic
+            cd /var/www/html/
+            rm -rf admin_clinic
+            git clone git@github.com:danylloweb/admin_clinic.git
+            cd admin_clinic
+            git checkout -b main
             git pull origin main
             make prod-restart
             make prod-migrate
