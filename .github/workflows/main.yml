@@ -16,10 +16,9 @@ jobs:
         env:
           ENVPROD: ${{ secrets.ENVPROD }}
         with:
-          host: 142.171.227.141
-          username: root
-          key: Ljx6n2DgLG5J
-          port: 22
+          host: ${{ secrets.HOST_RENOVAR }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY_RENOVAR }}
           envs: ENVPROD
           script_stop: true
           script: |
