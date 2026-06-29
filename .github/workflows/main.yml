@@ -16,14 +16,14 @@ jobs:
         env:
           ENVPROD: ${{ secrets.ENVPROD }}
         with:
-          host: ${{ secrets.HOST_SERVER }}
-          username: ${{ secrets.USERNAME_SERVER }}
-          key: ${{ secrets.KEY_SERVER }}
+          host: ${{ secrets.HOST_RENOVAR }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY_RENOVAR }}
           envs: ENVPROD
           script: |
             cd /var/www/html/
-            git clone git@github.com:danylloweb/admin_clinic.git
-            echo "ENVPROD=$ENVPROD" > .env
-            cd admin_clinic
-            make prod-install
+#            git clone git@github.com:danylloweb/admin_clinic.git
+#            echo "ENVPROD=$ENVPROD" > .env
+#            cd admin_clinic
+#            make prod-install
 
