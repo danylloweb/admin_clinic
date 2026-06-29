@@ -19,11 +19,19 @@ jobs:
           host: ${{ secrets.HOST_SERVER }}
           username: ${{ secrets.USERNAME_SERVER }}
           key: ${{ secrets.KEY_SERVER }}
+          passphrase: ${{ secrets.KEY_PASSPHRASE }}
+          port: 22
           envs: ENVPROD
+          debug: true
           script: |
             cd /var/www/html/
-            git clone git@github.com:danylloweb/admin_clinic.git
+            if [ ! -d admin_clinic/.git ]; then
+              git clone git@github.com:danylloweb/admin_clinic.git
+            fi
             cd admin_clinic
-            printf "%s" "$ENVPROD" > .env
+            git fetch origin main
+            git reset --hard origin/main
+            printf "%s\n" "$ENVPROD" > .env
+            chmod 600 .env
             make prod-install
 
