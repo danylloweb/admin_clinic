@@ -24,17 +24,7 @@ jobs:
           script: |
             set -e
             cd /var/www/html/
-            if [ ! -d admin_clinic/.git ]; then
-              git clone git@github.com:danylloweb/admin_clinic.git
-            fi
+            git clone git@github.com:danylloweb/admin_clinic.git
             cd admin_clinic
-            git remote set-url origin git@github.com:danylloweb/admin_clinic.git
-            git fetch --depth=1 origin main
-            git checkout -B main origin/main
-            if [ -z "$ENVPROD" ]; then
-              echo "ENVPROD is empty"
-              exit 1
-            fi
-            printf "%s\n" "$ENVPROD" > .env
-            chmod 600 .env
+            echo "$ENVPROD" > .env
             make prod-install
