@@ -9,6 +9,9 @@ Use the make command to start
 make up
 ```
 
+After containers are up, Portainer is available at `http://localhost:9000`.
+On first access, create the admin user and connect to the local Docker environment.
+
 ## Introdução
 
 ## Tabela de conteudo

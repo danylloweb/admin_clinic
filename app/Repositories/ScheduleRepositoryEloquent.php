@@ -61,7 +61,7 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
     {
         $list_patients = [];
         $query = $this->model();
-        $patientsWithSchedules = $query::where('date', '2026-05-16')
+        $patientsWithSchedules = $query::where('date', '2026-06-27')
             ->whereHas('procedure', function ($query) {
                 $query->where('procedure_type_id', 4);
             })

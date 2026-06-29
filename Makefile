@@ -1,6 +1,6 @@
 COMPOSE_CMD := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; elif docker-compose version >/dev/null 2>&1; then echo "docker-compose"; fi)
 COMPOSE_DEV := $(COMPOSE_CMD)
-COMPOSE_PROD := $(COMPOSE_CMD) -f docker-compose-prod.yml
+COMPOSE_PROD := $(COMPOSE_CMD)
 
 .PHONY: install up down build ps prod-install prod-up prod-down prod-build prod-ps prod-composer-install prod-cache check-compose
 

@@ -4,6 +4,7 @@ services:
             context: ./docker
             dockerfile: Dockerfile-dev
         restart: unless-stopped
+        container_name: app-clinic
         working_dir: /var/www/html
         volumes:
             - ./:/var/www/html
@@ -15,26 +16,6 @@ services:
             - redis
         networks:
             - admin_clinic
-#    mobile:
-#        build:
-#            context: ./mobile
-#            dockerfile: Dockerfile
-#        restart: unless-stopped
-#        working_dir: /usr/src/app
-#        volumes:
-#            - ./mobile:/usr/src/app
-#            - mobile_node_modules:/usr/src/app/node_modules
-#        ports:
-#            - 8081:8081
-#        stdin_open: true
-#        tty: true
-#        environment:
-#            NODE_ENV: development
-#            CI: "true"
-#            REACT_NATIVE_PACKAGER_HOSTNAME: 0.0.0.0
-#        command: ["npm", "run", "start", "--", "--host", "0.0.0.0"]
-#        networks:
-#            - admin_clinic
     mysql:
         image: mysql/mysql-server:latest
         restart: unless-stopped
@@ -59,7 +40,6 @@ services:
         networks:
             - admin_clinic
 
-
     mongo:
         image: mongo
         restart: always
@@ -82,54 +62,21 @@ services:
         image: redis
         networks:
             - admin_clinic
-##
-#    zookeeper:
-#        image: confluentinc/cp-zookeeper:latest
-#        restart: unless-stopped
-#        environment:
-#            ZOOKEEPER_CLIENT_PORT: 2181
-#            ZOOKEEPER_TICK_TIME: 2000
-#            TZ: "America/Sao_Paulo"
-#        networks:
-#            - admin_clinic
-#
-#    kafka:
-#        image: confluentinc/cp-kafka:latest
-#        restart: unless-stopped
-#        depends_on:
-#            - zookeeper
-#        environment:
-#            KAFKA_BROKER_ID: 1
-#            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-#            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-#            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-#            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-#            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#            KAFKA_CREATE_TOPICS: ""
-#            TZ: "America/Sao_Paulo"
-#        volumes:
-#            - ./.docker/kafka:/data/db
-#        networks:
-#            - admin_clinic
-#
-#    kafka-ui:
-#        image: provectuslabs/kafka-ui
-#        ports:
-#            - "8089:8080"
-#        restart: on-failure
-#        depends_on:
-#            - kafka
-#        environment:
-#            - KAFKA_CLUSTERS_0_NAME=local
-#            - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-#            - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
-#        networks:
-#            - admin_clinic
+
+    portainer:
+        image: portainer/portainer-ce:latest
+        restart: unless-stopped
+        ports:
+            - 9000:9000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - portainer_data:/data
+        networks:
+            - admin_clinic
+
+volumes:
+    portainer_data:
 
 networks:
     admin_clinic:
         driver: bridge
-
-volumes:
-    mobile_node_modules:
-
