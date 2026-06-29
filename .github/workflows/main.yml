@@ -22,7 +22,6 @@ jobs:
           envs: ENVPROD
           script_stop: true
           script: |
-            set -e
             cd /var/www/html/
             git clone git@github.com:danylloweb/admin_clinic.git
             cd admin_clinic
