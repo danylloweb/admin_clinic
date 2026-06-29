@@ -19,11 +19,24 @@ jobs:
           host: ${{ secrets.HOST_RENOVAR }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY_RENOVAR }}
+          port: 22
           envs: ENVPROD
+          script_stop: true
           script: |
+            set -e
             cd /var/www/html/
-#            git clone git@github.com:danylloweb/admin_clinic.git
-#            echo "ENVPROD=$ENVPROD" > .env
+#            if [ ! -d admin_clinic/.git ]; then
+#              git clone git@github.com:danylloweb/admin_clinic.git
+#            fi
 #            cd admin_clinic
+#            git remote set-url origin git@github.com:danylloweb/admin_clinic.git
+#            git fetch --depth=1 origin main
+#            git checkout -B main origin/main
+#            if [ -z "$ENVPROD" ]; then
+#              echo "ENVPROD is empty"
+#              exit 1
+#            fi
+#            printf "%s\n" "$ENVPROD" > .env
+#            chmod 600 .env
 #            make prod-install
 
