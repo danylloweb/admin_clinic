@@ -11,30 +11,30 @@ jobs:
       - name: Repository checkout
         uses: actions/checkout@v3.5.2
 
-      - name: Executing remote ssh commands using key
+      - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v0.1.10
         env:
           ENVPROD: ${{ secrets.ENVPROD }}
         with:
           host: ${{ secrets.HOST_RENOVAR }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY_RENOVAR }}
+          password: ${{ secrets.KEY_SECRET }}
           envs: ENVPROD
           script_stop: true
           script: |
+            set -e
             cd /var/www/html/
-#            if [ ! -d admin_clinic/.git ]; then
-#              git clone git@github.com:danylloweb/admin_clinic.git
-#            fi
-#            cd admin_clinic
-#            git remote set-url origin git@github.com:danylloweb/admin_clinic.git
-#            git fetch --depth=1 origin main
-#            git checkout -B main origin/main
-#            if [ -z "$ENVPROD" ]; then
-#              echo "ENVPROD is empty"
-#              exit 1
-#            fi
-#            printf "%s\n" "$ENVPROD" > .env
-#            chmod 600 .env
-#            make prod-install
-
+            if [ ! -d admin_clinic/.git ]; then
+              git clone git@github.com:danylloweb/admin_clinic.git
+            fi
+            cd admin_clinic
+            git remote set-url origin git@github.com:danylloweb/admin_clinic.git
+            git fetch --depth=1 origin main
+            git checkout -B main origin/main
+            if [ -z "$ENVPROD" ]; then
+              echo "ENVPROD is empty"
+              exit 1
+            fi
+            printf "%s\n" "$ENVPROD" > .env
+            chmod 600 .env
+            make prod-install
