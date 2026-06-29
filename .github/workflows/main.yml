@@ -11,14 +11,14 @@ jobs:
       - name: Repository checkout
         uses: actions/checkout@v3.5.2
 
-      - name: Executing remote ssh commands using key
+      - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v0.1.10
         env:
           ENVPROD: ${{ secrets.ENVPROD }}
         with:
           host: ${{ secrets.HOST_SERVER }}
           username: ${{ secrets.USERNAME_SERVER }}
-          key: ${{ secrets.KEY_SERVER }}
+          password: ${{ secrets.PASSWORD_SERVER }}
           port: 22
           envs: ENVPROD
           script_stop: true
