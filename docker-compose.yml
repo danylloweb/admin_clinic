@@ -1,8 +1,6 @@
 services:
     app:
-        build:
-            context: ./docker
-            dockerfile: Dockerfile-dev
+        image: danyllo431/clinic-app
         restart: unless-stopped
         container_name: app-clinic
         working_dir: /var/www/html
@@ -63,19 +61,7 @@ services:
         networks:
             - admin_clinic
 
-    portainer:
-        image: portainer/portainer-ce:latest
-        restart: unless-stopped
-        ports:
-            - 9000:9000
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - portainer_data:/data
-        networks:
-            - admin_clinic
 
-volumes:
-    portainer_data:
 
 networks:
     admin_clinic:
