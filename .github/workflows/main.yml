@@ -22,8 +22,7 @@ jobs:
           envs: ENVPROD
           script_stop: true
           script: |
-            cd /var/www/html/
-            git clone git@github.com:danylloweb/admin_clinic.git
-            cd admin_clinic
+            cd /var/www/html/admin_clinic
+            git pull origin main
             echo "$ENVPROD" > .env
             make prod-install
