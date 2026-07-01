@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "725a52a7dbad519a14c49d4612159ed1",
+    "content-hash": "448b00f5da1f00760c2a30da80a61d05",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -1641,16 +1641,16 @@
         },
         {
             "name": "laravel/octane",
-            "version": "v2.17.3",
+            "version": "v2.17.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/octane.git",
-                "reference": "040bfbebfdf545a752376f4396d942cd6f7da036"
+                "reference": "058ae4d7109eed40836dc42960f9388b9bf71f73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/octane/zipball/040bfbebfdf545a752376f4396d942cd6f7da036",
-                "reference": "040bfbebfdf545a752376f4396d942cd6f7da036",
+                "url": "https://api.github.com/repos/laravel/octane/zipball/058ae4d7109eed40836dc42960f9388b9bf71f73",
+                "reference": "058ae4d7109eed40836dc42960f9388b9bf71f73",
                 "shasum": ""
             },
             "require": {
@@ -1726,7 +1726,7 @@
                 "issues": "https://github.com/laravel/octane/issues",
                 "source": "https://github.com/laravel/octane"
             },
-            "time": "2026-04-23T14:52:16+00:00"
+            "time": "2026-06-04T09:05:08+00:00"
         },
         {
             "name": "laravel/prompts",
