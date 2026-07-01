@@ -1,6 +1,8 @@
 services:
     app:
-        image: danyllo431/clinic-app
+        build:
+            context: ./docker
+            dockerfile: Dockerfile-dev
         restart: unless-stopped
         container_name: app-clinic
         working_dir: /var/www/html
