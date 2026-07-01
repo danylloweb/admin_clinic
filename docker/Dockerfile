@@ -4,6 +4,7 @@ ENV DOCUMENT_ROOT=/var/www/html
 # - Inclui libs necessárias para compilar extensões (incl. OpenSwoole), GD, intl etc.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx supervisor unzip git curl nano ca-certificates tzdata cron \
+    default-mysql-client \
     pkg-config $PHPIZE_DEPS \
     libxml2-dev libzip-dev libxslt-dev \
     libssl-dev libcurl4-openssl-dev zlib1g-dev \
@@ -22,18 +23,42 @@ RUN docker-php-ext-install -j"$(nproc)" \
 
 # ==== Extensões PECL ====
 # MongoDB fixado na série ^1.15 para compatibilidade com mongodb/laravel-mongodb 4.8.x
-RUN pecl install mongodb \
- && docker-php-ext-enable mongodb
+RUN set -eux; \
+    MONGODB_VERSION=1.21.2; \
+    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
+      "https://pecl.php.net/get/mongodb-${MONGODB_VERSION}.tgz" -o /tmp/mongodb.tgz; \
+    tar -tzf /tmp/mongodb.tgz >/dev/null; \
+    pecl install /tmp/mongodb.tgz; \
+    docker-php-ext-enable mongodb; \
+    rm -f /tmp/mongodb.tgz
 
-RUN pecl install redis \
- && docker-php-ext-enable redis
+RUN set -eux; \
+    REDIS_VERSION=6.2.0; \
+    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
+      "https://pecl.php.net/get/redis-${REDIS_VERSION}.tgz" -o /tmp/redis.tgz; \
+    tar -tzf /tmp/redis.tgz >/dev/null; \
+    pecl install /tmp/redis.tgz; \
+    docker-php-ext-enable redis; \
+    rm -f /tmp/redis.tgz
 
-RUN pecl install apcu \
- && docker-php-ext-enable apcu
+RUN set -eux; \
+    APCU_VERSION=5.1.28; \
+    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
+      "https://pecl.php.net/get/apcu-${APCU_VERSION}.tgz" -o /tmp/apcu.tgz; \
+    tar -tzf /tmp/apcu.tgz >/dev/null; \
+    pecl install /tmp/apcu.tgz; \
+    docker-php-ext-enable apcu; \
+    rm -f /tmp/apcu.tgz
 
 # OpenSwoole (Octane) — conforme documentação oficial
-RUN pecl install openswoole \
- && docker-php-ext-enable openswoole
+RUN set -eux; \
+    OPENSWOOLE_VERSION=25.2.0; \
+    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
+      "https://pecl.php.net/get/openswoole-${OPENSWOOLE_VERSION}.tgz" -o /tmp/openswoole.tgz; \
+    tar -tzf /tmp/openswoole.tgz >/dev/null; \
+    pecl install /tmp/openswoole.tgz; \
+    docker-php-ext-enable openswoole; \
+    rm -f /tmp/openswoole.tgz
 
 # ==== Memcached (manual) ====
 RUN curl -fsSL https://github.com/php-memcached-dev/php-memcached/archive/refs/heads/master.zip -o /tmp/memcached.zip \

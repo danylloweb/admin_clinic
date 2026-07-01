@@ -76,7 +76,8 @@ Route::group(['middleware' => ['authGateway']], function () {
     Route::get('products/{id}/alerts', 'ProductsController@getAlerts');
     Route::get('products/{id}/movements', 'ProductsController@getMovements');
     Route::get('products/{id}/consumption-history', 'ProductsController@getConsumptionHistory');
-    Route::resource('suppliers', 'SuppliersController', ['create', 'edit']);
+     Route::resource('suppliers', 'SuppliersController', ['create', 'edit']);
+     Route::resource('backups', 'BackupsController', ['only' => ['index']]);
 
 });
 Route::prefix('mobile')->middleware('jwt.auth')->group(function () {

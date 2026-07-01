@@ -680,5 +680,14 @@ class PanelController extends Controller
         ]);
     }
 
+    public function backupIndex(): View|Factory|Application
+    {
+        return view('backups.index', [
+            'title'       => 'Backups',
+            'subtitle'    => 'Histórico de Backups',
+            'routeCreate' => '#',
+        ]);
+    }
+
 
 }

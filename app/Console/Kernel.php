@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('message-confirmation:run')->dailyAt('06:30');
         $schedule->command('patient-photos:update')->dailyAt('12:37');
+        $schedule->command('backup:database')->daily()->at('02:00');
 //        $schedule->command('patient-photos:update')->everyFifteenDays()->at('02:00');
     }
 

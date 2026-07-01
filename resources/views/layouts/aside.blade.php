@@ -27,8 +27,9 @@
                     <li><a href="{{ route('panel.campaign.create') }}"><i class="ph ph-whatsapp-logo"></i>Novo</a></li>
                 </ul>
             </li>
-            <li class="menu-title">Configurações</li>
-            <li><a href="{{ route('panel.users.index') }}"> <i class="ph ph-users"></i> <span>Colaboradores</span></a></li>
+             <li class="menu-title">Configurações</li>
+             <li><a href="{{ route('panel.users.index') }}"> <i class="ph ph-users"></i> <span>Colaboradores</span></a></li>
+             <li><a href="{{ route('panel.backups.index') }}"> <i class="ph ph-database"></i> <span>Backups</span></a></li>
         </ul>
     </div>
 </aside>

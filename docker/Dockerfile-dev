@@ -4,6 +4,7 @@ ENV DOCUMENT_ROOT=/var/www/html
 # - Inclui libs necessárias para compilar extensões (incl. OpenSwoole), GD, intl etc.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx supervisor unzip git curl nano ca-certificates tzdata cron \
+    default-mysql-client \
     pkg-config $PHPIZE_DEPS \
     libxml2-dev libzip-dev libxslt-dev \
     libssl-dev libcurl4-openssl-dev zlib1g-dev \
@@ -28,8 +29,14 @@ RUN pecl install mongodb \
 RUN pecl install redis \
  && docker-php-ext-enable redis
 
-RUN pecl install apcu \
- && docker-php-ext-enable apcu
+RUN set -eux; \
+    APCU_VERSION=5.1.28; \
+    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
+      "https://pecl.php.net/get/apcu-${APCU_VERSION}.tgz" -o /tmp/apcu.tgz; \
+    tar -tzf /tmp/apcu.tgz >/dev/null; \
+    pecl install /tmp/apcu.tgz; \
+    docker-php-ext-enable apcu; \
+    rm -f /tmp/apcu.tgz
 
 # OpenSwoole (Octane) — conforme documentação oficial
 RUN pecl install openswoole \

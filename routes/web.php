@@ -3,6 +3,7 @@
 use App\Http\Controllers\CampaignsController;
 use App\Http\Controllers\PanelController;
 use App\Http\Controllers\UploadsController;
+use App\Http\Controllers\BackupsController;
 use App\Http\Controllers\PatientMedicalRecordController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ProceduresController;
@@ -108,5 +109,9 @@ Route::middleware(['jwt.web'])->group(function () {
     Route::get('/panel-suppliers-create', [PanelController::class, 'suppliersCreate'])->name('panel.suppliers.create');
     Route::get('/panel-suppliers-show/{id}', [PanelController::class, 'suppliersShow'])->name('panel.suppliers.show');
     Route::get('/panel-suppliers-edit/{id}', [PanelController::class, 'suppliersEdit'])->name('panel.suppliers.edit');
+
+    // Rotas para Backups
+    Route::get('/panel-backups-index', [PanelController::class, 'backupIndex'])->name('panel.backups.index');
+    Route::get('/panel-backups-download/{id}', [BackupsController::class, 'download'])->name('panel.backups.download');
 });
 
