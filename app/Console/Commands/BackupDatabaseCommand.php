@@ -88,7 +88,7 @@ class BackupDatabaseCommand extends Command
             $shareableUrl = route('panel.backups.download', ['id' => (string) $backup->getKey()]);
 
             $this->cleanOldBackups();
-            $this->notifyPatientViaWhatsApp($backup, $shareableUrl);
+            $this->notifyPatientViaWhatsApp($backup, $url);
 
             $this->info('Database backup completed successfully!');
             Log::info('Database backup completed', [
