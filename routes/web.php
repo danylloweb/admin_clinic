@@ -112,6 +112,7 @@ Route::middleware(['jwt.web'])->group(function () {
 
     // Rotas para Backups
     Route::get('/panel-backups-index', [PanelController::class, 'backupIndex'])->name('panel.backups.index');
+    Route::get('/panel-backups-data', [BackupsController::class, 'index'])->name('panel.backups.data');
     Route::get('/panel-backups-download/{id}', [BackupsController::class, 'download'])->name('panel.backups.download');
 });
 

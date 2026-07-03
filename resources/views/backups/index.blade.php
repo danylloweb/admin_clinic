@@ -83,7 +83,7 @@
                 const orderBy = columnMap[orderColumnIndex] || 'created_at';
 
                 $.ajax({
-                    url: '{{ route("backups.index") }}',
+                    url: '{{ route("panel.backups.data") }}',
                     method: 'GET',
                     data: {
                         limit: limit,
@@ -148,7 +148,7 @@
                     searchable: false,
                     render: function (_, __, row) {
                         const downloadButton = row.is_downloadable
-                            ? `<a class="btn btn-sm btn-primary" href="${row.download_url}">
+                            ? `<a class="btn btn-sm btn-primary" href="${row.download_url}" target="_blank" rel="noopener noreferrer">
                                     <i class="ph ph-download"></i> Baixar
                                </a>`
                             : `<button class="btn btn-sm btn-secondary" disabled>

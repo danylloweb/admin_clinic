@@ -23,7 +23,7 @@ class BackupDatabaseCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Backup MySQL database, compress with gzip, upload to storage and notify patient via WhatsApp';
+    protected $description = 'Backup MySQL database as plain text, upload to storage and notify patient via WhatsApp';
 
     protected AppService $appService;
 
@@ -41,11 +41,9 @@ class BackupDatabaseCommand extends Command
         $timestamp = now()->format('Y-m-d');
         $backupFileName = "backup_{$timestamp}.txt";
         $tempPath = storage_path("backups/{$backupFileName}");
-        $compressedFileName = "backup_{$timestamp}.txt.gz";
-        $compressedPath = storage_path("backups/{$compressedFileName}");
 
         $backup = BackupHistory::create([
-            'file_name' => $compressedFileName,
+            'file_name' => $backupFileName,
             'status' => 'running',
             'backup_date' => now(),
             'started_at' => now(),
@@ -67,20 +65,14 @@ class BackupDatabaseCommand extends Command
             $this->executeMysqldump($backupFileName);
             $this->info("Backup created: {$backupFileName}");
 
-            $this->info('Compressing backup with gzip...');
-            $this->compressBackupFile($tempPath, $compressedPath);
-            $this->info("Backup compressed: {$compressedFileName}");
-
-            $sizeBytes = file_exists($compressedPath) ? (filesize($compressedPath) ?: 0) : 0;
+            $sizeBytes = file_exists($tempPath) ? (filesize($tempPath) ?: 0) : 0;
 
             $this->info('Uploading backup...');
-            [$disk, $path, $url] = $this->storeBackupFile($compressedFileName, $compressedPath);
+            [$disk, $path, $url] = $this->storeBackupFile($backupFileName, $tempPath);
             $this->info("Uploaded to {$disk}: {$path}");
 
-            $shareableUrl = $this->buildShareableUrl($disk, $path, $url, $compressedFileName);
-
-            if (file_exists($compressedPath)) {
-                @unlink($compressedPath);
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
             }
 
             $backup->forceFill([
@@ -93,13 +85,15 @@ class BackupDatabaseCommand extends Command
                 'expires_at' => now()->addDays(7),
             ])->save();
 
+            $shareableUrl = route('panel.backups.download', ['id' => (string) $backup->getKey()]);
+
             $this->cleanOldBackups();
             $this->notifyPatientViaWhatsApp($backup, $shareableUrl);
 
             $this->info('Database backup completed successfully!');
             Log::info('Database backup completed', [
                 'backup_id' => (string) $backup->getKey(),
-                'file_name' => $compressedFileName,
+                'file_name' => $backupFileName,
                 'storage_disk' => $disk,
                 'storage_path' => $path,
             ]);
@@ -108,10 +102,6 @@ class BackupDatabaseCommand extends Command
         } catch (\Throwable $e) {
             if (file_exists($tempPath)) {
                 @unlink($tempPath);
-            }
-
-            if (file_exists($compressedPath)) {
-                @unlink($compressedPath);
             }
 
             $backup->forceFill([
@@ -285,26 +275,6 @@ class BackupDatabaseCommand extends Command
     }
 
     /**
-     * Compress backup file with gzip
-     */
-    private function compressBackupFile(string $tempPath, string $compressedPath): void
-    {
-        $gzipCmd = sprintf('gzip -f %s 2>&1', escapeshellarg($tempPath));
-        $output = [];
-        $returnCode = 0;
-
-        exec($gzipCmd, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            throw new \Exception('gzip compression failed: ' . implode("\n", $output));
-        }
-
-        if (! file_exists($compressedPath)) {
-            throw new \Exception('gzip compression failed - output file not created');
-        }
-    }
-
-    /**
      * Store backup file to S3 or public disk
      */
     private function storeBackupFile(string $fileName, string $localPath): array
@@ -313,12 +283,14 @@ class BackupDatabaseCommand extends Command
         $content = file_get_contents($localPath);
 
         if ($content === false) {
-            throw new \Exception('Could not read compressed backup file for upload.');
+            throw new \Exception('Could not read backup file for upload.');
         }
 
         try {
             if ($this->canUseS3Disk()) {
-                Storage::disk('s3')->put($storagePath, $content);
+                Storage::disk('s3')->put($storagePath, $content, [
+                    'ContentType' => 'text/plain',
+                ]);
                 return ['s3', $storagePath, Storage::disk('s3')->url($storagePath)];
             }
         } catch (\Throwable $exception) {
@@ -330,52 +302,30 @@ class BackupDatabaseCommand extends Command
     }
 
     /**
-     * Build shareable URL for backup download
-     */
-    private function buildShareableUrl(string $disk, string $path, string $fallbackUrl, string $fileName): string
-    {
-        if ($disk === 's3') {
-            try {
-                return Storage::disk('s3')->temporaryUrl(
-                    $path,
-                    now()->addDays(7),
-                    [
-                        'ResponseContentDisposition' => 'attachment; filename="' . $fileName . '"',
-                    ]
-                );
-            } catch (\Throwable $exception) {
-                Log::warning('Could not generate temporary S3 URL: ' . $exception->getMessage());
-            }
-        }
-
-        return $fallbackUrl;
-    }
-
-    /**
      * Check if S3 disk is available and configured
      */
     private function canUseS3Disk(): bool
     {
         return class_exists('League\\Flysystem\\AwsS3V3\\PortableVisibilityConverter')
             && config('filesystems.disks.s3.driver') === 's3'
-            && filled(config('filesystems.disks.s3.bucket'))
-            && filled(config('filesystems.disks.s3.key'))
-            && filled(config('filesystems.disks.s3.secret'))
-            && filled(config('filesystems.disks.s3.region'));
+            && filled(config('filesystems.disks.s3.bucket'));
     }
 
     /**
-     * Delete backups older than 5 days
-     */
-    /**
-     * Delete backups older than 5 days
+     * Delete backups that reached expiration, with legacy fallback for old records.
      */
     private function cleanOldBackups(): void
     {
         try {
-            $cutoff = now()->subDays(5)->startOfDay();
             $oldBackups = BackupHistory::query()
-                ->where('backup_date', '<', $cutoff)
+                ->where(function ($query) {
+                    $query->whereNotNull('expires_at')
+                        ->where('expires_at', '<=', now());
+                })
+                ->orWhere(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->where('backup_date', '<', now()->subDays(5)->startOfDay());
+                })
                 ->get();
 
             $deletedCount = 0;
@@ -432,7 +382,7 @@ class BackupDatabaseCommand extends Command
                 . "Um novo backup foi gerado com sucesso.\n\n"
                 . "📅 *Data:* " . now()->format('d/m/Y H:i:s') . "\n"
                 . "📁 *Arquivo:* {$backup->file_name}\n"
-                . "⏰ *Link válido até:* " . now()->addDays(7)->format('d/m/Y H:i:s') . "\n\n"
+                . "⏰ *Arquivo disponível até:* " . optional($backup->expires_at)->format('d/m/Y H:i:s') . "\n\n"
                 . "🔗 *Link do Backup:*\n{$shareableUrl}";
 
             $response = $this->appService->sendMessageToWhatsApp($patient->chat_id, $message);
@@ -470,5 +420,6 @@ class BackupDatabaseCommand extends Command
 
         return ['raw' => (string) $response];
     }
+
 }
 

@@ -14,6 +14,12 @@ document.addEventListener("DOMContentLoaded", function () {
 function showToast(message, type = "info") {
     const toastId = "toast-" + Date.now();
     const container = document.getElementById("toast-container");
+
+    if (!container) {
+        console.warn("Toast container not found:", message);
+        return;
+    }
+
     const toast = document.createElement("div");
     toast.className = `toast align-items-center text-white bg-${type} border-0 show mb-2`;
     toast.setAttribute("role", "alert");

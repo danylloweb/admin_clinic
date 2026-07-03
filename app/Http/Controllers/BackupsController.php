@@ -38,7 +38,7 @@ class BackupsController extends Controller
             $paginator = $query->orderBy($orderBy, $sortedBy)->paginate($limit);
 
             $data = collect($paginator->items())
-                ->map(fn ($backup) => $this->transformBackup($backup))
+                ->map(fn ($backup) => $this->transformBackup(is_array($backup) ? $backup : $backup->toArray()))
                 ->values()
                 ->all();
 
@@ -71,48 +71,56 @@ class BackupsController extends Controller
             abort(404, 'Backup não encontrado.');
         }
 
-        if ($backup->status !== 'completed') {
+        if (($backup->status ?? null) !== 'completed') {
             abort(422, 'Backup ainda não está disponível para download.');
         }
 
-        if ($backup->storage_disk === 'public') {
-            if (! Storage::disk('public')->exists($backup->storage_path)) {
-                abort(404, 'Arquivo do backup não encontrado.');
-            }
+        $storagePath = (string) ($backup->storage_path ?? '');
 
-            return Storage::disk('public')->download($backup->storage_path, $backup->file_name);
+        if ($storagePath === '') {
+            abort(404, 'Localização do backup não encontrada.');
         }
 
-        if ($backup->storage_disk === 's3' && $backup->storage_path) {
+        $diskName = (string) ($backup->storage_disk ?: 'public');
+        $fileName = (string) ($backup->file_name ?: basename($storagePath));
+
+        try {
+            $disk = Storage::disk($diskName);
+            $stream = $disk->readStream($storagePath);
+
+            if (! is_resource($stream)) {
+                throw new \RuntimeException('Stream inválido para o arquivo de backup.');
+            }
+
+            $headers = [
+                'Content-Type' => 'text/plain; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ];
+
             try {
-                $temporaryUrl = Storage::disk('s3')->temporaryUrl(
-                    $backup->storage_path,
-                    now()->addMinutes(10),
-                    [
-                        'ResponseContentDisposition' => 'attachment; filename="' . $backup->file_name . '"',
-                    ]
-                );
-
-                return redirect()->away($temporaryUrl);
+                $headers['Content-Length'] = (string) $disk->size($storagePath);
             } catch (\Throwable $exception) {
-                if (! empty($backup->storage_url)) {
-                    return redirect()->away($backup->storage_url);
-                }
-
-                abort(500, 'Não foi possível gerar o link temporário do backup.');
+                // Optional header; keep download functional even if size cannot be resolved.
             }
-        }
 
-        if (! empty($backup->storage_url)) {
-            return redirect()->away($backup->storage_url);
-        }
+            return response()->streamDownload(function () use ($stream) {
+                fpassthru($stream);
 
-        abort(404, 'Localização do backup não encontrada.');
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }, $fileName, $headers);
+        } catch (\Throwable $exception) {
+            if (! empty($backup->storage_url)) {
+                return redirect()->away($backup->storage_url);
+            }
+
+            abort(500, 'Não foi possível baixar o arquivo do backup.');
+        }
     }
 
-    private function transformBackup($backup): array
+    private function transformBackup(array $row): array
     {
-        $row = is_array($backup) ? $backup : $backup->toArray();
         $id = (string) ($row['id'] ?? $row['_id'] ?? '');
 
         return [
