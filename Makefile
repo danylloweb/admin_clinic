@@ -35,7 +35,7 @@ prod-down: check-compose
 	$(COMPOSE_PROD) down
 
 prod-build: check-compose
-	$(COMPOSE_PROD) up -d --build --remove-orphans --force-recreate
+	$(COMPOSE_PROD) up -d --build --remove-orphans --force-recreate app-clinic
 
 prod-ps: check-compose
 	$(COMPOSE_PROD) ps
