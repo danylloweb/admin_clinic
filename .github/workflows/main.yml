@@ -24,4 +24,4 @@ jobs:
           script: |
             cd /var/www/html/admin_clinic
             git pull origin main
-            make prod-build
+            make restart-app
