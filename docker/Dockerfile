@@ -22,24 +22,12 @@ RUN docker-php-ext-install -j"$(nproc)" \
     pcntl opcache bcmath mysqli pdo_mysql intl zip xsl soap
 
 # ==== Extensões PECL ====
-# MongoDB fixado na série ^1.15 para compatibilidade com mongodb/laravel-mongodb 4.8.x
-RUN set -eux; \
-    MONGODB_VERSION=1.21.2; \
-    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
-      "https://pecl.php.net/get/mongodb-${MONGODB_VERSION}.tgz" -o /tmp/mongodb.tgz; \
-    tar -tzf /tmp/mongodb.tgz >/dev/null; \
-    pecl install /tmp/mongodb.tgz; \
-    docker-php-ext-enable mongodb; \
-    rm -f /tmp/mongodb.tgz
+# MongoDB >= 1.21 necessário para mongodb/laravel-mongodb ^5.x (Laravel 12)
+RUN pecl install mongodb \
+ && docker-php-ext-enable mongodb
 
-RUN set -eux; \
-    REDIS_VERSION=6.2.0; \
-    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
-      "https://pecl.php.net/get/redis-${REDIS_VERSION}.tgz" -o /tmp/redis.tgz; \
-    tar -tzf /tmp/redis.tgz >/dev/null; \
-    pecl install /tmp/redis.tgz; \
-    docker-php-ext-enable redis; \
-    rm -f /tmp/redis.tgz
+RUN pecl install redis \
+ && docker-php-ext-enable redis
 
 RUN set -eux; \
     APCU_VERSION=5.1.28; \
@@ -51,15 +39,8 @@ RUN set -eux; \
     rm -f /tmp/apcu.tgz
 
 # OpenSwoole (Octane) — conforme documentação oficial
-RUN set -eux; \
-    OPENSWOOLE_VERSION=25.2.0; \
-    curl -fsSL --retry 5 --retry-all-errors --connect-timeout 20 \
-      "https://pecl.php.net/get/openswoole-${OPENSWOOLE_VERSION}.tgz" -o /tmp/openswoole.tgz; \
-    tar -tzf /tmp/openswoole.tgz >/dev/null; \
-    pecl install /tmp/openswoole.tgz; \
-    docker-php-ext-enable openswoole; \
-    rm -f /tmp/openswoole.tgz
-
+RUN pecl install openswoole \
+ && docker-php-ext-enable openswoole
 # ==== Memcached (manual) ====
 RUN curl -fsSL https://github.com/php-memcached-dev/php-memcached/archive/refs/heads/master.zip -o /tmp/memcached.zip \
  && unzip /tmp/memcached.zip -d /tmp/ \
