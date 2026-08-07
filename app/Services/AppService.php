@@ -212,7 +212,7 @@ class AppService
         try {
             $params = [
                 'token'   => '19kudd3ash52qthi',
-                'to'      => "558185879004@c.us",
+                'to'      => $phone,
                 'image'   => $image,
                 'caption' => $caption
             ];
