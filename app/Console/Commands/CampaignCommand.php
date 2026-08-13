@@ -43,7 +43,7 @@ class CampaignCommand extends Command
             $this->info('Fora do horário permitido. Encerrando esta execução.');
             return;
         }
-        $campaignId = $this->campaignService->findWhere(["date" => Carbon::now()->toDateString()],true)->id;
+        $campaignId = $this->campaignService->findWhere(["date" => Carbon::now()->format('Y-m-d')],true)->id;
         if (empty($campaignId)) {
             $this->info('Nenhuma campanha ativa para hoje.');
             return;
