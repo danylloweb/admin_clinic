@@ -6,6 +6,7 @@ use App\Entities\Patient;
 use App\Entities\FacialEvaluation;
 use App\Services\FacialEvaluationService;
 use App\Services\PatientService;
+use App\Services\WApiService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -29,6 +30,7 @@ class FacialEvaluationsController extends Controller
      */
     protected $service;
 
+    protected WApiService $wapiService;
     /**
      * @var FacialEvaluationValidator
      */
@@ -41,10 +43,12 @@ class FacialEvaluationsController extends Controller
      */
     public function __construct(FacialEvaluationService         $service,
                                 FacialEvaluationValidator       $validator,
-                                private readonly PatientService $patientService)
+                                private readonly PatientService $patientService,
+                                WApiService $wapiService)
     {
         $this->service   = $service;
         $this->validator = $validator;
+        $this->wapiService = $wapiService;
     }
 
 
@@ -295,7 +299,7 @@ class FacialEvaluationsController extends Controller
              }
 
              $patient = $facialEvaluation->getChatAttributes();
-             $phone   = $patient['chat_id'];
+             $phone   = $patient['phone'];
              $name    = $patient['social_name'];
 
 
@@ -307,7 +311,7 @@ class FacialEvaluationsController extends Controller
                        "Por favor, confirme e assine através do link abaixo:\n\n" .
                        "{$signatureUrl}\n\n" .
                        "Este link expira em 7 dias.";
-             $this->service->sendMessageToWhatsApp($phone, $message);
+             $this->wapiService->sendText($phone, $message);
 
              return response()->json([
                  'error'         => false,

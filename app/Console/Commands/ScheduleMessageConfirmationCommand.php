@@ -6,6 +6,7 @@ use App\Repositories\PatientRepository;
 use App\Repositories\ScheduleRepository;
 use App\Services\CampaignService;
 use App\Services\DashboardService;
+use App\Services\WApiService;
 use Illuminate\Console\Command;
 
 /**
@@ -22,6 +23,7 @@ class ScheduleMessageConfirmationCommand extends Command
     protected PatientRepository $patientRepository;
     protected CampaignService $campaignService;
     protected ScheduleRepository $scheduleRepository;
+    protected WApiService $wapiService;
 
     /**
      * @var string
@@ -29,10 +31,12 @@ class ScheduleMessageConfirmationCommand extends Command
     protected $description = 'Cancellation of unpaid dues';
 
     public function __construct(CampaignService    $campaignService,
-                                ScheduleRepository $scheduleRepository)
+                                ScheduleRepository $scheduleRepository,
+                                WApiService $wapiService)
     {
         $this->campaignService    = $campaignService;
         $this->scheduleRepository = $scheduleRepository;
+        $this->wapiService = $wapiService;
         parent::__construct();
     }
 
@@ -43,7 +47,7 @@ class ScheduleMessageConfirmationCommand extends Command
 
         foreach ($patients as $patient) {
             $message = "Bom dia! ☀️ $patient->social_name ✨ " .$camp->description;
-            $this->campaignService->sendMessageToWhatsApp($patient->chat_id, $message);
+            $this->wapiService->sendText($patient->phone, $message);
         }
     }
 

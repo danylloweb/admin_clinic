@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'wapi' => [
+        'base_url' => env('WAPI_BASE_URL', 'https://wapi-api.intello.com.br'),
+        'instance_name' => env('WAPI_INSTANCE_NAME'),
+        'x_api_key' => env('WAPI_X_API_KEY'),
+    ],
+
 ];

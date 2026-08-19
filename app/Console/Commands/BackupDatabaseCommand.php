@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Entities\Patient;
 use App\Models\BackupHistory;
 use App\Services\AppService;
+use App\Services\WApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -27,7 +28,7 @@ class BackupDatabaseCommand extends Command
 
     protected AppService $appService;
 
-    public function __construct(AppService $appService)
+    public function __construct(AppService $appService, private readonly WApiService $wapiService)
     {
         parent::__construct();
         $this->appService = $appService;
@@ -385,7 +386,7 @@ class BackupDatabaseCommand extends Command
                 . "⏰ *Arquivo disponível até:* " . optional($backup->expires_at)->format('d/m/Y H:i:s') . "\n\n"
                 . "🔗 *Link do Backup:*\n{$shareableUrl}";
 
-            $response = $this->appService->sendMessageToWhatsApp($patient->chat_id, $message);
+            $response = $this->wapiService->sendText($patient->phone, $message);
 
             $backup->forceFill([
                 'patient_id' => $patient->id,

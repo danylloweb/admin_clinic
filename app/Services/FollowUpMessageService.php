@@ -23,7 +23,7 @@ class FollowUpMessageService extends AppService
      * @param PatientRepository $patientRepository
      *
      */
-    public function __construct(FollowUpMessageRepository $repository,PatientRepository $patientRepository)
+    public function __construct(FollowUpMessageRepository $repository,PatientRepository $patientRepository, private WApiService $wapiService)
     {
         $this->repository = $repository;
         $this->patientRepository = $patientRepository;
@@ -52,7 +52,7 @@ class FollowUpMessageService extends AppService
         $message = $this->repository->skipPresenter()->find($data['follow_up_message_id']);
         $patient = $this->patientRepository->skipPresenter()->find($data['patient_id']);
         $messageSend = str_replace("[!!Paciente!!]", $patient->social_name, $message->message);
-        $this->sendMessageToWhatsApp($patient->chat_id,$messageSend);
+        $this->wapiService->sendText($patient->phone,$messageSend);
         return ['message'=> 'envidada'];
     }
 

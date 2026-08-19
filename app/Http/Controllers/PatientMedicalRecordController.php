@@ -6,6 +6,7 @@ use App\Entities\Patient;
 use App\Entities\PatientMedicalRecord;
 use App\Http\Requests\PatientMedicalRecordCreateRequest;
 use App\Services\PatientService;
+use App\Services\WApiService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -18,8 +19,11 @@ use Illuminate\View\View;
 
 class PatientMedicalRecordController extends Controller
 {
-    public function __construct(private PatientService $patientService)
+    protected WApiService $wapiService;
+
+    public function __construct(private PatientService $patientService,  WApiService $wapiService)
     {
+        $this->wapiService = $wapiService;
     }
 
     public function successStatus(): View|Factory|Application
@@ -53,10 +57,9 @@ class PatientMedicalRecordController extends Controller
 
         if (!empty($link)) {
             try {
-                $chatId      = $patient->chat_id ?: $this->patientService->getContactIdByPhone((string) $patient->phone);
                 $patientName = $patient->social_name ?: $patient->name;
                 $message     = "Ola {$patientName}, tudo bem? para continuarmos seu atendimento na Renovar, preencha seu prontuario pelo link: {$link}";
-                $this->patientService->sendMessageToWhatsApp($chatId, $message);
+                $this->wapiService->sendText($patient->phone, $message);
                 $whatsappSent = true;
             } catch (\Throwable $exception) {
                 $whatsappError = 'Nao foi possivel enviar a mensagem no WhatsApp automaticamente.';

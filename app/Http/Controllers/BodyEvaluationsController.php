@@ -39,10 +39,11 @@ class BodyEvaluationsController extends Controller
      * @param BodyEvaluationService $service
      * @param BodyEvaluationValidator $validator
      * @param PatientService $patientService
+     * @param WApiService $wapiService
      */
     public function __construct(BodyEvaluationService   $service,
                                 BodyEvaluationValidator $validator,
-                                private PatientService    $patientService)
+                                private PatientService    $patientService, private WApiService $wapiService)
     {
         $this->service   = $service;
         $this->validator = $validator;
@@ -336,7 +337,7 @@ class BodyEvaluationsController extends Controller
             }
 
             $patient = $bodyEvaluation->getChatAttributes();
-            $phone   = $patient['chat_id'];
+            $phone   = $patient['phone'];
             $name    = $patient['social_name'];
 
             $signatureUrl = route('body-evaluation.sign', ['token' => $bodyEvaluation->signature_token]);
@@ -346,7 +347,7 @@ class BodyEvaluationsController extends Controller
                        "Por favor, confirme e assine através do link abaixo:\n\n" .
                        "{$signatureUrl}\n\n" .
                        "Este link expira em 7 dias.";
-            $this->service->sendMessageToWhatsApp($phone, $message);
+            $this->wapiService->sendText($phone, $message);
 
             return response()->json([
                 'error'         => false,

@@ -55,7 +55,7 @@ class ScheduleService extends AppService
                                 PatientService      $patientService,
                                 ProcedureRepository $procedureRepository,
                                 SalesOrderItemRepository $salesOrderItemRepository,
-                                SalesOrderRepository $salesOrderRepository)
+                                SalesOrderRepository $salesOrderRepository, private WApiService $wapiService)
     {
         $this->repository               = $repository;
         $this->patientService           = $patientService;
@@ -182,7 +182,7 @@ class ScheduleService extends AppService
             $message  = $schedule->procedure->message_schedule_after;
 
             if (!$this->isEmpty($message)){
-                $this->sendMessageToWhatsApp($schedule->patient->chat_id, $message);
+                $this->wapiService->sendText($schedule->patient->phone, $message);
             }
         }
         return parent::update($data_update, $id);
@@ -215,24 +215,24 @@ class ScheduleService extends AppService
      * @param string $procedure_name
      * @return void
      */
-    private function sendNotificationToEmployers($date_schedule, $time, string $procedure_name): void
-    {
-        try {
-            $dataSchedule = Carbon::createFromFormat('Y-m-d', $date_schedule);
-
-            $now   = Carbon::now(); // Obtém a data e hora atual usando Carbon
-            $start = $now->copy()->setHour(9)->setMinute(0)->setSecond(0); // Define a hora de início como 09:00 da manhã
-            $final = $now->copy()->setHour(21)->setMinute(0)->setSecond(0); // Define a hora de término como 21:00 da noite
-            // Verifica se a hora atual está entre o início e o fim
-            if ($now->between($start, $final) && $dataSchedule->isSameDay($now)) {
-                $message = "Atenção um novo agendamento de $procedure_name para hoje as $time ";
-                $this->sendMessageToWhatsApp("120363146408206361@g.us", $message);
-            }
-        } catch (\Exception $exception) {
-            \Log::info($exception->getMessage());
-            return;
-        }
-    }
+//    private function sendNotificationToEmployers($date_schedule, $time, string $procedure_name): void
+//    {
+//        try {
+//            $dataSchedule = Carbon::createFromFormat('Y-m-d', $date_schedule);
+//
+//            $now   = Carbon::now(); // Obtém a data e hora atual usando Carbon
+//            $start = $now->copy()->setHour(9)->setMinute(0)->setSecond(0); // Define a hora de início como 09:00 da manhã
+//            $final = $now->copy()->setHour(21)->setMinute(0)->setSecond(0); // Define a hora de término como 21:00 da noite
+//            // Verifica se a hora atual está entre o início e o fim
+//            if ($now->between($start, $final) && $dataSchedule->isSameDay($now)) {
+//                $message = "Atenção um novo agendamento de $procedure_name para hoje as $time ";
+//                $this->sendMessageToWhatsApp("120363146408206361@g.us", $message);
+//            }
+//        } catch (\Exception $exception) {
+//            \Log::info($exception->getMessage());
+//            return;
+//        }
+//    }
 
     public function calendar(): mixed
     {

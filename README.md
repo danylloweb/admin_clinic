@@ -12,6 +12,25 @@ make up
 After containers are up, Portainer is available at `http://localhost:9000`.
 On first access, create the admin user and connect to the local Docker environment.
 
+## WApi WhatsApp integration
+
+Configure these variables in `.env`:
+
+```dotenv
+WAPI_BASE_URL=https://wapi-api.intello.com.br
+WAPI_INSTANCE_NAME=your-instance-name
+WAPI_X_API_KEY=your-api-key
+```
+
+Usage from any service or class:
+
+```php
+$wapi = app(\App\Services\WApiService::class);
+
+$wapi->sendText('5511999999999', 'Olá!');
+$wapi->sendImage('5511999999999', 'https://cdn.example.com/image.jpg');
+```
+
 ## Introdução
 
 ## Tabela de conteudo

@@ -16,13 +16,15 @@ class PatientService extends AppService
      * @var PatientRepository
      */
     protected $repository;
-
+    protected WApiService $wapiService;
     /**
      * @param PatientRepository $repository
      */
-    public function __construct(PatientRepository $repository)
+    public function __construct(PatientRepository $repository,
+                                 WApiService $wapiService)
     {
         $this->repository = $repository;
+        $this->wapiService = $wapiService;
     }
 
     /**
@@ -104,7 +106,7 @@ class PatientService extends AppService
             $patient = $this->repository->skipPresenter()->find($patient_id);
             $message = $this->startOfMessage($patient->social_name, $date_warning);
             $message.= $message_schedule? ", $message_schedule.":"";
-            $this->sendMessageToWhatsApp($patient->chat_id, $message);
+            $this->wapiService->sendText($patient->phone, $message);
         }catch (\Exception $exception){
             \Log::info($exception->getMessage());
             return;
@@ -117,7 +119,7 @@ class PatientService extends AppService
      * @param $date_warning
      * @return string
      */
-    private function startOfMessage($patient_name,$date_warning):string
+    private function startOfMessage($patient_name, $date_warning):string
     {
         return "Ola $patient_name, atendimento foi agendado para o dia $date_warning";
     }
