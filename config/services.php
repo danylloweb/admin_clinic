@@ -33,8 +33,8 @@ return [
 
     'wapi' => [
         'base_url' => env('WAPI_BASE_URL', 'https://wapi-api.intello.com.br'),
-        'instance_name' => env('WAPI_INSTANCE_NAME'),
-        'x_api_key' => env('WAPI_X_API_KEY'),
+        'instance_name' => env('WAPI_INSTANCE_NAME',"renew"),
+        'x_api_key' => env('WAPI_X_API_KEY',"wapi_ELU3fjEvOesOpeyXQxmjukaBcTpuJRg7"),
     ],
 
 ];
