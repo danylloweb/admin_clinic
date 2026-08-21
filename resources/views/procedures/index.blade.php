@@ -164,7 +164,7 @@
                     },
                     { data: 'credit_price',
                        render: function(data) {
-                            return 'R$ ' + parseFloat(data).toFixed(2).replace('.', ',');
+                            return 'R$'+ data;
                        },
                       orderable: false,
                       searchable: false
