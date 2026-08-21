@@ -39,7 +39,7 @@
                                 <th>ID</th>
                                 <th>Nome</th>
                                 <th>Tipo</th>
-                                <th>Preço a vista</th>
+                                <th>Valor</th>
                                 <th>Status</th>
                                 <th>Atualizado em</th>
                                 <th>Ações</th>
@@ -162,7 +162,7 @@
                         orderable: false,
                         searchable: false
                     },
-                    { data: 'price',
+                    { data: 'credit_price',
                        render: function(data) {
                             return 'R$ ' + parseFloat(data).toFixed(2).replace('.', ',');
                        },

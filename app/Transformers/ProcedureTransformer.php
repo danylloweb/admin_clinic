@@ -21,6 +21,10 @@ class ProcedureTransformer extends TransformerAbstract
      */
     public function transform(Procedure $model)
     {
+
+        $installment        = $model->price / 1;
+        $installment_tax    = $model->getInstallmentTax();
+        $amount_installment = $installment + ($installment * $installment_tax);
         return [
             'id'                     => (int) $model->id,
             'name'                   => $model->name,
@@ -32,6 +36,7 @@ class ProcedureTransformer extends TransformerAbstract
             'minimum_amount_of_time' => $model->minimum_amount_of_time,
             'non_competing'          => $model->non_competing,
             'price'                  => number_format($model->price,2,',','.'),
+            'credit_price'           => number_format($amount_installment,2,',','.'),
             'cost_price'             => number_format($model->cost_price,2,',','.'),
             'percentage_on_sale'     => $model->percentage_on_sale,
             'status'                 => $model->status == 1 ? 'Ativo': 'Inativo',
