@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use App\Repositories\PatientRepository;
 use App\Services\CampaignService;
+use App\Services\WApiService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class CampaignCommand extends Command
 {
@@ -23,10 +25,13 @@ class CampaignCommand extends Command
 
     protected $description = 'Envia campanha em lotes, com delay aleatório, dentro do horário comercial, evitando bloqueio do WhatsApp.';
 
-    public function __construct(PatientRepository $patientRepository, CampaignService $campaignService)
+    protected WApiService $wapiService;
+
+    public function __construct(PatientRepository $patientRepository, CampaignService $campaignService,WApiService $wapiService)
     {
         $this->patientRepository = $patientRepository;
         $this->campaignService   = $campaignService;
+        $this->wapiService       = $wapiService;
         parent::__construct();
     }
 
@@ -97,8 +102,8 @@ class CampaignCommand extends Command
             $name    = $patient->social_name ?: $patient->name;
             $message = str_replace('{name}', $name, $camp->description);
 
-            $this->campaignService->sendImageToWhatsApp($patient->chat_id, $image, $message);
-
+            $this->wapiService->sendText($patient->phone,  $message);
+            Log::info("Mensagem enviada para {$name} ({$patient->phone}) na campanha {$campaignId}.");
             $state['sent']++;
             $state['processed']++;
             $state['updated_at']      = now()->toDateTimeString();
