@@ -23,7 +23,9 @@ class CampaignService extends AppService
      * @param PatientRepository $patientRepository
      */
     public function __construct(CampaignRepository                 $repository,
-                                private readonly PatientRepository $patientRepository)
+                                private readonly PatientRepository $patientRepository,
+                                private readonly WApiService $wapiService,
+                            )
     {
         $this->repository = $repository;
     }
@@ -123,14 +125,14 @@ class CampaignService extends AppService
             $campaign = $this->repository->skipPresenter()->find($campaignId);
             $patient = $this->patientRepository->skipPresenter()->find($patientId);
 
-            if (empty($patient?->chat_id)) {
-                return ['error' => true, 'message' => 'Paciente de teste sem chat_id configurado.'];
+            if (empty($patient?->phone)) {
+                return ['error' => true, 'message' => 'Paciente de teste sem telefone configurado.'];
             }
 
             $name = $patient->social_name ?: $patient->name;
             $message = str_replace('{name}', $name, (string) $campaign->description);
 
-            $providerResponse = $this->sendImageToWhatsApp((string) $patient->chat_id, (string) $campaign->url_image, $message);
+            $providerResponse = $this->wapiService->sendImage((string) $patient->phone, (string) $campaign->url_image, $message);
 
             return [
                 'error' => false,
@@ -138,7 +140,7 @@ class CampaignService extends AppService
                 'data' => [
                     'campaign_id' => $campaignId,
                     'patient_id' => $patientId,
-                    'chat_id' => $patient->chat_id,
+                    'phone' => $patient->phone,
                     'provider_response' => $providerResponse,
                 ],
             ];

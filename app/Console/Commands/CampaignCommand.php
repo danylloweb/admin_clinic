@@ -18,7 +18,7 @@ class CampaignCommand extends Command
                             {--minDelay=20 : Delay mínimo (s) entre envios}
                             {--maxDelay=40 : Delay máximo (s) entre envios}
                             {--startHour=8 : Hora inicial permitida}
-                            {--endHour=20 : Hora final permitida}';
+                            {--endHour=22 : Hora final permitida}';
 
     protected PatientRepository $patientRepository;
     protected CampaignService $campaignService;
@@ -102,7 +102,7 @@ class CampaignCommand extends Command
             $name    = $patient->social_name ?: $patient->name;
             $message = str_replace('{name}', $name, $camp->description);
 
-            $this->wapiService->sendText($patient->phone,  $message);
+            $this->wapiService->sendImage($patient->phone, $image, $message);
             Log::info("Mensagem enviada para {$name} ({$patient->phone}) na campanha {$campaignId}.");
             $state['sent']++;
             $state['processed']++;

@@ -23,11 +23,12 @@ class WApiService
         ]);
     }
 
-    public function sendImage(string $phone, string $imageUrl): array
+    public function sendImage(string $phone, string $imageUrl, string $caption): array
     {
         return $this->send('image', [
-            'phone' => $this->formatPhone($phone),
-            'image' => $imageUrl,
+            'phone'   => $this->formatPhone($phone),
+            'caption' => $caption,
+            'image'   => $imageUrl,
         ]);
     }
 
