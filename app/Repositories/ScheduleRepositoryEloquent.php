@@ -70,7 +70,7 @@ class ScheduleRepositoryEloquent extends AppRepository implements ScheduleReposi
             ->groupBy('patient.id');
 
         foreach ($patientsWithSchedules as $schedules) {
-            $list_patients[] = $schedules[0]->patient->chat_id;
+            $list_patients[] = $schedules[0]->patient->phone;
         }
         return $list_patients;
     }

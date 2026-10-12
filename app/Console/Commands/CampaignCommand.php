@@ -61,7 +61,7 @@ class CampaignCommand extends Command
             return;
         }
 
-        $not    = [75, 549, 251, 412, 230, 448];
+        $not    = [75,549,238,251,253,412,322,426,635,180,181,217,214,230];
         $cursor = $state['last_patient_id'] ?? 0;
 
         // ajuste o filtro conforme o que o seu repository suportar
@@ -127,6 +127,6 @@ class CampaignCommand extends Command
 
     private function updateCache(int $campaignId, $state): void
     {
-        Cache::put($this->campaignService->dispatchCacheKey($campaignId), $state, now()->addHours(24));
+        Cache::put($this->campaignService->dispatchCacheKey($campaignId), $state, now()->addHours(48));
     }
 }

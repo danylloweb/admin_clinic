@@ -77,7 +77,14 @@ class CampaignsController extends Controller
     public function startSend(int $id): JsonResponse
     {
         $response = $this->service->startDispatch($id);
-        $this->runArtisanAsync('campaign:run', ['--campaignId' => $id]);
+        $this->runArtisanAsync('campaign:run', [
+            '--campaignId' => $id,
+            '--batch'      => $response['total'],
+            '--minDelay'   => 40,
+            '--maxDelay'   => 60,
+            '--startHour'  => 7,
+            '--endHour'    => 22
+        ]);
         return response()->json($response);
     }
 
