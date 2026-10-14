@@ -209,11 +209,14 @@
         }
 
         .consent input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin-top: 2px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            margin-top: 0;
             accent-color: var(--renovar-primary);
             padding: 0;
+            flex: 0 0 28px;
+            cursor: pointer;
         }
 
         .button {

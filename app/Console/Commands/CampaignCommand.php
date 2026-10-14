@@ -65,7 +65,8 @@ class CampaignCommand extends Command
         $cursor = $state['last_patient_id'] ?? 0;
 
         // ajuste o filtro conforme o que o seu repository suportar
-        $allPatients = $this->patientRepository->skipPresenter()->findWhereNotIn('id', $not);
+//        $allPatients = $this->patientRepository->skipPresenter()->findWhereNotIn('id', $not);
+        $allPatients = $this->patientRepository->skipPresenter()->findWhere([['id','>',700]]);
 
         if (!isset($state['total'])) {
             $state['total']     = count($allPatients);

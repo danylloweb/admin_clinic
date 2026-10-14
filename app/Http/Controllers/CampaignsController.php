@@ -78,8 +78,7 @@ class CampaignsController extends Controller
     {
         $response = $this->service->startDispatch($id);
         $this->runArtisanAsync('campaign:run', [
-            '--campaignId' => $id,
-            '--batch'      => $response['total'],
+            '--batch'      => 100,
             '--minDelay'   => 40,
             '--maxDelay'   => 60,
             '--startHour'  => 7,

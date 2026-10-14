@@ -16,10 +16,10 @@ class Kernel extends ConsoleKernel
 //        $schedule->command('patient-photos:update')->dailyAt('12:37');
         $schedule->command('backup:database')->daily()->at('02:00');
 //        $schedule->command('patient-photos:update')->saturdays()->at('05:00');
-        $schedule->command('campaign:run --campaignId=19 --batch=10 --minDelay=20 --maxDelay=25')
-            ->everyFourMinutes()
-            ->between('07:00', '22:00')
-            ->withoutOverlapping();
+//        $schedule->command('campaign:run --campaignId=19 --batch=10 --minDelay=20 --maxDelay=25')
+//            ->everyFourMinutes()
+//            ->between('07:00', '22:00')
+//            ->withoutOverlapping();
     }
 
     /**

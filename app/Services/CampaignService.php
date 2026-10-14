@@ -76,7 +76,8 @@ class CampaignService extends AppService
     {
         $campaign = $this->repository->skipPresenter()->find($campaignId);
         $not        = [75,549,238,251,253,412,322,426,635,180,181,217,214,230];
-        $patients   = $this->patientRepository->skipPresenter()->findWhereNotIn('id',$not);
+//        $patients   = $this->patientRepository->skipPresenter()->findWhereNotIn('id',$not);
+        $patients   = $this->patientRepository->skipPresenter()->findWhere([['id','>',700]]);
         $state = [
             'campaign_id'     => $campaignId,
             'campaign_name'   => $campaign->name,
