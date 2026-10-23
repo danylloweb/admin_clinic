@@ -69,7 +69,7 @@ COPY docker/swoole/supervisor.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/swoole/supervisor.conf /etc/supervisor/supervisord.conf
 
 # ==== Cron ====
-COPY docker/swoole/laravel-cron /etc/cron.d/laravel-cron
+COPY docker/laravel-cron /etc/cron.d/laravel-cron
 RUN chmod 0644 /etc/cron.d/laravel-cron \
     && crontab /etc/cron.d/laravel-cron
 
