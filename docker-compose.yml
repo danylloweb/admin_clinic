@@ -1,18 +1,14 @@
 services:
-    app:
-        build:
-            context: ./docker
-            dockerfile: Dockerfile-dev
+    admin-clinic:
+        image: danyllo431/adminclinic:latest
         restart: unless-stopped
-        container_name: app-clinic
-        working_dir: /var/www/html
-        volumes:
-            - ./:/var/www/html
+        container_name: admin-clinic
+        env_file:
+            - .env
         ports:
             - 8001:80
         depends_on:
             - mysql
-            - mongo
             - redis
         networks:
             - admin_clinic
@@ -62,8 +58,6 @@ services:
         image: redis
         networks:
             - admin_clinic
-
-
 
 networks:
     admin_clinic:

@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.4.27-cli
 ENV DOCUMENT_ROOT=/var/www/html
 # ==== Sistema ====
 # - Inclui libs necessárias para compilar extensões (incl. OpenSwoole), GD, intl etc.
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # ==== PHP core/extensões ====
-# GD separado (PHP 8.3 usa --with-freetype --with-jpeg)
+# GD separado (PHP 8.4.27 usa --with-freetype --with-jpeg)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" gd
 
@@ -62,14 +62,14 @@ WORKDIR $DOCUMENT_ROOT
 
 # ==== Copia app e configs ====
 COPY . $DOCUMENT_ROOT
-COPY swoole/php.ini /usr/local/etc/php/conf.d/app.ini
-COPY swoole/nginx.conf /etc/nginx/nginx.conf
-COPY swoole/site-nginx.conf /etc/nginx/conf.d/app.conf
-COPY swoole/supervisor.conf /etc/supervisor/conf.d/supervisord.conf
-COPY swoole/supervisor.conf /etc/supervisor/supervisord.conf
+COPY docker/swoole/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY docker/swoole/nginx.conf /etc/nginx/nginx.conf
+COPY docker/swoole/site-nginx.conf /etc/nginx/conf.d/app.conf
+COPY docker/swoole/supervisor.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/swoole/supervisor.conf /etc/supervisor/supervisord.conf
 
 # ==== Cron ====
-COPY laravel-cron /etc/cron.d/laravel-cron
+COPY docker/swoole/laravel-cron /etc/cron.d/laravel-cron
 RUN chmod 0644 /etc/cron.d/laravel-cron \
     && crontab /etc/cron.d/laravel-cron
 
