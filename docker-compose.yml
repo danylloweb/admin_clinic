@@ -1,8 +1,13 @@
 services:
-    admin-clinic:
-        image: danyllo431/adminclinic:latest
+    app-clinic:
+        build:
+            context: ./docker
+            dockerfile: Dockerfile-dev
         restart: unless-stopped
         container_name: admin-clinic
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
         env_file:
             - .env
         ports:

@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.4.27-cli
 ENV DOCUMENT_ROOT=/var/www/html
 # ==== Sistema ====
 # - Inclui libs necessárias para compilar extensões (incl. OpenSwoole), GD, intl etc.
