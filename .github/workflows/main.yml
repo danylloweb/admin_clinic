@@ -56,10 +56,8 @@ jobs:
             export DOCKERHUB_USERNAME
             export IMAGE_TAG
             docker compose -f docker-compose.yml pull admin-clinic
-            docker compose -f docker-compose.yml up -d  admin-clinic
-            docker compose -f docker-compose.yml run \
-              --rm admin-clinic \
-              php artisan migrate --force
+            docker compose -f docker-compose.yml up -d admin-clinic
+            docker exec admin-clinic php artisan migrate --force
             sleep 10
             docker exec admin-clinic php artisan optimize
             docker image prune -f
