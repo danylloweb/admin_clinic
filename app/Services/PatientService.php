@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Criterias\AppRequestCriteria;
-use App\Criterias\FilterByPatientIdCriteria;
 use App\Repositories\PatientRepository;
 use Carbon\Carbon;
 
@@ -36,7 +35,6 @@ class PatientService extends AppService
     {
         return $this->repository
             ->resetCriteria()
-            ->pushCriteria(app(FilterByPatientIdCriteria::class))
             ->pushCriteria(app(AppRequestCriteria::class))
             ->paginate($limit);
     }
