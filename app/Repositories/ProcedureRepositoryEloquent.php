@@ -27,7 +27,7 @@ class ProcedureRepositoryEloquent extends AppRepository implements ProcedureRepo
      * @var array
      */
     protected $fieldsRules = [
-        'name' => ['string', 'max:20']
+        'name' => ['string', 'max:40']
     ];
     /**
      * Specify Model class name

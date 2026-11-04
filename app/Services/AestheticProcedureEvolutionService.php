@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Entities\AestheticProcedureEvolution;
 use App\Criterias\AppRequestCriteria;
 use App\Criterias\FilterByPatientIdCriteria;
+use App\Entities\AestheticProcedureEvolution;
 use App\Repositories\AestheticProcedureEvolutionRepository;
-use Prettus\Repository\Exceptions\RepositoryException;
 use Illuminate\Support\Str;
+use Prettus\Repository\Exceptions\RepositoryException;
 
 class AestheticProcedureEvolutionService extends AppService
 {

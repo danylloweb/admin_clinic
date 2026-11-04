@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Criterias\AppRequestCriteria;
 use App\Criterias\FilterByPatientIdCriteria;
 use App\Repositories\FacialEvaluationRepository;
-use App\Repositories\PatientMedicalRecordRepository;
 use Prettus\Repository\Exceptions\RepositoryException;
 
 /**
